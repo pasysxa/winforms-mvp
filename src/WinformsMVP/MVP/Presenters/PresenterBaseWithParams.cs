@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace WinformsMVP.MVP.Presenters
 {
-    class PresenterBaseOfTViewAndParams
+    class PresenterBaseWithParams
     {
     }
 }

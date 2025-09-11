@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace WinformsMVP.Core.Views
+namespace WinformsMVP.Common.Events
 {
-    class IControlView
+    internal class ValueChangedEventArgs
     {
     }
 }

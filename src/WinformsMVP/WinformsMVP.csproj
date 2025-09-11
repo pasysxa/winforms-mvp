@@ -42,16 +42,23 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common\ChangedTracker.cs" />
+    <Compile Include="Common\Events\ActionRequestEventArgs.cs" />
+    <Compile Include="Common\Events\ExecutionRequestEventArgs.cs" />
+    <Compile Include="Common\Events\SelectedEventArgs.cs" />
+    <Compile Include="Common\Events\SelectionEventArgs.cs" />
+    <Compile Include="Common\Events\ValueChangedEventArgs.cs" />
+    <Compile Include="Common\Helpers\CommitStatus.cs" />
+    <Compile Include="Common\Helpers\ConfirmationHelper.cs" />
     <Compile Include="Common\Helpers\EqualityHelper.cs" />
     <Compile Include="Common\InteractionResult.cs" />
-    <Compile Include="Common\InteractionStatus.cs" />
+    <Compile Include="Common\ResultStatus.cs" />
     <Compile Include="MVP\Models\BindableModel.cs" />
-    <Compile Include="MVP\Presenters\PresenterBaseOfTView.cs" />
-    <Compile Include="MVP\Presenters\PresenterBaseOfTViewAndParams.cs" />
+    <Compile Include="MVP\Presenters\PresenterBase.cs" />
+    <Compile Include="MVP\Presenters\PresenterBaseWithParams.cs" />
     <Compile Include="MVP\ViewActions\ViewAction.cs" />
     <Compile Include="MVP\ViewActions\ViewActionBinder.cs" />
     <Compile Include="MVP\ViewActions\ViewActionDispatcher.cs" />
-    <Compile Include="MVP\Views\IControlView.cs" />
+    <Compile Include="MVP\Views\IValidationCommitable.cs" />
     <Compile Include="MVP\Views\IViewBase.cs" />
     <Compile Include="MVP\Views\IWindowView.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
