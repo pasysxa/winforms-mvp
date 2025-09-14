@@ -1,6 +1,6 @@
 ﻿namespace WinformsMVP.MVP.Views
 {
-    internal interface IValidationCommitable
+    public interface IValidationCommitable
     {
         bool HasChanges();
 

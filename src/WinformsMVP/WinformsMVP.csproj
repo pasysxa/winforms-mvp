@@ -33,6 +33,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Text.Json, Version=8.0.0.5, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -50,18 +51,21 @@
     <Compile Include="Common\Events\SelectedEventArgs.cs" />
     <Compile Include="Common\Events\SelectionEventArgs.cs" />
     <Compile Include="Common\Events\ValueChangedEventArgs.cs" />
-    <Compile Include="Common\Helpers\CommitStatus.cs" />
+    <Compile Include="Common\Extensions\StringExtensions.cs" />
     <Compile Include="Common\Helpers\ConfirmationHelper.cs" />
     <Compile Include="Common\Helpers\EqualityHelper.cs" />
     <Compile Include="Common\InteractionResult.cs" />
-    <Compile Include="MVP\Models\BindableModel.cs" />
+    <Compile Include="Common\ToastType.cs" />
+    <Compile Include="MVP\Models\BindableBase.cs" />
     <Compile Include="MVP\Presenters\PresenterBase.cs" />
     <Compile Include="MVP\Presenters\PresenterBaseWithParams.cs" />
     <Compile Include="MVP\ViewActions\ActionBinding.cs" />
     <Compile Include="MVP\ViewActions\IViewActionHandler.cs" />
+    <Compile Include="MVP\ViewActions\QualifiedViewActionFactory.cs" />
     <Compile Include="MVP\ViewActions\ViewAction.cs" />
     <Compile Include="MVP\ViewActions\ViewActionBinder.cs" />
     <Compile Include="MVP\ViewActions\ViewActionDispatcher.cs" />
+    <Compile Include="MVP\ViewActions\ViewActionFactory.cs" />
     <Compile Include="MVP\ViewActions\ViewActionHandler.cs" />
     <Compile Include="MVP\Views\IValidationCommitable.cs" />
     <Compile Include="MVP\Views\IViewBase.cs" />

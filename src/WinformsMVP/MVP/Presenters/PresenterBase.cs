@@ -48,9 +48,9 @@ namespace WinformsMVP.Core.Presenters
             Dispatcher.Dispatch(key, payload);
         }
 
-        protected abstract void RegisterViewActions();
+        protected virtual void RegisterViewActions() { }
 
-        protected abstract void Cleanup();
+        protected virtual void Cleanup() { }
 
         private bool _isDisposed = false;
         public void Dispose()

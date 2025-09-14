@@ -13,11 +13,10 @@
             Value = value;
         }
 
-        public static InteractionResult<T> Ok<T>(T value)
+        public static InteractionResult<T> Ok(T value)
             => new InteractionResult<T>(true, value);
 
-        public static InteractionResult<T> Cancel<T>()
+        public static InteractionResult<T> Cancel()
             => new InteractionResult<T>(false, default(T));
-
     }
 }
