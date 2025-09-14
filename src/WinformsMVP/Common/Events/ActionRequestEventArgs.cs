@@ -1,12 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using WinformsMVP.MVP.ViewActions;
 
 namespace WinformsMVP.Common.Events
 {
-    internal class ActionRequestEventArgs
+    public class ActionRequestEventArgs
     {
+        public ActionRequestEventArgs(ViewAction actionKey)
+        {
+            ActionKey = actionKey;
+        }
+        public ViewAction ActionKey { get; }
+    }
+
+    public class ActionRequestEventArgs<T> : ActionRequestEventArgs, IActionRequestEventArgsWithValue
+    {
+        public ActionRequestEventArgs(ViewAction actionKey) : base(actionKey)
+        {
+        }
+
+        public T Value { get; }
+        public object GetValue() => Value;
     }
 }

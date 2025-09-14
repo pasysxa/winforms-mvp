@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace WinformsMVP.MVP.Views
+﻿namespace WinformsMVP.MVP.Views
 {
-    internal class IValidationCommitable
+    internal interface IValidationCommitable
     {
+        bool HasChanges();
+
+        bool Validate();
+
+        void Commit();
     }
 }

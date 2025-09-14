@@ -1,6 +1,6 @@
 ﻿namespace WinformsMVP.Core.Views
 {
-    class IWindowView
+    public interface IWindowView : IViewBase
     {
     }
 }

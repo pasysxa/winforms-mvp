@@ -1,6 +1,6 @@
 ﻿namespace WinformsMVP.Services
 {
-    public interface ICommonServices
+    public interface IAppContext
     {
     }
 }

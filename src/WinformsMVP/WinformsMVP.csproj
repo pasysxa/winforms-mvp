@@ -33,6 +33,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -41,9 +42,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Common\ChangedTracker.cs" />
+    <Compile Include="Common\ChangeTracker.cs" />
+    <Compile Include="Common\CommitResult.cs" />
     <Compile Include="Common\Events\ActionRequestEventArgs.cs" />
     <Compile Include="Common\Events\ExecutionRequestEventArgs.cs" />
+    <Compile Include="Common\Events\IActionRequestEventArgsWithValue.cs" />
     <Compile Include="Common\Events\SelectedEventArgs.cs" />
     <Compile Include="Common\Events\SelectionEventArgs.cs" />
     <Compile Include="Common\Events\ValueChangedEventArgs.cs" />
@@ -51,17 +54,20 @@
     <Compile Include="Common\Helpers\ConfirmationHelper.cs" />
     <Compile Include="Common\Helpers\EqualityHelper.cs" />
     <Compile Include="Common\InteractionResult.cs" />
-    <Compile Include="Common\ResultStatus.cs" />
     <Compile Include="MVP\Models\BindableModel.cs" />
     <Compile Include="MVP\Presenters\PresenterBase.cs" />
     <Compile Include="MVP\Presenters\PresenterBaseWithParams.cs" />
+    <Compile Include="MVP\ViewActions\ActionBinding.cs" />
+    <Compile Include="MVP\ViewActions\IViewActionHandler.cs" />
     <Compile Include="MVP\ViewActions\ViewAction.cs" />
     <Compile Include="MVP\ViewActions\ViewActionBinder.cs" />
     <Compile Include="MVP\ViewActions\ViewActionDispatcher.cs" />
+    <Compile Include="MVP\ViewActions\ViewActionHandler.cs" />
     <Compile Include="MVP\Views\IValidationCommitable.cs" />
     <Compile Include="MVP\Views\IViewBase.cs" />
     <Compile Include="MVP\Views\IWindowView.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\IAppContext.cs" />
     <Compile Include="Services\ICommonServices.cs" />
     <Compile Include="Services\IDialogService.cs" />
     <Compile Include="Services\IFileService.cs" />

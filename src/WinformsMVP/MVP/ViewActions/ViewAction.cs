@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace WinformsMVP.MVP.ViewActions
+﻿namespace WinformsMVP.MVP.ViewActions
 {
-    class ViewAction
+    public class ViewAction
     {
     }
 }
