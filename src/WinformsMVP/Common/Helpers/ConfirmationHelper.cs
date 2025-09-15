@@ -12,10 +12,7 @@ namespace WinformsMVP.Common.Helpers
                 return CommitResult.Skip;
 
             if (!commitable.Validate())
-            {
-                messageService.ShowWarning("内容不合法！");
                 return CommitResult.Cancel;
-            }
 
             var result = messageService.ConfirmYesNoCancel(message);
 

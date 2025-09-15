@@ -2,7 +2,7 @@
 
 namespace WinformsMVP.MVP.ViewActions
 {
-    public class ViewAction : IEquatable<ViewAction>
+    public struct ViewAction : IEquatable<ViewAction>
     {
         public string Name { get; }
         private ViewAction(string name)
@@ -12,18 +12,22 @@ namespace WinformsMVP.MVP.ViewActions
         }
 
         public static ViewAction Create(string name) => new ViewAction(name);
-        public static QualifiedViewActionFactory Factory(params string[] qualifiers) => new QualifiedViewActionFactory(qualifiers);
+        public static ViewActionFactory Factory { get; } = new ViewActionFactory();
 
-        public ViewAction WithSuffix(string suffix, string sep = ".")
+        public ViewAction WithQualifier(ViewActionFactory factory) => factory.Create(Name);
+
+        public ViewAction WithSuffix(string suffix, string sep = "_")
             => new ViewAction($"{Name}{sep}{suffix}");
 
-        public bool Equals(ViewAction other)
-            => other != null &&
-               Name == other.Name;
-        public override bool Equals(object obj)
-            => Equals(obj as ViewAction);
+        public bool Equals(ViewAction other) => string.Equals(Name, other.Name, StringComparison.Ordinal);
+        public override bool Equals(object obj) => obj is ViewAction other && Equals(other);
+
+        public static bool operator ==(ViewAction left, ViewAction right) => left.Equals(right);
+        public static bool operator !=(ViewAction left, ViewAction right) => !left.Equals(right);
 
         public override int GetHashCode()
-            => Name.GetHashCode();
+            => Name?.GetHashCode() ?? 0;
+
+        public override string ToString() => Name;
     }
 }
