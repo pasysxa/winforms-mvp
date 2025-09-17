@@ -76,5 +76,11 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\WinformsMVP\WinformsMVP.csproj">
+      <Project>{c99309fc-bf3b-4a95-9750-a90ac626a0b3}</Project>
+      <Name>WinformsMVP</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

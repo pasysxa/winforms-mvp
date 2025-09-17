@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace WinformsMVP.Services
+﻿namespace WinformsMVP.Services
 {
-    class IFileService
+    public interface IFileService
     {
     }
 }

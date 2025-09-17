@@ -77,11 +77,15 @@
     <Compile Include="Services\IDialogService.cs" />
     <Compile Include="Services\IFileService.cs" />
     <Compile Include="Services\IMessageService.cs" />
+    <Compile Include="Services\Implementations\DefaultAppContext.cs" />
+    <Compile Include="Services\Implementations\DefaultCommonServices.cs" />
+    <Compile Include="Services\Implementations\DialogService.cs" />
+    <Compile Include="Services\Implementations\FileService.cs" />
+    <Compile Include="Services\Implementations\MessageService.cs" />
     <Compile Include="Services\IWindowNavigator.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Common\Validations\" />
-    <Folder Include="Services\Implementations\" />
     <Folder Include="Services\Loggers\" />
     <Folder Include="Services\Settings\" />
   </ItemGroup>

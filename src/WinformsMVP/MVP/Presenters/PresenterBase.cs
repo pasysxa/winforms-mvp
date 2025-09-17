@@ -3,6 +3,7 @@ using WinformsMVP.Common.Events;
 using WinformsMVP.Core.Views;
 using WinformsMVP.MVP.ViewActions;
 using WinformsMVP.Services;
+using WinformsMVP.Services.Implementations;
 
 namespace WinformsMVP.Core.Presenters
 {
@@ -12,12 +13,12 @@ namespace WinformsMVP.Core.Presenters
         protected readonly ICommonServices _commonServices;
         protected readonly IAppContext _appContext;
 
-        protected PresenterBase(TView view, ICommonServices commonServices, IAppContext appContext)
+        protected PresenterBase(TView view, ICommonServices commonServices = null, IAppContext appContext = null)
         {
             View = view;
             _dispatcher = new ViewActionDispatcher();
-            _commonServices = commonServices;
-            _appContext = appContext;
+            _commonServices = _commonServices ?? new DefaultCommonServices();
+            _appContext = _appContext ?? new DefaultAppContext();
         }
 
         protected TView View { get; }
