@@ -7,5 +7,6 @@ namespace WinformsMVP.MVP.Presenters
     {
         event EventHandler<CloseRequestedEventArgs<TResult>> CloseRequested;
         bool CanClose();
+        bool TryGetResult(out TResult result);
     }
 }

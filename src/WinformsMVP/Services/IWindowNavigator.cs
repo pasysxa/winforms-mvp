@@ -1,15 +1,26 @@
-﻿using System.Windows.Forms;
+﻿using System;
+using System.Windows.Forms;
 using WinformsMVP.Common;
+using WinformsMVP.Core.Views;
 using WinformsMVP.MVP.Presenters;
 
 namespace WinformsMVP.Services
 {
     public interface IWindowNavigator
     {
-        void ShowWindow(IPresenter presenter, IWin32Window owner = null);
+        IWindowView ShowWindow<TPresenter, TResult>(
+        TPresenter presenter,
+        IWin32Window owner = null,
+        Func<TPresenter, object> keySelector = null,
+        Action<InteractionResult<TResult>> onClosed = null) where TPresenter : IPresenter;
 
-        InteractionResult ShowWindowAsModal(IPresenter presenter, IWin32Window owner = null);
+        IWindowView ShowWindow<TPresenter>(TPresenter presenter,
+        IWin32Window owner = null,
+        Func<TPresenter, object> keySelector = null)
+        where TPresenter : IPresenter;
 
-        InteractionResult<T> ShowWindowAsModal<T>(IPresenter presenter, IWin32Window owner = null);
+        InteractionResult ShowWindowAsModal<TPresenter>(TPresenter presenter, IWin32Window owner = null) where TPresenter : IPresenter;
+
+        InteractionResult<TResult> ShowWindowAsModal<TPresenter, TResult>(TPresenter presenter, IWin32Window owner = null) where TPresenter : IPresenter;
     }
 }

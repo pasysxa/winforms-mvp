@@ -2,7 +2,7 @@
 
 namespace WinformsMVP.MVP.Presenters
 {
-    public interface IPresenter
+    public interface IPresenter : IDisposable
     {
         Type ViewInterfaceType { get; }
     }
