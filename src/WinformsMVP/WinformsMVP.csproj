@@ -47,6 +47,7 @@
     <Compile Include="Common\ChangeTracker.cs" />
     <Compile Include="Common\CommitResult.cs" />
     <Compile Include="Common\Events\ActionRequestEventArgs.cs" />
+    <Compile Include="Common\Events\CloseRequestedEventArgs.cs" />
     <Compile Include="Common\Events\ExecutionRequestEventArgs.cs" />
     <Compile Include="Common\Events\IActionRequestEventArgsWithValue.cs" />
     <Compile Include="Common\Events\SelectedEventArgs.cs" />
@@ -61,6 +62,10 @@
     <Compile Include="Common\PropertyNameHelper.cs" />
     <Compile Include="Common\ToastType.cs" />
     <Compile Include="MVP\Models\BindableBase.cs" />
+    <Compile Include="MVP\Presenters\IInitializable.cs" />
+    <Compile Include="MVP\Presenters\IPresenter.cs" />
+    <Compile Include="MVP\Presenters\IRequestClose.cs" />
+    <Compile Include="MVP\Presenters\IViewAttacher.cs" />
     <Compile Include="MVP\Presenters\PresenterBase.cs" />
     <Compile Include="MVP\Presenters\PresenterBaseWithParams.cs" />
     <Compile Include="MVP\ViewActions\ActionBinding.cs" />
@@ -92,6 +97,9 @@
     <Compile Include="Services\Implementations\DialogProvider.cs" />
     <Compile Include="Services\Implementations\FileService.cs" />
     <Compile Include="Services\Implementations\MessageService.cs" />
+    <Compile Include="Services\Implementations\ViewMappingRegister.cs" />
+    <Compile Include="Services\Implementations\WindowNavigator.cs" />
+    <Compile Include="Services\IViewMappingRegister.cs" />
     <Compile Include="Services\IWindowNavigator.cs" />
   </ItemGroup>
   <ItemGroup>

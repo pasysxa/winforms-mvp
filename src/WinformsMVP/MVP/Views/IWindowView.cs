@@ -1,6 +1,8 @@
-﻿namespace WinformsMVP.Core.Views
+﻿using System.Windows.Forms;
+
+namespace WinformsMVP.Core.Views
 {
-    public interface IWindowView : IViewBase
+    public interface IWindowView : IViewBase, IWin32Window
     {
     }
 }
