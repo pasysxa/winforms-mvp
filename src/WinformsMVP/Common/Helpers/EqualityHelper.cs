@@ -32,6 +32,10 @@ namespace WinformsMVP.Common.Helpers
             {
                 return false;
             }
+            catch (Exception)
+            {
+                return false;
+            }
         }
     }
 }

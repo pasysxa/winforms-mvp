@@ -1,16 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using WinformsMVP.Common.Helpers;
 
 namespace WinformsMVP.Common
 {
+    /// <summary>
+    /// オブジェクト T の変更を追跡し、変更の受け入れまたは破棄を可能にするクラスです。
+    /// T は参照型 (class) であり、クローン可能 (ICloneable) である必要があります。
+    /// </summary>
     public class ChangeTracker<T> : IChangeTracking, IRevertibleChangeTracking where T : class, ICloneable
     {
         private T _originalValue;
         private readonly Func<T, T, bool> _comparer;
 
         public T CurrentValue { get; set; }
-        public ChangeTracker() { }
+
         public ChangeTracker(T initialValue, Func<T, T, bool> comparer = null)
         {
             if (initialValue == null)
@@ -23,13 +28,9 @@ namespace WinformsMVP.Common
             {
                 _comparer = comparer;
             }
-            else if (typeof(IEquatable<T>).IsAssignableFrom(typeof(T)))
-            {
-                _comparer = (x, y) => ((IEquatable<T>)x).Equals(y);
-            }
             else
             {
-                //_comparer = (x, y) => JsonSerializer.Serialize(x) == JsonSerializer.Serialize(y);
+                _comparer = EqualityHelper.Equals;
             }
         }
 
@@ -38,7 +39,10 @@ namespace WinformsMVP.Common
         {
         }
 
-        // --- Supervising Controller ---
+        // ----------------------------------------------------------------------------------
+        // IChangeTracking / IRevertibleChangeTracking インターフェース実装
+        // ----------------------------------------------------------------------------------
+
         public bool IsChanged => !_comparer(_originalValue, CurrentValue);
 
         public void AcceptChanges()
@@ -48,10 +52,13 @@ namespace WinformsMVP.Common
 
         public void RejectChanges()
         {
+            // クローンを使用して、参照が同一にならないようにします
             CurrentValue = (T)_originalValue.Clone();
         }
 
-        // --- Passive View ---
+        // ----------------------------------------------------------------------------------
+        // 補助メソッド (Passive View / Supervising Controller パターン用)
+        // ----------------------------------------------------------------------------------
         public bool IsChangedWith(T currentValueFromView)
         {
             return !_comparer(_originalValue, currentValueFromView);
@@ -60,6 +67,7 @@ namespace WinformsMVP.Common
         public void AcceptChanges(T newValue)
         {
             _originalValue = (T)newValue.Clone();
+            CurrentValue = (T)newValue.Clone();
         }
 
         public T GetOriginalValue()
