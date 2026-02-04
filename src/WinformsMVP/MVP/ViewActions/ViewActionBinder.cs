@@ -6,6 +6,10 @@ using System.Windows.Forms;
 
 namespace WinformsMVP.MVP.ViewActions
 {
+    /// <summary>
+    /// Binds UI controls to view actions with support for dynamic enable/disable based on CanExecute.
+    /// When bound to a ViewActionDispatcher, automatically updates control states after each action execution.
+    /// </summary>
     public class ViewActionBinder : IEnumerable<ActionBinding>
     {
         private readonly List<ActionBinding> _bindings = new List<ActionBinding>();
@@ -13,6 +17,8 @@ namespace WinformsMVP.MVP.ViewActions
             = new Dictionary<Type, (Action<Component, Delegate>, Action<Component, Delegate>)>();
         private readonly List<(Component Control, Delegate Handler, Action<Component, Delegate> Detacher)> _activeSubscriptions
             = new List<(Component, Delegate, Action<Component, Delegate>)>();
+        private readonly Dictionary<ViewAction, List<Component>> _actionToControls = new Dictionary<ViewAction, List<Component>>();
+        private ViewActionDispatcher _dispatcher;
 
         public ViewActionBinder()
         {
@@ -21,12 +27,22 @@ namespace WinformsMVP.MVP.ViewActions
 
         private void RegisterDefaultStrategies()
         {
-            // Button, CheckBox, RadioButton 
+            // CheckBox - supports both Click and CheckedChanged
+            RegisterStrategy<CheckBox>(
+                (c, h) => c.CheckedChanged += (EventHandler)h,
+                (c, h) => c.CheckedChanged -= (EventHandler)h);
+
+            // RadioButton - supports both Click and CheckedChanged
+            RegisterStrategy<RadioButton>(
+                (c, h) => c.CheckedChanged += (EventHandler)h,
+                (c, h) => c.CheckedChanged -= (EventHandler)h);
+
+            // Button (regular buttons, not CheckBox/RadioButton)
             RegisterStrategy<ButtonBase>(
                 (c, h) => c.Click += (EventHandler)h,
                 (c, h) => c.Click -= (EventHandler)h);
 
-            // ToolStripMenuItem, ToolStripButton, ToolStripDropDownButton, ToolStripStatusLabel 
+            // ToolStripMenuItem, ToolStripButton, ToolStripDropDownButton, ToolStripStatusLabel
             RegisterStrategy<ToolStripItem>(
                 (c, h) => c.Click += (EventHandler)h,
                 (c, h) => c.Click -= (EventHandler)h);
@@ -47,16 +63,28 @@ namespace WinformsMVP.MVP.ViewActions
             _bindings.Add(new ActionBinding(actionKey, controls));
         }
 
+        /// <summary>
+        /// Binds all registered controls to their actions.
+        /// </summary>
+        /// <param name="onActionTriggered">Callback when an action is triggered</param>
         public void Bind(Action<ViewAction> onActionTriggered)
         {
             Unbind();
 
+            _actionToControls.Clear();
             var actionMap = new Dictionary<object, ViewAction>();
+
             foreach (var binding in _bindings)
             {
+                if (!_actionToControls.ContainsKey(binding.ActionKey))
+                {
+                    _actionToControls[binding.ActionKey] = new List<Component>();
+                }
+
                 foreach (var component in binding.Components)
                 {
                     actionMap[component] = binding.ActionKey;
+                    _actionToControls[binding.ActionKey].Add(component);
                 }
             }
 
@@ -74,8 +102,89 @@ namespace WinformsMVP.MVP.ViewActions
             }
         }
 
+        /// <summary>
+        /// Binds all registered controls to a ViewActionDispatcher.
+        /// This overload enables automatic CanExecute support.
+        /// After binding, UI state will automatically update when:
+        /// 1. Actions are executed (ActionExecuted event)
+        /// 2. RaiseCanExecuteChanged() is called (CanExecuteChanged event)
+        /// </summary>
+        /// <param name="dispatcher">The dispatcher to bind to</param>
+        public void Bind(ViewActionDispatcher dispatcher)
+        {
+            _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
+
+            // Important: Call Bind first (which calls Unbind internally)
+            // Then subscribe to events after, otherwise Unbind will unsubscribe them
+            Bind(action => dispatcher.Dispatch(action));
+
+            // Subscribe to both events for automatic UI refresh
+            _dispatcher.ActionExecuted += OnActionExecuted;
+            _dispatcher.CanExecuteChanged += OnCanExecuteChanged;
+
+            UpdateCanExecuteStates();
+        }
+
+        /// <summary>
+        /// Called automatically after an action is executed.
+        /// Refreshes the enabled state of all bound controls.
+        /// </summary>
+        private void OnActionExecuted(object sender, ViewAction actionKey)
+        {
+            UpdateCanExecuteStates();
+        }
+
+        /// <summary>
+        /// Called automatically when RaiseCanExecuteChanged() is invoked.
+        /// Refreshes the enabled state of all bound controls.
+        /// </summary>
+        private void OnCanExecuteChanged(object sender, EventArgs e)
+        {
+            UpdateCanExecuteStates();
+        }
+
+        /// <summary>
+        /// Updates the enabled state of all bound controls based on their action's CanExecute.
+        /// When using Bind(dispatcher), this is called automatically after each action execution.
+        /// Only call manually if state changes outside of action handlers (e.g., from view events).
+        /// </summary>
+        public void UpdateCanExecuteStates()
+        {
+            if (_dispatcher == null)
+                return;
+
+            foreach (var kvp in _actionToControls)
+            {
+                var canExecute = _dispatcher.CanDispatch(kvp.Key);
+
+                foreach (var component in kvp.Value)
+                {
+                    SetControlEnabled(component, canExecute);
+                }
+            }
+        }
+
+        private void SetControlEnabled(Component component, bool enabled)
+        {
+            if (component is Control control)
+            {
+                control.Enabled = enabled;
+            }
+            else if (component is ToolStripItem toolStripItem)
+            {
+                toolStripItem.Enabled = enabled;
+            }
+        }
+
         public void Unbind()
         {
+            // Unsubscribe from dispatcher events
+            if (_dispatcher != null)
+            {
+                _dispatcher.ActionExecuted -= OnActionExecuted;
+                _dispatcher.CanExecuteChanged -= OnCanExecuteChanged;
+            }
+
             foreach (var (control, handler, detacher) in _activeSubscriptions)
             {
                 detacher(control, handler);

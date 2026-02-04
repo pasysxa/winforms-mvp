@@ -1,0 +1,12 @@
+using WinformsMVP.Core.Views;
+using WinformsMVP.MVP.ViewActions;
+
+namespace MinformsMVP.Samples.NavigatorDemo
+{
+    public interface ISingletonWindowView : IWindowView
+    {
+        void SetInstanceId(int id);
+        void SetMessage(string message);
+        void BindActions(ViewActionDispatcher dispatcher);
+    }
+}

@@ -1,0 +1,114 @@
+using System;
+using System.Windows.Forms;
+using WinformsMVP.Core.Presenters;
+using WinformsMVP.Core.Views;
+
+namespace WinformsMVP.MVP.Presenters
+{
+    /// <summary>
+    /// Base class for presenters that manage UserControl views with initialization parameters.
+    /// Use this class when the presenter requires parameters to initialize (e.g., entity ID, filter criteria).
+    /// The view and parameters are injected through the constructor and the presenter is automatically
+    /// initialized and disposed with the control's lifecycle.
+    /// </summary>
+    /// <typeparam name="TView">The view interface type, must implement IViewBase</typeparam>
+    /// <typeparam name="TParam">The type of initialization parameters</typeparam>
+    public abstract class ControlPresenterBase<TView, TParam> : PresenterBase<TView>
+        where TView : IViewBase
+    {
+        private bool _initialized = false;
+
+        /// <summary>
+        /// Gets the initialization parameters passed to this presenter.
+        /// Available after construction.
+        /// </summary>
+        protected TParam Parameters { get; private set; }
+
+        /// <summary>
+        /// Creates a new presenter for a UserControl view with initialization parameters.
+        /// </summary>
+        /// <param name="view">The view instance (typically a UserControl)</param>
+        /// <param name="parameters">Initialization parameters</param>
+        protected ControlPresenterBase(TView view, TParam parameters)
+        {
+            SetView(view);
+            Parameters = parameters;
+            Initialize();
+
+            // Subscribe to control lifecycle events
+            if (view is UserControl userControl)
+            {
+                userControl.Load += OnControlLoad;
+                userControl.Disposed += OnControlDisposed;
+            }
+            else if (view is Control control)
+            {
+                control.HandleCreated += OnControlHandleCreated;
+                control.Disposed += OnControlDisposed;
+            }
+        }
+
+        private void Initialize()
+        {
+            if (_initialized)
+                return;
+
+            _initialized = true;
+            RegisterViewActions();
+            OnInitialize(Parameters);
+        }
+
+        /// <summary>
+        /// Override to register view actions (UI event bindings).
+        /// </summary>
+        protected virtual void RegisterViewActions() { }
+
+        /// <summary>
+        /// Override to perform initialization logic with parameters.
+        /// At this point, both the View property and Parameters are guaranteed to be set.
+        /// Note: The control may not have a parent container yet.
+        /// </summary>
+        /// <param name="parameters">The initialization parameters</param>
+        protected abstract void OnInitialize(TParam parameters);
+
+        /// <summary>
+        /// Called when the UserControl is loaded (has parent and handle created).
+        /// Override this to perform operations that require the control to be fully initialized.
+        /// Only called if the view is a UserControl.
+        /// </summary>
+        protected virtual void OnControlLoad(object sender, EventArgs e)
+        {
+            // Default implementation: empty
+        }
+
+        /// <summary>
+        /// Called when the Control's window handle is created.
+        /// Override this to perform operations that require a window handle.
+        /// Called for all Control types.
+        /// </summary>
+        protected virtual void OnControlHandleCreated(object sender, EventArgs e)
+        {
+            // Default implementation: empty
+        }
+
+        /// <summary>
+        /// Called when the UserControl is being disposed.
+        /// Automatically disposes this presenter as well.
+        /// </summary>
+        protected virtual void OnControlDisposed(object sender, EventArgs e)
+        {
+            if (sender is UserControl userControl)
+            {
+                userControl.Load -= OnControlLoad;
+                userControl.Disposed -= OnControlDisposed;
+            }
+            else if (sender is Control control)
+            {
+                control.HandleCreated -= OnControlHandleCreated;
+                control.Disposed -= OnControlDisposed;
+            }
+
+            Dispose();
+        }
+    }
+}

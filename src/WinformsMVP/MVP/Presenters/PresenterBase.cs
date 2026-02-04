@@ -6,47 +6,52 @@ using WinformsMVP.MVP.ViewActions;
 
 namespace WinformsMVP.Core.Presenters
 {
-    public abstract class PresenterBase<TView> : IPresenter, IViewAttacher<TView>, IInitializable where TView : IViewBase
+    /// <summary>
+    /// Base class for all presenters providing common functionality.
+    /// This class should not be used directly - use WindowPresenterBase or ControlPresenterBase instead.
+    /// </summary>
+    public abstract class PresenterBase<TView> : IPresenter where TView : IViewBase
     {
+        protected TView View { get; private set; }
         protected readonly ViewActionDispatcher _dispatcher;
-        //protected readonly ICommonServices _commonServices;
-        //protected readonly IAppContext _appContext;
-
-        //protected PresenterBase(TView view, ICommonServices commonServices = null, IAppContext appContext = null)
-        //{
-        //    View = view;
-        //    _dispatcher = new ViewActionDispatcher();
-        //    _commonServices = _commonServices ?? new DefaultCommonServices();
-        //    _appContext = _appContext ?? new DefaultAppContext();
-        //}
 
         protected PresenterBase()
         {
             _dispatcher = new ViewActionDispatcher();
         }
 
-        public void AttachView(TView view)
+        /// <summary>
+        /// Sets the view for this presenter. Called by derived classes.
+        /// </summary>
+        protected void SetView(TView view)
         {
+            if (view == null)
+                throw new ArgumentNullException(nameof(view));
+
             View = view;
             OnViewAttached();
         }
 
-        public Type ViewInterfaceType => typeof(TView);
-        protected TView View { get; private set; }
+        /// <summary>
+        /// Called when the view is attached to this presenter.
+        /// </summary>
         protected abstract void OnViewAttached();
+
+        public Type ViewInterfaceType => typeof(TView);
 
         protected ViewActionDispatcher Dispatcher => _dispatcher;
 
-        public virtual void Initialize()
-        {
-            RegisterViewActions();
-        }
-
+        /// <summary>
+        /// Helper method to dispatch actions from view events.
+        /// </summary>
         protected void OnViewActionTriggered(object sender, ActionRequestEventArgs e)
         {
             DispatchAction(e);
         }
 
+        /// <summary>
+        /// Dispatches an action request to the registered handler.
+        /// </summary>
         protected void DispatchAction(ActionRequestEventArgs e)
         {
             if (e == null) return;
@@ -62,11 +67,9 @@ namespace WinformsMVP.Core.Presenters
             Dispatcher.Dispatch(key, payload);
         }
 
-        protected virtual void RegisterViewActions() { }
-
-        protected virtual void Cleanup() { }
-
+        // IDisposable implementation
         private bool _isDisposed = false;
+
         public void Dispose()
         {
             if (!_isDisposed)
@@ -76,5 +79,10 @@ namespace WinformsMVP.Core.Presenters
             }
             GC.SuppressFinalize(this);
         }
+
+        /// <summary>
+        /// Override to clean up resources when the presenter is disposed.
+        /// </summary>
+        protected virtual void Cleanup() { }
     }
 }

@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet --version:*)",
+      "Bash(msbuild:*)",
+      "Bash(dotnet build:*)",
+      "Bash(dotnet clean:*)",
+      "Bash(dotnet restore:*)",
+      "Bash(dotnet test:*)",
+      "Bash(dotnet run:*)",
+      "Bash(timeout /t 2 /nobreak)",
+      "Bash(tasklist:*)",
+      "Bash(start \"\" \"C:\\\\workspace\\\\winforms-mvp\\\\src\\\\MinformsMVP.Samples\\\\bin\\\\Debug\\\\net48\\\\MinformsMVP.Samples.exe\")",
+      "Bash(findstr:*)",
+      "Bash(\"C:\\\\workspace\\\\winforms-mvp\\\\src\\\\MinformsMVP.Samples\\\\bin\\\\Debug\\\\net48\\\\MinformsMVP.Samples.exe\")",
+      "Bash(timeout /t 3 /nobreak)",
+      "Bash(git checkout:*)",
+      "Bash(git stash:*)",
+      "Bash(git restore:*)",
+      "Bash(git config:*)",
+      "Bash(unix2dos:*)",
+      "Bash(if [ -f .gitignore ])",
+      "Bash(then cat .gitignore)",
+      "Bash(else echo \"No .gitignore found\")",
+      "Bash(fi)"
+    ]
+  }
+}

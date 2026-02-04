@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text.Json;
 
 namespace WinformsMVP.Common.Helpers
 {
@@ -19,23 +18,7 @@ namespace WinformsMVP.Common.Helpers
             if (left is IComparable<T> comparableLeft)
                 return comparableLeft.CompareTo(right) == 0;
 
-            if (left.GetType() == right.GetType())
-                return left.Equals(right);
-
-            try
-            {
-                string leftJson = JsonSerializer.Serialize(left);
-                string rightJson = JsonSerializer.Serialize(right);
-                return leftJson.Equals(rightJson);
-            }
-            catch (JsonException)
-            {
-                return false;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
+            return left.Equals(right);
         }
     }
 }
