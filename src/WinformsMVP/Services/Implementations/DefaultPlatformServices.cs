@@ -1,8 +1,12 @@
-﻿using System;
+using System;
 
 namespace WinformsMVP.Services.Implementations
 {
-    public class DefaultCommonServices : ICommonServices
+    /// <summary>
+    /// プラットフォームサービスのデフォルト実装。
+    /// 各サービスは遅延初期化されます。
+    /// </summary>
+    public class DefaultPlatformServices : IPlatformServices
     {
         private readonly Lazy<IDialogProvider> _dialogProvider = new Lazy<IDialogProvider>(() => new DialogProvider());
         private readonly Lazy<IMessageService> _messageService = new Lazy<IMessageService>(() => new MessageService());

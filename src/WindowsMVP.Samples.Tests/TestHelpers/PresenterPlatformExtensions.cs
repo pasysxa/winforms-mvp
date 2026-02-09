@@ -5,34 +5,34 @@ using WinformsMVP.Services;
 namespace WindowsMVP.Samples.Tests.TestHelpers
 {
     /// <summary>
-    /// Extension methods for testing presenters with mock platform services.
-    /// Provides a fluent API for injecting mock services before presenter initialization.
+    /// プレゼンターをテスト用のモックプラットフォームサービスで拡張するためのメソッド。
+    /// プレゼンター初期化前にモックサービスを注入するためのFluentAPIを提供します。
     /// </summary>
     public static class PresenterPlatformExtensions
     {
         /// <summary>
-        /// Injects mock platform services for testing.
-        /// MUST be called before AttachView() or Initialize().
+        /// テスト用にモックプラットフォームサービスを注入します。
+        /// AttachView() または Initialize() より前に呼び出す必要があります。
         /// </summary>
-        /// <typeparam name="T">The presenter type</typeparam>
-        /// <param name="presenter">The presenter instance</param>
-        /// <param name="platform">The mock platform services</param>
-        /// <returns>The presenter for fluent chaining</returns>
+        /// <typeparam name="T">プレゼンターの型</typeparam>
+        /// <param name="presenter">プレゼンターインスタンス</param>
+        /// <param name="platform">モックプラットフォームサービス</param>
+        /// <returns>メソッドチェーン用のプレゼンター</returns>
         /// <example>
         /// <code>
-        /// var mockServices = new MockCommonServices();
+        /// var mockServices = new MockPlatformServices();
         /// var presenter = new MyPresenter()
-        ///     .WithPlatformServices(mockServices);  // Before initialization!
+        ///     .WithPlatformServices(mockServices);  // 初期化前に！
         ///
         /// presenter.AttachView(mockView);
         /// presenter.Initialize();
         /// </code>
         /// </example>
-        public static T WithPlatformServices<T>(this T presenter, ICommonServices platform)
+        public static T WithPlatformServices<T>(this T presenter, IPlatformServices platform)
             where T : class
         {
-            // Use dynamic to call internal SetPlatformServices method
-            // This works because of InternalsVisibleTo attribute
+            // InternalsVisibleTo属性により内部メソッドにアクセス可能
+            // dynamicを使用してSetPlatformServicesを呼び出し
             dynamic dynamicPresenter = presenter;
             dynamicPresenter.SetPlatformServices(platform);
             return presenter;

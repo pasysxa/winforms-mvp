@@ -7,43 +7,43 @@ using WindowsMVP.Samples.Tests.TestHelpers;
 namespace WindowsMVP.Samples.Tests.Presenters
 {
     /// <summary>
-    /// 单元测试示例：测试 ToDoDemoPresenter
+    /// 単体テスト例：ToDoDemoPresenterをテスト
     ///
-    /// 演示如何：
-    /// 1. 使用 MockCommonServices 注入mock服务
-    /// 2. 使用 MockToDoView 模拟视图
-    /// 3. 验证Presenter的业务逻辑
-    /// 4. 验证服务调用（MessageService等）
+    /// デモンストレーション：
+    /// 1. MockPlatformServicesを使用してモックサービスを注入
+    /// 2. MockToDoViewを使用してビューをモック
+    /// 3. Presenterのビジネスロジックを検証
+    /// 4. サービス呼び出し（MessageServiceなど）を検証
     /// </summary>
     public class ToDoDemoPresenterTests
     {
-        private MockCommonServices _mockServices;
+        private MockPlatformServices _mockServices;
         private MockToDoView _mockView;
         private ToDoDemoPresenter _presenter;
 
         public ToDoDemoPresenterTests()
         {
-            // 每个测试前都会执行构造函数
+            // 各テスト前にコンストラクターが実行される
             SetupTest();
         }
 
         private void SetupTest()
         {
-            // 1. 创建Mock服务
-            _mockServices = new MockCommonServices();
+            // 1. モックサービスを作成
+            _mockServices = new MockPlatformServices();
 
-            // 2. 创建Presenter，使用WithPlatformServices注入Mock服务
+            // 2. Presenterを作成し、WithPlatformServicesでモックサービスを注入
             _presenter = new ToDoDemoPresenter()
                 .WithPlatformServices(_mockServices);
 
-            // 3. 创建Mock视图
+            // 3. モックビューを作成
             _mockView = new MockToDoView();
 
-            // 4. 附加视图并初始化
+            // 4. ビューをアタッチして初期化
             _presenter.AttachView(_mockView);
             _presenter.Initialize();
 
-            // 清除初始化时的调用记录（如果需要）
+            // 初期化時の呼び出し記録をクリア（必要に応じて）
             _mockServices.Reset();
             _mockView.MethodCalls.Clear();
             _mockView.StatusMessages.Clear();

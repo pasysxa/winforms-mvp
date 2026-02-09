@@ -16,7 +16,7 @@ namespace WinformsMVP.Core.Presenters
         protected readonly ViewActionDispatcher _dispatcher;
 
         // Platform services infrastructure
-        private WinformsMVP.Services.ICommonServices _platform;
+        private WinformsMVP.Services.IPlatformServices _platform;
         protected bool _initialized = false;
 
         protected PresenterBase()
@@ -31,7 +31,7 @@ namespace WinformsMVP.Core.Presenters
         /// <param name="platform">The platform services to use</param>
         /// <exception cref="ArgumentNullException">Thrown when platform is null</exception>
         /// <exception cref="InvalidOperationException">Thrown when called after initialization</exception>
-        internal void SetPlatformServices(WinformsMVP.Services.ICommonServices platform)
+        internal void SetPlatformServices(WinformsMVP.Services.IPlatformServices platform)
         {
             if (platform == null)
                 throw new ArgumentNullException(nameof(platform));
@@ -46,10 +46,10 @@ namespace WinformsMVP.Core.Presenters
 
         /// <summary>
         /// Gets the platform services container.
-        /// Defaults to CommonServices.Default if not explicitly set.
+        /// Defaults to PlatformServices.Default if not explicitly set.
         /// </summary>
-        protected WinformsMVP.Services.ICommonServices Platform =>
-            _platform ?? (_platform = WinformsMVP.Services.CommonServices.Default);
+        protected WinformsMVP.Services.IPlatformServices Platform =>
+            _platform ?? (_platform = WinformsMVP.Services.PlatformServices.Default);
 
         /// <summary>
         /// Convenience property for accessing IMessageService.
