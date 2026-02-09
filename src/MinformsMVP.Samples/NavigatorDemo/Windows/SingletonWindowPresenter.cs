@@ -61,7 +61,7 @@ namespace MinformsMVP.Samples.NavigatorDemo
         private static readonly ViewActionFactory Factory =
             ViewAction.Factory.WithQualifier("Singleton");
 
-        public static readonly ViewAction ShowInfo = Factory.Create("ShowInfo");  // 业务特定
-        public static readonly ViewAction Close = Factory.Create(StandardActionNames.Dialog.Close);
+        public static readonly ViewAction ShowInfo = Factory.Create("ShowInfo");  // 业务特定，使用 Factory 添加前缀
+        public static readonly ViewAction Close = StandardActions.Close;  // 标准动作，直接使用
     }
 }

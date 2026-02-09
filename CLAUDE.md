@@ -641,10 +641,202 @@ public class MyPresenter : WindowPresenterBase<IMyView>
 
 ### Change Tracking
 
-**ChangeTracker<T>** implements `IRevertibleChangeTracking` for edit/cancel scenarios:
-- Tracks changes by comparing current value to original clone
-- `AcceptChanges()` commits current state as new baseline
-- `RejectChanges()` reverts to last accepted state
+**ChangeTracker<T>** (`WinformsMVP.Common.ChangeTracker`) は編集/キャンセルシナリオのための堅牢な変更追跡を提供します。`IChangeTracking`および`IRevertibleChangeTracking`インターフェースを実装しています。
+
+**重要な要件：**
+
+ChangeTracker<T> を使用する型は `ICloneable` を実装し、**必ず深いコピー（ディープコピー）**を返す必要があります。
+
+**深いコピーの実装：**
+
+```csharp
+public class UserModel : ICloneable
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public Address Address { get; set; }
+
+    // ✅ 正しい実装（深いコピー）
+    public object Clone()
+    {
+        return new UserModel
+        {
+            Id = this.Id,
+            Name = this.Name,
+            Address = this.Address?.Clone() as Address  // ネストされたオブジェクトも深くコピー
+        };
+    }
+}
+
+public class Address : ICloneable
+{
+    public string City { get; set; }
+
+    public object Clone()
+    {
+        return new Address { City = this.City };
+    }
+}
+```
+
+**❌ 誤った実装（浅いコピー - 使用禁止）：**
+
+```csharp
+// ❌ NG: MemberwiseClone は浅いコピー
+public object Clone()
+{
+    return this.MemberwiseClone();  // 参照型プロパティは共有される！
+}
+
+// ❌ NG: ネストされたオブジェクトを深くコピーしていない
+public object Clone()
+{
+    return new UserModel
+    {
+        Id = this.Id,
+        Name = this.Name,
+        Address = this.Address  // 同じAddressインスタンスを共有！
+    };
+}
+```
+
+**ChangeTrackerの使用：**
+
+```csharp
+public class EditUserPresenter : WindowPresenterBase<IEditUserView>
+{
+    private ChangeTracker<UserModel> _changeTracker;
+
+    protected override void OnInitialize()
+    {
+        var user = LoadUser(userId);
+        _changeTracker = new ChangeTracker<UserModel>(user);
+
+        View.Model = _changeTracker.CurrentValue;
+    }
+
+    protected override void RegisterViewActions()
+    {
+        _dispatcher.Register(
+            CommonActions.Save,
+            OnSave,
+            canExecute: () => _changeTracker.IsChanged);
+
+        _dispatcher.Register(CommonActions.Reset, OnReset);
+    }
+
+    private void OnSave()
+    {
+        SaveUser(_changeTracker.CurrentValue);
+        _changeTracker.AcceptChanges();  // 新しいベースライン
+    }
+
+    private void OnReset()
+    {
+        _changeTracker.RejectChanges();  // ベースラインに戻す
+        View.Model = _changeTracker.CurrentValue;
+    }
+}
+```
+
+**深いコピーが必要な理由：**
+
+浅いコピーを使用すると、元のオブジェクトとコピーで参照型プロパティが共有されます。
+これにより、`RejectChanges()`を呼び出しても元の値に戻らない問題が発生します：
+
+```csharp
+// 浅いコピーの問題例
+var user = new UserModel { Address = new Address { City = "Tokyo" } };
+var tracker = new ChangeTracker<UserModel>(user);
+
+// AddressがCloneされていないため、同じインスタンスを共有
+tracker.CurrentValue.Address.City = "Osaka";
+
+// RejectChanges()を呼び出しても...
+tracker.RejectChanges();
+
+// 元の値も変更されてしまう！
+Console.WriteLine(tracker.CurrentValue.Address.City);  // "Osaka" (期待値: "Tokyo")
+```
+
+**ベストプラクティス：**
+
+1. **すべての参照型プロパティを深くコピー**
+   - ネストされたオブジェクト: `Address = this.Address?.Clone() as Address`
+   - コレクション: `Tags = this.Tags != null ? new List<string>(this.Tags) : null`
+
+2. **MemberwiseCloneを使用しない**
+   - 参照型プロパティが共有される
+   - 変更追跡が正しく動作しない
+
+3. **実装をテストする**
+   ```csharp
+   [Fact]
+   public void Clone_CreatesIndependentCopy()
+   {
+       var original = new UserModel { Name = "John" };
+       var clone = original.Clone() as UserModel;
+
+       clone.Name = "Jane";
+
+       Assert.Equal("John", original.Name);  // 元は変更されない
+       Assert.Equal("Jane", clone.Name);
+   }
+   ```
+
+**主要API：**
+
+- `CurrentValue` - 現在追跡している値（読み取り専用）
+- `UpdateCurrentValue(T)` - 現在の値を更新（IsChangedChangedイベントを発火）
+- `IsChanged` - 現在の値が元の値と異なるかどうか（キャッシュ付き）
+- `AcceptChanges()` - 現在の値を新しいベースラインとして確定
+- `RejectChanges()` - ベースラインに戻す
+- `IsChangedWith(T)` - 指定された値が元の値と異なるかチェック
+- `GetOriginalValue()` - 元の値のコピーを取得
+- `CanAcceptChanges(out string)` - 変更を受け入れ可能かチェック（検証用）
+- `CanRejectChanges(out string)` - 変更を破棄可能かチェック（検証用）
+
+**イベント：**
+
+- `IsChangedChanged` - IsChanged 状態が変わったときに発火
+
+**高度な機能：**
+
+1. **変更通知イベント**
+   ```csharp
+   var tracker = new ChangeTracker<UserModel>(user);
+
+   // IsChanged 状態の変化を監視
+   tracker.IsChangedChanged += (s, e) =>
+   {
+       // UI更新（例：保存ボタンの有効化/無効化）
+       _dispatcher.RaiseCanExecuteChanged();
+   };
+   ```
+
+2. **スレッドセーフ**
+   - すべての操作は内部でロック保護されており、マルチスレッド環境で安全に使用可能
+
+3. **パフォーマンス最適化**
+   - IsChanged プロパティは結果をキャッシュし、値が変更されるまで再計算しない
+
+4. **検証サポート**
+   ```csharp
+   // カスタム検証ロジック（派生クラスで実装）
+   public class ValidatedChangeTracker<T> : ChangeTracker<T> where T : class, ICloneable
+   {
+       public override bool CanAcceptChanges(out string error)
+       {
+           if (CurrentValue is IValidatable validatable && !validatable.IsValid)
+           {
+               error = "Validation failed";
+               return false;
+           }
+           error = null;
+           return true;
+       }
+   }
+   ```
 
 ## Project Structure
 

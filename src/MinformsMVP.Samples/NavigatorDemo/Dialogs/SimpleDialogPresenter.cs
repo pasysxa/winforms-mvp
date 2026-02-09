@@ -57,11 +57,8 @@ namespace MinformsMVP.Samples.NavigatorDemo
 
     public static class SimpleDialogActions
     {
-        private static readonly ViewActionFactory Factory =
-            ViewAction.Factory.WithQualifier("SimpleDialog");
-
-        // 使用标准对话框动作名称
-        public static readonly ViewAction Ok = Factory.Create(StandardActionNames.Dialog.Ok);
-        public static readonly ViewAction Cancel = Factory.Create(StandardActionNames.Dialog.Cancel);
+        // 直接使用标准动作（无前缀）
+        public static readonly ViewAction Ok = StandardActions.Ok;
+        public static readonly ViewAction Cancel = StandardActions.Cancel;
     }
 }

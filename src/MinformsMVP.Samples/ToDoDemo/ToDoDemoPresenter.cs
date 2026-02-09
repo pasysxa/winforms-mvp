@@ -7,18 +7,18 @@ namespace MinformsMVP.Samples.ToDoDemo
 {
     /// <summary>
     /// ActionKeys for ToDo demo.
-    /// Best practice: Use static classes and ViewActionFactory with StandardActionNames.
+    /// Best practice: Use static classes. Use Factory for qualified actions, StandardActions for standard actions.
     /// </summary>
     public static class ToDoDemoActions
     {
         private static readonly ViewActionFactory Factory =
             ViewAction.Factory.WithQualifier("ToDoDemo");
 
-        // 使用 StandardActionNames 确保命名一致性
-        public static readonly ViewAction AddTask = Factory.Create("AddTask");        // 业务特定
-        public static readonly ViewAction RemoveTask = Factory.Create("RemoveTask");  // 业务特定
-        public static readonly ViewAction CompleteTask = Factory.Create("CompleteTask"); // 业务特定
-        public static readonly ViewAction SaveAll = Factory.Create(StandardActionNames.Crud.Save); // "ToDoDemo.Save"（使用标准名称）
+        // 业务特定动作 - 使用 Factory 添加 "ToDoDemo" 前缀
+        public static readonly ViewAction AddTask = Factory.Create("AddTask");        // "ToDoDemo.AddTask"
+        public static readonly ViewAction RemoveTask = Factory.Create("RemoveTask");  // "ToDoDemo.RemoveTask"
+        public static readonly ViewAction CompleteTask = Factory.Create("CompleteTask"); // "ToDoDemo.CompleteTask"
+        public static readonly ViewAction SaveAll = Factory.Create("Save"); // "ToDoDemo.Save"（使用标准名称但加前缀）
     }
 
     /// <summary>

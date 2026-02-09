@@ -90,12 +90,9 @@ namespace MinformsMVP.Samples.NavigatorDemo
 
     public static class ConfirmDialogActions
     {
-        private static readonly ViewActionFactory Factory =
-            ViewAction.Factory.WithQualifier("ConfirmDialog");
-
-        // 使用标准对话框动作名称
-        public static readonly ViewAction Yes = Factory.Create(StandardActionNames.Dialog.Yes);
-        public static readonly ViewAction No = Factory.Create(StandardActionNames.Dialog.No);
-        public static readonly ViewAction Cancel = Factory.Create(StandardActionNames.Dialog.Cancel);
+        // 直接使用标准动作（无前缀）
+        public static readonly ViewAction Yes = StandardActions.Yes;
+        public static readonly ViewAction No = StandardActions.No;
+        public static readonly ViewAction Cancel = StandardActions.Cancel;
     }
 }

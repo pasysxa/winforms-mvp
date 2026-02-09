@@ -23,7 +23,9 @@
       "Bash(then cat .gitignore)",
       "Bash(else echo \"No .gitignore found\")",
       "Bash(fi)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(find:*)"
     ]
   }
 }

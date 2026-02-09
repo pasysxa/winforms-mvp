@@ -20,9 +20,9 @@ namespace MinformsMVP.Samples.CheckBoxDemo
         public static readonly ViewAction SelectDarkTheme = Factory.Create("SelectDarkTheme");
         public static readonly ViewAction SelectAutoTheme = Factory.Create("SelectAutoTheme");
 
-        // 使用标准名称
-        public static readonly ViewAction ApplySettings = Factory.Create(StandardActionNames.Dialog.Apply);
-        public static readonly ViewAction ResetSettings = Factory.Create(StandardActionNames.Crud.Reset);
+        // 标准动作 - 直接使用（无前缀）
+        public static readonly ViewAction ApplySettings = StandardActions.Apply;
+        public static readonly ViewAction ResetSettings = StandardActions.Reset;
     }
 
     /// <summary>

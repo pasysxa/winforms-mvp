@@ -11,13 +11,10 @@ namespace MinformsMVP.Samples.MVPComparisonDemo.PassiveView
     /// </summary>
     public static class UserEditorActions
     {
-        private static readonly ViewActionFactory Factory =
-            ViewAction.Factory.WithQualifier("UserEditor");
-
-        // 使用标准动作名称
-        public static readonly ViewAction Save = Factory.Create(StandardActionNames.Crud.Save);
-        public static readonly ViewAction Reset = Factory.Create(StandardActionNames.Crud.Reset);
-        public static readonly ViewAction Close = Factory.Create(StandardActionNames.Dialog.Close);
+        // 直接使用标准动作（无前缀）
+        public static readonly ViewAction Save = StandardActions.Save;
+        public static readonly ViewAction Reset = StandardActions.Reset;
+        public static readonly ViewAction Close = StandardActions.Close;
     }
 
     /// <summary>

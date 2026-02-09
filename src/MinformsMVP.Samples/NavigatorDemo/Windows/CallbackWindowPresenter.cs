@@ -79,7 +79,7 @@ namespace MinformsMVP.Samples.NavigatorDemo
         private static readonly ViewActionFactory Factory =
             ViewAction.Factory.WithQualifier("Callback");
 
-        public static readonly ViewAction SaveAndClose = Factory.Create("SaveAndClose");  // 业务特定
-        public static readonly ViewAction Cancel = Factory.Create(StandardActionNames.Dialog.Cancel);
+        public static readonly ViewAction SaveAndClose = Factory.Create("SaveAndClose");  // 业务特定，使用 Factory 添加前缀
+        public static readonly ViewAction Cancel = StandardActions.Cancel;  // 标准动作，直接使用
     }
 }

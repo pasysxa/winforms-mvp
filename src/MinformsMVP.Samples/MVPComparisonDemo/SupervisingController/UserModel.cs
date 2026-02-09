@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel;
 using System.Text;
 using WinformsMVP.Core.Models;
@@ -15,7 +16,7 @@ namespace MinformsMVP.Samples.MVPComparisonDemo.SupervisingController
     ///
     /// This reduces boilerplate code for simple property synchronization.
     /// </summary>
-    public class UserModel : BindableBase
+    public class UserModel : BindableBase, ICloneable
     {
         private string _name;
         private string _email;
@@ -104,9 +105,28 @@ namespace MinformsMVP.Samples.MVPComparisonDemo.SupervisingController
         }
 
         /// <summary>
-        /// Create a snapshot of current values for reset functionality
+        /// このUserModelインスタンスの深いコピー（ディープコピー）を作成します。
         /// </summary>
-        public UserModel Clone()
+        /// <returns>すべてのプロパティが独立してコピーされた新しいUserModelインスタンス。</returns>
+        /// <remarks>
+        /// <para>
+        /// このメソッドは<strong>深いコピー</strong>を実装しています。
+        /// すべてのプロパティ値が新しいインスタンスにコピーされ、元のオブジェクトと参照を共有しません。
+        /// </para>
+        /// <para>
+        /// <strong>注意:</strong> このモデルにネストされたオブジェクト（例：Address、List等）がある場合、
+        /// それらも深くコピーする必要があります：
+        /// <code>
+        /// Address = this.Address?.Clone() as Address,
+        /// Tags = this.Tags != null ? new List&lt;string&gt;(this.Tags) : null
+        /// </code>
+        /// </para>
+        /// <para>
+        /// MemberwiseClone() は使用しないでください。浅いコピーとなり、
+        /// ChangeTracker&lt;T&gt; での使用時に問題が発生します。
+        /// </para>
+        /// </remarks>
+        public object Clone()
         {
             return new UserModel
             {
@@ -114,6 +134,7 @@ namespace MinformsMVP.Samples.MVPComparisonDemo.SupervisingController
                 Email = this.Email,
                 Age = this.Age,
                 IsActive = this.IsActive
+                // ValidationErrorsは自動的に再計算されるため、コピー不要
             };
         }
 
