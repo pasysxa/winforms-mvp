@@ -16,8 +16,6 @@ namespace WinformsMVP.MVP.Presenters
         IInitializable
         where TView : IWindowView
     {
-        private bool _initialized = false;
-
         protected WindowPresenterBase()
         {
         }

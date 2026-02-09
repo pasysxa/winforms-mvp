@@ -15,8 +15,6 @@ namespace WinformsMVP.MVP.Presenters
     public abstract class ControlPresenterBase<TView> : PresenterBase<TView>
         where TView : IViewBase
     {
-        private bool _initialized = false;
-
         /// <summary>
         /// Creates a new presenter for a UserControl view.
         /// </summary>

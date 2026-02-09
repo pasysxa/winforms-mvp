@@ -10,12 +10,10 @@ namespace MinformsMVP.Samples.NavigatorDemo
     /// </summary>
     public class SingletonWindowPresenter : WindowPresenterBase<ISingletonWindowView>
     {
-        private readonly IMessageService _messageService;
         private readonly int _instanceId;
 
-        public SingletonWindowPresenter(IMessageService messageService, int instanceId)
+        public SingletonWindowPresenter(int instanceId)
         {
-            _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
             _instanceId = instanceId;
         }
 
@@ -43,7 +41,7 @@ namespace MinformsMVP.Samples.NavigatorDemo
 
         private void OnShowInfo()
         {
-            _messageService.ShowInfo(
+            Messages.ShowInfo(
                 $"This is singleton window instance #{_instanceId}.\n" +
                 "Only one instance can exist at a time.",
                 "Singleton Window");

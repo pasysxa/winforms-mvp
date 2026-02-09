@@ -42,18 +42,11 @@ namespace MinformsMVP.Samples.MVPComparisonDemo.PassiveView
     /// </summary>
     public class UserEditorPresenter : WindowPresenterBase<IUserEditorView>
     {
-        private readonly IMessageService _messageService;
-
         // Presenter holds the original data for reset functionality
         private string _originalName;
         private string _originalEmail;
         private int _originalAge;
         private bool _originalIsActive;
-
-        public UserEditorPresenter(IMessageService messageService)
-        {
-            _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
-        }
 
         protected override void OnViewAttached()
         {
@@ -115,7 +108,7 @@ namespace MinformsMVP.Samples.MVPComparisonDemo.PassiveView
             View.ClearValidationErrors();
 
             // Simulate saving
-            _messageService.ShowInfo(
+            Messages.ShowInfo(
                 $"User saved successfully!\n\n" +
                 $"Name: {name}\n" +
                 $"Email: {email}\n" +

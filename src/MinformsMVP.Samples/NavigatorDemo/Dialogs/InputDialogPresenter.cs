@@ -12,15 +12,9 @@ namespace MinformsMVP.Samples.NavigatorDemo
     /// </summary>
     public class InputDialogPresenter : WindowPresenterBase<IInputDialogView>, IRequestClose<string>
     {
-        private readonly IMessageService _messageService;
         private string _result;
 
         public event EventHandler<CloseRequestedEventArgs<string>> CloseRequested;
-
-        public InputDialogPresenter(IMessageService messageService)
-        {
-            _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
-        }
 
         protected override void OnViewAttached()
         {
@@ -45,7 +39,7 @@ namespace MinformsMVP.Samples.NavigatorDemo
             var input = View.GetInput();
             if (string.IsNullOrWhiteSpace(input))
             {
-                _messageService.ShowWarning("Please enter a value.", "Input Required");
+                Messages.ShowWarning("Please enter a value.", "Input Required");
                 return;
             }
 

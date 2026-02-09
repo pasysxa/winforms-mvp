@@ -24,16 +24,8 @@ namespace MinformsMVP.Samples.ExecutionRequestDemo
     /// </summary>
     public class ExecutionRequestDemoPresenter : WindowPresenterBase<IExecutionRequestDemoView>
     {
-        private readonly IMessageService _messageService;
-        private readonly IDialogProvider _dialogProvider;
         private CustomerData _currentCustomer;
         private string _currentFilePath;
-
-        public ExecutionRequestDemoPresenter(IMessageService messageService, IDialogProvider dialogProvider)
-        {
-            _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
-            _dialogProvider = dialogProvider ?? throw new ArgumentNullException(nameof(dialogProvider));
-        }
 
         protected override void OnViewAttached()
         {
@@ -86,7 +78,7 @@ namespace MinformsMVP.Samples.ExecutionRequestDemo
                 Title = "选择文件"
             };
 
-            var result = _dialogProvider.ShowOpenFileDialog(options);
+            var result = Dialogs.ShowOpenFileDialog(options);
 
             if (result.Status == WinformsMVP.Common.InteractionStatus.Ok)
             {
@@ -127,7 +119,7 @@ namespace MinformsMVP.Samples.ExecutionRequestDemo
             }
             catch (Exception ex)
             {
-                _messageService.ShowError($"编辑失败: {ex.Message}", "错误");
+                Messages.ShowError($"编辑失败: {ex.Message}", "错误");
                 e.Callback?.Invoke(null);  // ✅ 失败返回 null
             }
         }
@@ -148,7 +140,7 @@ namespace MinformsMVP.Samples.ExecutionRequestDemo
             }
             catch (Exception ex)
             {
-                _messageService.ShowError($"保存失败: {ex.Message}", "错误");
+                Messages.ShowError($"保存失败: {ex.Message}", "错误");
                 e.Callback?.Invoke(false);
             }
         }
@@ -215,14 +207,14 @@ namespace MinformsMVP.Samples.ExecutionRequestDemo
                              $"邮箱: {data.Email}\n" +
                              $"年龄: {data.Age}";
 
-                _messageService.ShowInfo(message, "保存成功");
+                Messages.ShowInfo(message, "保存成功");
                 View.UpdateStatus("客户数据保存成功", true);
 
                 return true;
             }
             catch (Exception ex)
             {
-                _messageService.ShowError($"保存失败: {ex.Message}", "错误");
+                Messages.ShowError($"保存失败: {ex.Message}", "错误");
                 View.UpdateStatus("保存失败", false);
                 return false;
             }

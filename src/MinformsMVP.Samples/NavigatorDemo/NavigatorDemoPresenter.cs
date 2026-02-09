@@ -30,13 +30,11 @@ namespace MinformsMVP.Samples.NavigatorDemo
     public class NavigatorDemoPresenter : WindowPresenterBase<INavigatorDemoView>
     {
         private readonly IWindowNavigator _navigator;
-        private readonly IMessageService _messageService;
         private int _singletonCounter = 0;
 
-        public NavigatorDemoPresenter(IWindowNavigator navigator, IMessageService messageService)
+        public NavigatorDemoPresenter(IWindowNavigator navigator)
         {
             _navigator = navigator ?? throw new ArgumentNullException(nameof(navigator));
-            _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
         }
 
         protected override void OnViewAttached()
@@ -68,7 +66,7 @@ namespace MinformsMVP.Samples.NavigatorDemo
         {
             View.AppendLog("Opening simple modal dialog...");
 
-            var presenter = new SimpleDialogPresenter(_messageService);
+            var presenter = new SimpleDialogPresenter();
             var result = _navigator.ShowWindowAsModal(presenter);
 
             View.AppendLog($"Modal dialog closed. Status: {result.Status}");
@@ -78,7 +76,7 @@ namespace MinformsMVP.Samples.NavigatorDemo
         {
             View.AppendLog("Opening modal dialog with return value...");
 
-            var presenter = new InputDialogPresenter(_messageService);
+            var presenter = new InputDialogPresenter();
             var result = _navigator.ShowWindowAsModal<InputDialogPresenter, string>(presenter);
 
             if (result.IsOk)
@@ -102,7 +100,7 @@ namespace MinformsMVP.Samples.NavigatorDemo
                 DefaultYes = true
             };
 
-            var presenter = new ConfirmDialogPresenter(_messageService);
+            var presenter = new ConfirmDialogPresenter();
             var result = _navigator.ShowWindowAsModal<ConfirmDialogPresenter, ConfirmDialogParameters, bool>(
                 presenter, parameters);
 
@@ -120,7 +118,7 @@ namespace MinformsMVP.Samples.NavigatorDemo
         {
             View.AppendLog("Opening non-modal window (will not block)...");
 
-            var presenter = new NonModalWindowPresenter(_messageService);
+            var presenter = new NonModalWindowPresenter();
             _navigator.ShowWindow(presenter);
 
             View.AppendLog("Non-modal window opened. You can continue using main window.");
@@ -130,7 +128,7 @@ namespace MinformsMVP.Samples.NavigatorDemo
         {
             View.AppendLog("Opening non-modal window with callback...");
 
-            var presenter = new CallbackWindowPresenter(_messageService);
+            var presenter = new CallbackWindowPresenter();
             _navigator.ShowWindow<CallbackWindowPresenter, string>(
                 presenter,
                 onClosed: result =>
@@ -155,7 +153,7 @@ namespace MinformsMVP.Samples.NavigatorDemo
             _singletonCounter++;
             var instanceId = _singletonCounter;
 
-            var presenter = new SingletonWindowPresenter(_messageService, instanceId);
+            var presenter = new SingletonWindowPresenter(instanceId);
             _navigator.ShowWindow<SingletonWindowPresenter, object>(
                 presenter,
                 keySelector: p => "SingletonKey", // Same key = same instance

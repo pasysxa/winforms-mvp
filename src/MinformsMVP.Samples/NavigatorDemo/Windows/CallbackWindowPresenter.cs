@@ -12,15 +12,9 @@ namespace MinformsMVP.Samples.NavigatorDemo
     /// </summary>
     public class CallbackWindowPresenter : WindowPresenterBase<ICallbackWindowView>, IRequestClose<string>
     {
-        private readonly IMessageService _messageService;
         private string _result;
 
         public event EventHandler<CloseRequestedEventArgs<string>> CloseRequested;
-
-        public CallbackWindowPresenter(IMessageService messageService)
-        {
-            _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
-        }
 
         protected override void OnViewAttached()
         {
@@ -45,7 +39,7 @@ namespace MinformsMVP.Samples.NavigatorDemo
             var text = View.GetText();
             if (string.IsNullOrWhiteSpace(text))
             {
-                _messageService.ShowWarning("Please enter some text.", "Input Required");
+                Messages.ShowWarning("Please enter some text.", "Input Required");
                 return;
             }
 

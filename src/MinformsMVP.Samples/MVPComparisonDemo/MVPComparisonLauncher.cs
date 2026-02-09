@@ -179,8 +179,7 @@ namespace MinformsMVP.Samples.MVPComparisonDemo
         {
             try
             {
-                var messageService = _serviceProvider.GetRequiredService<IMessageService>();
-                var presenter = new PassiveView.UserEditorPresenter(messageService);
+                var presenter = new PassiveView.UserEditorPresenter();
                 var view = new PassiveView.UserEditorForm();
 
                 // Manual MVP wiring (in real apps, use WindowNavigator)

@@ -558,18 +558,83 @@ Common application services accessed via `ICommonServices`. These services are e
 - **IAppContext**: Application-wide context and settings
   - Provides access to application configuration
 
-**Best Practice**: Always inject required services into presenter constructors:
+### Platform Services Access
+
+All presenters have **built-in access** to platform services through convenience properties. No constructor injection needed for basic services!
+
+**Using services in presenters:**
 
 ```csharp
 public class MyPresenter : WindowPresenterBase<IMyView>
 {
-    private readonly IMessageService _messageService;
-    private readonly IDialogProvider _dialogProvider;
+    // No constructor needed - Platform services automatically available!
 
-    public MyPresenter(IMessageService messageService, IDialogProvider dialogProvider)
+    protected override void OnInitialize()
     {
-        _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
-        _dialogProvider = dialogProvider ?? throw new ArgumentNullException(nameof(dialogProvider));
+        // Use convenience properties
+        Messages.ShowInfo("Welcome!", "App");  // IMessageService
+
+        var file = Dialogs.ShowOpenFileDialog("Select file");  // IDialogProvider
+        if (file != null)
+        {
+            var content = Files.ReadAllText(file);  // IFileService
+        }
+    }
+
+    private void OnSave()
+    {
+        SaveData();
+        Messages.ShowInfo("Data saved!");  // Simple and clean!
+    }
+}
+```
+
+**Available convenience properties:**
+- `Messages` - IMessageService (ShowInfo, ShowError, ConfirmYesNo, etc.)
+- `Dialogs` - IDialogProvider (OpenFileDialog, SaveFileDialog, FolderBrowser, etc.)
+- `Files` - IFileService (ReadAllText, WriteAllText, file operations)
+- `Platform` - ICommonServices (full service container for custom services)
+
+**Testing with mock services:**
+
+```csharp
+[Fact]
+public void Test_MyPresenter()
+{
+    // 1. Create mock services
+    var mockServices = new MockCommonServices();
+
+    // 2. Create presenter with mock platform
+    var presenter = new MyPresenter()
+        .WithPlatformServices(mockServices);  // Inject mocks before initialization
+
+    // 3. Attach view and initialize
+    presenter.AttachView(mockView);
+    presenter.Initialize();
+
+    // 4. Verify mock calls
+    Assert.True(mockServices.MessageService.InfoMessageShown);
+}
+```
+
+**Legacy pattern (still supported):**
+
+If you need to inject services manually (e.g., for business-specific services), you can still use constructor injection:
+
+```csharp
+public class MyPresenter : WindowPresenterBase<IMyView>
+{
+    private readonly IUserRepository _users;  // Business service
+
+    public MyPresenter(IUserRepository users)
+    {
+        _users = users;  // Manual injection for custom services
+    }
+
+    private void OnSave()
+    {
+        _users.Save(userData);
+        Messages.ShowInfo("Saved!");  // Platform services still available
     }
 }
 ```

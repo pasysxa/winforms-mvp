@@ -8,6 +8,7 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,7 +21,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="System.Windows.Forms" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\WinformsMVP\WinformsMVP.csproj" />
+    <ProjectReference Include="..\MinformsMVP.Samples\MinformsMVP.Samples.csproj" />
   </ItemGroup>
 
   <ItemGroup>

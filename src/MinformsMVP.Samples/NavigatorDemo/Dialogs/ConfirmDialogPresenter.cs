@@ -22,16 +22,10 @@ namespace MinformsMVP.Samples.NavigatorDemo
         IRequestClose<bool>,
         IInitializable<ConfirmDialogParameters>
     {
-        private readonly IMessageService _messageService;
         private bool _result;
         private ConfirmDialogParameters _parameters;
 
         public event EventHandler<CloseRequestedEventArgs<bool>> CloseRequested;
-
-        public ConfirmDialogPresenter(IMessageService messageService)
-        {
-            _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
-        }
 
         protected override void OnViewAttached()
         {

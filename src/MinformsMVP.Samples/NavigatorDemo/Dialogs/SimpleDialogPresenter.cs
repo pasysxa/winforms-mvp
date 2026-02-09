@@ -12,14 +12,7 @@ namespace MinformsMVP.Samples.NavigatorDemo
     /// </summary>
     public class SimpleDialogPresenter : WindowPresenterBase<ISimpleDialogView>, IRequestClose<object>
     {
-        private readonly IMessageService _messageService;
-
         public event EventHandler<CloseRequestedEventArgs<object>> CloseRequested;
-
-        public SimpleDialogPresenter(IMessageService messageService)
-        {
-            _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
-        }
 
         protected override void OnViewAttached()
         {
@@ -41,7 +34,7 @@ namespace MinformsMVP.Samples.NavigatorDemo
 
         private void OnOk()
         {
-            _messageService.ShowInfo("You clicked OK!", "Simple Dialog");
+            Messages.ShowInfo("You clicked OK!", "Simple Dialog");
             RequestClose(InteractionStatus.Ok);
         }
 

@@ -15,10 +15,59 @@ namespace WinformsMVP.Core.Presenters
         protected TView View { get; private set; }
         protected readonly ViewActionDispatcher _dispatcher;
 
+        // Platform services infrastructure
+        private WinformsMVP.Services.ICommonServices _platform;
+        protected bool _initialized = false;
+
         protected PresenterBase()
         {
             _dispatcher = new ViewActionDispatcher();
         }
+
+        /// <summary>
+        /// Sets the platform services for testing purposes.
+        /// MUST be called before AttachView() or Initialize().
+        /// </summary>
+        /// <param name="platform">The platform services to use</param>
+        /// <exception cref="ArgumentNullException">Thrown when platform is null</exception>
+        /// <exception cref="InvalidOperationException">Thrown when called after initialization</exception>
+        internal void SetPlatformServices(WinformsMVP.Services.ICommonServices platform)
+        {
+            if (platform == null)
+                throw new ArgumentNullException(nameof(platform));
+
+            if (_initialized)
+                throw new InvalidOperationException(
+                    "Cannot set platform services after presenter has been initialized. " +
+                    "Call SetPlatformServices() before AttachView() or Initialize().");
+
+            _platform = platform;
+        }
+
+        /// <summary>
+        /// Gets the platform services container.
+        /// Defaults to CommonServices.Default if not explicitly set.
+        /// </summary>
+        protected WinformsMVP.Services.ICommonServices Platform =>
+            _platform ?? (_platform = WinformsMVP.Services.CommonServices.Default);
+
+        /// <summary>
+        /// Convenience property for accessing IMessageService.
+        /// Use this instead of Platform.MessageService for cleaner code.
+        /// </summary>
+        protected WinformsMVP.Services.IMessageService Messages => Platform.MessageService;
+
+        /// <summary>
+        /// Convenience property for accessing IDialogProvider.
+        /// Use this instead of Platform.DialogProvider for cleaner code.
+        /// </summary>
+        protected WinformsMVP.Services.IDialogProvider Dialogs => Platform.DialogProvider;
+
+        /// <summary>
+        /// Convenience property for accessing IFileService.
+        /// Use this instead of Platform.FileService for cleaner code.
+        /// </summary>
+        protected WinformsMVP.Services.IFileService Files => Platform.FileService;
 
         /// <summary>
         /// Sets the view for this presenter. Called by derived classes.

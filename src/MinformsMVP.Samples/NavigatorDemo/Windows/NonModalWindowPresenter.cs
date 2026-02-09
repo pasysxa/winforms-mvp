@@ -10,13 +10,7 @@ namespace MinformsMVP.Samples.NavigatorDemo
     /// </summary>
     public class NonModalWindowPresenter : WindowPresenterBase<INonModalWindowView>
     {
-        private readonly IMessageService _messageService;
         private int _counter = 0;
-
-        public NonModalWindowPresenter(IMessageService messageService)
-        {
-            _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
-        }
 
         protected override void OnViewAttached()
         {

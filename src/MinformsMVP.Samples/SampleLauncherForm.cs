@@ -210,9 +210,8 @@ namespace MinformsMVP.Samples
 
         private void LaunchToDoDemo()
         {
-            var messageService = new MessageService();
             var view = new ToDoDemoForm();
-            var presenter = new ToDoDemoPresenter(messageService);
+            var presenter = new ToDoDemoPresenter();  // Uses CommonServices.Default
 
             presenter.AttachView(view);
             presenter.Initialize();  // Must call Initialize!
@@ -224,9 +223,8 @@ namespace MinformsMVP.Samples
 
         private void LaunchCheckBoxDemo()
         {
-            var messageService = new MessageService();
             var view = new SettingsDemoForm();
-            var presenter = new SettingsDemoPresenter(messageService);
+            var presenter = new SettingsDemoPresenter();
 
             presenter.AttachView(view);
             presenter.Initialize();  // Must call Initialize!
@@ -238,9 +236,8 @@ namespace MinformsMVP.Samples
 
         private void LaunchBulkBindingDemo()
         {
-            var messageService = new MessageService();
             var view = new SurveyDemoForm();
-            var presenter = new SurveyDemoPresenter(messageService);
+            var presenter = new SurveyDemoPresenter();
 
             presenter.AttachView(view);
             presenter.Initialize();  // Must call Initialize!
@@ -266,7 +263,7 @@ namespace MinformsMVP.Samples
 
             var navigator = new WindowNavigator(viewMappingRegister);
             var view = new NavigatorDemoForm();
-            var presenter = new NavigatorDemoPresenter(navigator, messageService);
+            var presenter = new NavigatorDemoPresenter(navigator);
 
             presenter.AttachView(view);
             presenter.Initialize();
@@ -287,10 +284,8 @@ namespace MinformsMVP.Samples
 
         private void LaunchExecutionRequestDemo()
         {
-            var messageService = new MessageService();
-            var dialogProvider = new DialogProvider();
             var view = new ExecutionRequestDemoForm();
-            var presenter = new ExecutionRequestDemoPresenter(messageService, dialogProvider);
+            var presenter = new ExecutionRequestDemoPresenter();
 
             presenter.AttachView(view);
             presenter.Initialize();

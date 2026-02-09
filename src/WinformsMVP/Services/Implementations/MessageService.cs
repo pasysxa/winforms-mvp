@@ -1,73 +1,124 @@
-﻿using System.Windows.Forms;
+﻿using System.Drawing;
+using System.Windows.Forms;
 using WinformsMVP.Common;
 
 namespace WinformsMVP.Services.Implementations
 {
+    /// <summary>
+    /// Default implementation of IMessageService using WinForms MessageBox and custom dialogs.
+    /// Uses configurable defaults from DialogDefaults class.
+    /// </summary>
     public class MessageService : IMessageService
     {
-        public const string Caption = "システム";
-        public bool ConfirmOkCancel(string text, string caption = Caption)
+        #region Standard Message Dialogs
+
+        public bool ConfirmOkCancel(string text, string caption = "")
         {
+            caption = string.IsNullOrEmpty(caption) ? DialogDefaults.DefaultMessageCaption : caption;
             return MessageBox.Show(text, caption, MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.OK;
         }
 
-        public bool ConfirmOkCancelAt(string text, string caption = Caption)
+        public bool ConfirmYesNo(string text, string caption = "")
         {
-            return MessageBox.Show(text, caption, MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.OK;
-        }
-
-        public bool ConfirmYesNo(string text, string caption = Caption)
-        {
+            caption = string.IsNullOrEmpty(caption) ? DialogDefaults.DefaultMessageCaption : caption;
             return MessageBox.Show(text, caption, MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes;
         }
 
-        public bool ConfirmYesNoAt(string text, string caption = Caption)
+        public DialogResult ConfirmYesNoCancel(string text, string caption = "")
         {
-            return MessageBox.Show(text, caption, MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes;
-        }
-
-        public DialogResult ConfirmYesNoCancel(string text, string caption = Caption)
-        {
+            caption = string.IsNullOrEmpty(caption) ? DialogDefaults.DefaultMessageCaption : caption;
             return MessageBox.Show(text, caption, MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
         }
 
-        public DialogResult ConfirmYesNoCancelAt(string text, string caption = Caption)
+        public void ShowError(string text, string caption = "")
         {
-            return MessageBox.Show(text, caption, MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
-        }
-
-        public void ShowError(string text, string caption = Caption)
-        {
+            caption = string.IsNullOrEmpty(caption) ? DialogDefaults.DefaultMessageCaption : caption;
             MessageBox.Show(text, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
-        public void ShowErrorAt(string text, string caption = Caption)
+        public void ShowInfo(string text, string caption = "")
         {
-            MessageBox.Show(text, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
-        }
-
-        public void ShowInfo(string text, string caption = Caption)
-        {
+            caption = string.IsNullOrEmpty(caption) ? DialogDefaults.DefaultMessageCaption : caption;
             MessageBox.Show(text, caption, MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
-        public void ShowInfoAt(string text, string caption = Caption)
+        public void ShowWarning(string text, string caption = "")
         {
-            MessageBox.Show(text, caption, MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-
-        public void ShowWarning(string text, string caption = Caption)
-        {
+            caption = string.IsNullOrEmpty(caption) ? DialogDefaults.DefaultMessageCaption : caption;
             MessageBox.Show(text, caption, MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
 
-        public void ShowWarningAt(string text, string caption = Caption)
+        #endregion
+
+        #region Positioned Message Dialogs
+
+        public bool ConfirmOkCancelAt(string text, Point location, string caption = "")
         {
-            MessageBox.Show(text, caption, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            caption = string.IsNullOrEmpty(caption) ? DialogDefaults.DefaultMessageCaption : caption;
+            using (var dialog = new PositionedMessageBox(text, caption, MessageBoxButtons.OKCancel, MessageBoxIcon.Question, location))
+            {
+                dialog.ShowDialog();
+                return dialog.Result == DialogResult.OK;
+            }
         }
 
-        public void ShowTotast(string text, ToastType type, int duration = 1000)
+        public bool ConfirmYesNoAt(string text, Point location, string caption = "")
         {
+            caption = string.IsNullOrEmpty(caption) ? DialogDefaults.DefaultMessageCaption : caption;
+            using (var dialog = new PositionedMessageBox(text, caption, MessageBoxButtons.YesNo, MessageBoxIcon.Question, location))
+            {
+                dialog.ShowDialog();
+                return dialog.Result == DialogResult.Yes;
+            }
         }
+
+        public DialogResult ConfirmYesNoCancelAt(string text, Point location, string caption = "")
+        {
+            caption = string.IsNullOrEmpty(caption) ? DialogDefaults.DefaultMessageCaption : caption;
+            using (var dialog = new PositionedMessageBox(text, caption, MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question, location))
+            {
+                dialog.ShowDialog();
+                return dialog.Result;
+            }
+        }
+
+        public void ShowErrorAt(string text, Point location, string caption = "")
+        {
+            caption = string.IsNullOrEmpty(caption) ? DialogDefaults.DefaultMessageCaption : caption;
+            using (var dialog = new PositionedMessageBox(text, caption, MessageBoxButtons.OK, MessageBoxIcon.Error, location))
+            {
+                dialog.ShowDialog();
+            }
+        }
+
+        public void ShowInfoAt(string text, Point location, string caption = "")
+        {
+            caption = string.IsNullOrEmpty(caption) ? DialogDefaults.DefaultMessageCaption : caption;
+            using (var dialog = new PositionedMessageBox(text, caption, MessageBoxButtons.OK, MessageBoxIcon.Information, location))
+            {
+                dialog.ShowDialog();
+            }
+        }
+
+        public void ShowWarningAt(string text, Point location, string caption = "")
+        {
+            caption = string.IsNullOrEmpty(caption) ? DialogDefaults.DefaultMessageCaption : caption;
+            using (var dialog = new PositionedMessageBox(text, caption, MessageBoxButtons.OK, MessageBoxIcon.Warning, location))
+            {
+                dialog.ShowDialog();
+            }
+        }
+
+        #endregion
+
+        #region Toast Notifications
+
+        public void ShowToast(string text, ToastType type, int duration = 3000)
+        {
+            var toast = new ToastNotification(text, type, duration);
+            toast.Show();
+        }
+
+        #endregion
     }
 }

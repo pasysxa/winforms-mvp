@@ -7,6 +7,10 @@ using WinformsMVP.Services.Implementations.DialogOptions;
 
 namespace WinformsMVP.Services.Implementations
 {
+    /// <summary>
+    /// Default implementation of IDialogProvider using standard WinForms dialogs.
+    /// Uses configurable defaults from DialogDefaults class.
+    /// </summary>
     public class DialogProvider : IDialogProvider
     {
         public InteractionResult<string> ShowOpenFileDialog(OpenFileDialogOptions options = null)
@@ -15,10 +19,16 @@ namespace WinformsMVP.Services.Implementations
             {
                 using (var dialog = new OpenFileDialog())
                 {
-                    dialog.Filter = options?.Filter ?? "すべてのファイル (*.*)|*.*";
-                    dialog.Multiselect = options?.Multiselect ?? false;
+                    dialog.Filter = options?.Filter ?? DialogDefaults.DefaultFileFilter;
+                    dialog.Multiselect = false;  // Single file only
                     dialog.InitialDirectory = options?.InitialDirectory ?? "";
-                    dialog.Title = options?.Title ?? "ファイルを開く";
+                    dialog.Title = options?.Title ?? DialogDefaults.OpenFileDialogTitle;
+
+                    if (!string.IsNullOrEmpty(options?.FileName))
+                        dialog.FileName = options.FileName;
+
+                    dialog.CheckFileExists = options?.CheckFileExists ?? true;
+                    dialog.CheckPathExists = options?.CheckPathExists ?? true;
 
                     var result = dialog.ShowDialog();
                     return result == DialogResult.OK
@@ -28,7 +38,36 @@ namespace WinformsMVP.Services.Implementations
             }
             catch (Exception ex)
             {
-                return InteractionResult<string>.Error("ファイルを開くに失敗しました", ex);
+                return InteractionResult<string>.Error(DialogDefaults.FileOpenErrorMessage, ex);
+            }
+        }
+
+        public InteractionResult<string[]> ShowOpenMultipleFilesDialog(OpenFileDialogOptions options = null)
+        {
+            try
+            {
+                using (var dialog = new OpenFileDialog())
+                {
+                    dialog.Filter = options?.Filter ?? DialogDefaults.DefaultFileFilter;
+                    dialog.Multiselect = true;  // Multiple files allowed
+                    dialog.InitialDirectory = options?.InitialDirectory ?? "";
+                    dialog.Title = options?.Title ?? DialogDefaults.OpenFileDialogTitle;
+
+                    if (!string.IsNullOrEmpty(options?.FileName))
+                        dialog.FileName = options.FileName;
+
+                    dialog.CheckFileExists = options?.CheckFileExists ?? true;
+                    dialog.CheckPathExists = options?.CheckPathExists ?? true;
+
+                    var result = dialog.ShowDialog();
+                    return result == DialogResult.OK
+                        ? InteractionResult<string[]>.Ok(dialog.FileNames)
+                        : InteractionResult<string[]>.Cancel();
+                }
+            }
+            catch (Exception ex)
+            {
+                return InteractionResult<string[]>.Error(DialogDefaults.FileOpenErrorMessage, ex);
             }
         }
 
@@ -38,9 +77,18 @@ namespace WinformsMVP.Services.Implementations
             {
                 using (var dialog = new SaveFileDialog())
                 {
-                    dialog.Filter = options?.Filter ?? "すべてのファイル (*.*)|*.*";
+                    dialog.Filter = options?.Filter ?? DialogDefaults.DefaultFileFilter;
                     dialog.InitialDirectory = options?.InitialDirectory ?? "";
-                    dialog.Title = options?.Title ?? "ファイルを保存";
+                    dialog.Title = options?.Title ?? DialogDefaults.SaveFileDialogTitle;
+
+                    if (!string.IsNullOrEmpty(options?.DefaultExt))
+                        dialog.DefaultExt = options.DefaultExt;
+
+                    if (!string.IsNullOrEmpty(options?.FileName))
+                        dialog.FileName = options.FileName;
+
+                    dialog.OverwritePrompt = options?.OverwritePrompt ?? true;
+                    dialog.CreatePrompt = options?.CreatePrompt ?? false;
 
                     var result = dialog.ShowDialog();
                     return result == DialogResult.OK
@@ -50,7 +98,7 @@ namespace WinformsMVP.Services.Implementations
             }
             catch (Exception ex)
             {
-                return InteractionResult<string>.Error("ファイルの保存に失敗しました", ex);
+                return InteractionResult<string>.Error(DialogDefaults.FileSaveErrorMessage, ex);
             }
         }
 
@@ -60,7 +108,7 @@ namespace WinformsMVP.Services.Implementations
             {
                 using (var dialog = new FolderBrowserDialog())
                 {
-                    dialog.Description = options?.Description ?? "フォルダを選択してください";
+                    dialog.Description = options?.Description ?? DialogDefaults.FolderBrowserDescription;
                     dialog.SelectedPath = options?.SelectedPath ?? "";
 
                     var result = dialog.ShowDialog();
@@ -71,12 +119,12 @@ namespace WinformsMVP.Services.Implementations
             }
             catch (Exception ex)
             {
-                return InteractionResult<string>.Error("フォルダ選択に失敗しました", ex);
+                return InteractionResult<string>.Error(DialogDefaults.FolderSelectErrorMessage, ex);
             }
         }
 
         // -----------------------
-        // スタイル選択
+        // Style Selection Dialogs
         // -----------------------
         public InteractionResult<Color> ShowColorDialog(ColorDialogOptions options = null)
         {
@@ -94,7 +142,7 @@ namespace WinformsMVP.Services.Implementations
             }
             catch (Exception ex)
             {
-                return InteractionResult<Color>.Error("色選択に失敗しました", ex);
+                return InteractionResult<Color>.Error(DialogDefaults.ColorSelectErrorMessage, ex);
             }
         }
 
@@ -114,12 +162,12 @@ namespace WinformsMVP.Services.Implementations
             }
             catch (Exception ex)
             {
-                return InteractionResult<Font>.Error("フォント選択に失敗しました", ex);
+                return InteractionResult<Font>.Error(DialogDefaults.FontSelectErrorMessage, ex);
             }
         }
 
         // -----------------------
-        // 印刷設定
+        // Print Dialogs
         // -----------------------
         public InteractionResult<PrinterSettings> ShowPrintDialog(PrintDialogOptions options = null)
         {
@@ -138,7 +186,7 @@ namespace WinformsMVP.Services.Implementations
             }
             catch (Exception ex)
             {
-                return InteractionResult<PrinterSettings>.Error("印刷ダイアログに失敗しました", ex);
+                return InteractionResult<PrinterSettings>.Error(DialogDefaults.PrintDialogErrorMessage, ex);
             }
         }
 
@@ -158,7 +206,7 @@ namespace WinformsMVP.Services.Implementations
             }
             catch (Exception ex)
             {
-                return InteractionResult<PageSettings>.Error("ページ設定に失敗しました", ex);
+                return InteractionResult<PageSettings>.Error(DialogDefaults.PageSetupErrorMessage, ex);
             }
         }
 
@@ -169,6 +217,14 @@ namespace WinformsMVP.Services.Implementations
                 using (var dialog = new PrintPreviewDialog())
                 {
                     dialog.Document = options?.Document;
+                    if (!string.IsNullOrEmpty(options?.Title))
+                    {
+                        dialog.Text = options.Title;
+                    }
+                    else
+                    {
+                        dialog.Text = DialogDefaults.PrintPreviewDialogTitle;
+                    }
 
                     var result = dialog.ShowDialog();
                     return result == DialogResult.OK
@@ -178,7 +234,7 @@ namespace WinformsMVP.Services.Implementations
             }
             catch (Exception ex)
             {
-                return InteractionResult<bool>.Error("印刷プレビューに失敗しました", ex);
+                return InteractionResult<bool>.Error(DialogDefaults.PrintPreviewErrorMessage, ex);
             }
         }
 

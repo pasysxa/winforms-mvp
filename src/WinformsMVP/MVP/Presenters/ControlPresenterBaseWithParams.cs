@@ -16,8 +16,6 @@ namespace WinformsMVP.MVP.Presenters
     public abstract class ControlPresenterBase<TView, TParam> : PresenterBase<TView>
         where TView : IViewBase
     {
-        private bool _initialized = false;
-
         /// <summary>
         /// Gets the initialization parameters passed to this presenter.
         /// Available after construction.

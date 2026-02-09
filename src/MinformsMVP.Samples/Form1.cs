@@ -71,9 +71,8 @@ namespace MinformsMVP.Samples
             // Create the demo form
             var demoForm = new ToDoDemoForm();
 
-            // Create presenter with dependency injection (MVP principle)
-            var messageService = new MessageService();
-            var presenter = new ToDoDemoPresenter(messageService);
+            // Create presenter - uses CommonServices.Default automatically
+            var presenter = new ToDoDemoPresenter();
 
             // Attach view to presenter
             presenter.AttachView(demoForm);

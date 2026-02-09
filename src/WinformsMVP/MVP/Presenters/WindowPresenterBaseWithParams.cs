@@ -17,8 +17,6 @@ namespace WinformsMVP.MVP.Presenters
         IInitializable<TParam>
         where TView : IWindowView
     {
-        private bool _initialized = false;
-
         /// <summary>
         /// Gets the initialization parameters passed to this presenter.
         /// Available after Initialize() is called.

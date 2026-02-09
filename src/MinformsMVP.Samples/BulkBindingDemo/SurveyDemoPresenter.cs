@@ -39,14 +39,8 @@ namespace MinformsMVP.Samples.BulkBindingDemo
     /// </summary>
     public class SurveyDemoPresenter : WindowPresenterBase<ISurveyView>
     {
-        private readonly IMessageService _messageService;
         private int _q1Answer = -1;  // -1 = not answered, 0-4 = answer index
         private int _q2Answer = -1;
-
-        public SurveyDemoPresenter(IMessageService messageService)
-        {
-            _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
-        }
 
         protected override void OnViewAttached()
         {
@@ -99,7 +93,7 @@ namespace MinformsMVP.Samples.BulkBindingDemo
         {
             if (_q1Answer < 0 || _q2Answer < 0)
             {
-                _messageService.ShowWarning("Please answer all questions before submitting.", "Incomplete Survey");
+                Messages.ShowWarning("Please answer all questions before submitting.", "Incomplete Survey");
                 return;
             }
 
@@ -108,7 +102,7 @@ namespace MinformsMVP.Samples.BulkBindingDemo
                          $"Q2: {GetAnswerText(_q2Answer)}\n\n" +
                          $"Thank you for your feedback!";
 
-            _messageService.ShowInfo(message, "Survey Submitted");
+            Messages.ShowInfo(message, "Survey Submitted");
 
             View.UpdateStatus("Survey submitted successfully!");
         }

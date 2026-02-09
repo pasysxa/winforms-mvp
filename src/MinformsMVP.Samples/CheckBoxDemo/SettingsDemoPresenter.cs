@@ -38,12 +38,7 @@ namespace MinformsMVP.Samples.CheckBoxDemo
     /// </summary>
     public class SettingsDemoPresenter : WindowPresenterBase<ISettingsView>
     {
-        private readonly IMessageService _messageService;
-
-        public SettingsDemoPresenter(IMessageService messageService)
-        {
-            _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
-        }
+        // No constructor needed - Platform services are automatically available
 
         protected override void OnViewAttached()
         {
@@ -171,14 +166,14 @@ namespace MinformsMVP.Samples.CheckBoxDemo
                          $"Notifications: {(View.IsNotificationsEnabled ? "Enabled" : "Disabled")}\n" +
                          $"Theme: {View.SelectedTheme}";
 
-            _messageService.ShowInfo(summary, "Settings Applied");
+            Messages.ShowInfo(summary, "Settings Applied");
 
             View.UpdateStatus("Settings applied successfully!");
         }
 
         private void OnResetSettings()
         {
-            if (!_messageService.ConfirmYesNo("Reset all settings to default?", "Confirm Reset"))
+            if (!Messages.ConfirmYesNo("Reset all settings to default?", "Confirm Reset"))
             {
                 return;
             }

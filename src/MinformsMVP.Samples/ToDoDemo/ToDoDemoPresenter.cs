@@ -36,16 +36,11 @@ namespace MinformsMVP.Samples.ToDoDemo
     /// 3. CanExecute predicates that control action availability
     /// 4. AUTOMATIC UI updates after actions (action-driven)
     /// 5. MANUAL UI updates from view events (state-driven via RaiseCanExecuteChanged)
-    /// 6. Dependency injection with IMessageService
+    /// 6. Simplified service injection with CommonServices.Default
     /// </summary>
     public class ToDoDemoPresenter : WindowPresenterBase<IToDoView>
     {
-        private readonly IMessageService _messageService;
-
-        public ToDoDemoPresenter(IMessageService messageService)
-        {
-            _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
-        }
+        // No constructor needed - Platform services are automatically available
 
         protected override void OnViewAttached()
         {
@@ -137,7 +132,7 @@ namespace MinformsMVP.Samples.ToDoDemo
 
             if (string.IsNullOrWhiteSpace(taskText))
             {
-                _messageService.ShowWarning("Please enter a task description.", "Empty Task");
+                Messages.ShowWarning("Please enter a task description.", "Empty Task");
                 return;
             }
 
@@ -146,7 +141,7 @@ namespace MinformsMVP.Samples.ToDoDemo
             View.TaskText = string.Empty;
 
             // Show confirmation
-            _messageService.ShowInfo($"Task added: {taskText}", "Success");
+            Messages.ShowInfo($"Task added: {taskText}", "Success");
 
             // UI state automatically updates here!
             // - Save action will become available (HasPendingChanges = true)
@@ -156,7 +151,7 @@ namespace MinformsMVP.Samples.ToDoDemo
         private void OnRemoveTask()
         {
             // Confirm deletion
-            if (!_messageService.ConfirmYesNo("Are you sure you want to delete this task?", "Confirm Delete"))
+            if (!Messages.ConfirmYesNo("Are you sure you want to delete this task?", "Confirm Delete"))
             {
                 return;
             }
@@ -185,7 +180,7 @@ namespace MinformsMVP.Samples.ToDoDemo
             // Simulate saving
             View.ClearPendingChanges();
 
-            _messageService.ShowInfo("All changes have been saved!", "Save Successful");
+            Messages.ShowInfo("All changes have been saved!", "Save Successful");
 
             // UI state automatically updates here!
             // - Save action will become unavailable (HasPendingChanges = false)
