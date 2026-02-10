@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using WinformsMVP.Samples.ToDoDemo;
 using WinformsMVP.MVP.ViewActions;
 
-namespace WindowsMVP.Samples.Tests.Mocks
+namespace WinformsMVP.Samples.Tests.Mocks
 {
     /// <summary>
     /// Mock implementation of IToDoView for testing.

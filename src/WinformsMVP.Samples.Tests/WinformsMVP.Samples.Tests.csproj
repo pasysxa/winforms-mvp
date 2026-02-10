@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
-    <RootNamespace>WindowsMVP.Samples.Tests</RootNamespace>
-    <AssemblyName>WindowsMVP.Samples.Tests</AssemblyName>
+    <RootNamespace>WinformsMVP.Samples.Tests</RootNamespace>
+    <AssemblyName>WinformsMVP.Samples.Tests</AssemblyName>
     <LangVersion>latest</LangVersion>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <IsPackable>false</IsPackable>

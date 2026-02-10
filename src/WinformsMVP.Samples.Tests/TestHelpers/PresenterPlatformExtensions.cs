@@ -2,7 +2,7 @@ using WinformsMVP.Core.Presenters;
 using WinformsMVP.Core.Views;
 using WinformsMVP.Services;
 
-namespace WindowsMVP.Samples.Tests.TestHelpers
+namespace WinformsMVP.Samples.Tests.TestHelpers
 {
     /// <summary>
     /// プレゼンターをテスト用のモックプラットフォームサービスで拡張するためのメソッド。

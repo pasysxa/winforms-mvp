@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Xunit;
 using WinformsMVP.Common;
 
-namespace WindowsMVP.Samples.Tests.Common
+namespace WinformsMVP.Samples.Tests.Common
 {
     /// <summary>
     /// ChangeTracker<T> の単体テスト

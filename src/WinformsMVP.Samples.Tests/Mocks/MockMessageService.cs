@@ -5,7 +5,7 @@ using System.Windows.Forms;
 using WinformsMVP.Common;
 using WinformsMVP.Services;
 
-namespace WindowsMVP.Samples.Tests.Mocks
+namespace WinformsMVP.Samples.Tests.Mocks
 {
     /// <summary>
     /// Mock implementation of IMessageService for testing.

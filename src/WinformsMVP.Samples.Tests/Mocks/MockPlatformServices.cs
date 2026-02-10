@@ -1,6 +1,6 @@
 using WinformsMVP.Services;
 
-namespace WindowsMVP.Samples.Tests.Mocks
+namespace WinformsMVP.Samples.Tests.Mocks
 {
     /// <summary>
     /// プラットフォームサービスのモック実装（テスト用）。

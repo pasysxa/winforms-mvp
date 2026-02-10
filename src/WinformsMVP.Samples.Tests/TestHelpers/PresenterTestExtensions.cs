@@ -2,7 +2,7 @@ using WinformsMVP.Core.Presenters;
 using WinformsMVP.Core.Views;
 using WinformsMVP.MVP.ViewActions;
 
-namespace WindowsMVP.Samples.Tests.TestHelpers
+namespace WinformsMVP.Samples.Tests.TestHelpers
 {
     /// <summary>
     /// Extension methods to simplify presenter testing.

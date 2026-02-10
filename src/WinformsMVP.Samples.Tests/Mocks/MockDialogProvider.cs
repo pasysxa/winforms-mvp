@@ -4,7 +4,7 @@ using WinformsMVP.Common;
 using WinformsMVP.Services;
 using WinformsMVP.Services.Implementations.DialogOptions;
 
-namespace WindowsMVP.Samples.Tests.Mocks
+namespace WinformsMVP.Samples.Tests.Mocks
 {
     /// <summary>
     /// Mock implementation of IDialogProvider for testing.

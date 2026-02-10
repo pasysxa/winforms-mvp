@@ -1,10 +1,10 @@
 using System;
 using Xunit;
 using WinformsMVP.Samples.ToDoDemo;
-using WindowsMVP.Samples.Tests.Mocks;
-using WindowsMVP.Samples.Tests.TestHelpers;
+using WinformsMVP.Samples.Tests.Mocks;
+using WinformsMVP.Samples.Tests.TestHelpers;
 
-namespace WindowsMVP.Samples.Tests.Presenters
+namespace WinformsMVP.Samples.Tests.Presenters
 {
     /// <summary>
     /// 単体テスト例：ToDoDemoPresenterをテスト

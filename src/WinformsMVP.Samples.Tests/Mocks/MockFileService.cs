@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using WinformsMVP.Services;
 
-namespace WindowsMVP.Samples.Tests.Mocks
+namespace WinformsMVP.Samples.Tests.Mocks
 {
     /// <summary>
     /// Mock implementation of IFileService for testing.

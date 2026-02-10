@@ -9,7 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinformsMVP", "WinformsMVP\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinformsMVP.Samples", "WinformsMVP.Samples\WinformsMVP.Samples.csproj", "{CFEF6708-FF61-409B-9F56-3664E1021CA3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WindowsMVP.Samples.Tests", "WindowsMVP.Samples.Tests\WindowsMVP.Samples.Tests.csproj", "{1C505253-1223-40D1-8B23-79A0786D371D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinformsMVP.Samples.Tests", "WinformsMVP.Samples.Tests\WinformsMVP.Samples.Tests.csproj", "{1C505253-1223-40D1-8B23-79A0786D371D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

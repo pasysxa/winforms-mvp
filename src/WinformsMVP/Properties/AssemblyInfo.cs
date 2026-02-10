@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // Allow test project to access internal members
-[assembly: InternalsVisibleTo("WindowsMVP.Samples.Tests")]
+[assembly: InternalsVisibleTo("WinformsMVP.Samples.Tests")]
 
 // アセンブリに関する一般情報は以下の属性セットをとおして制御されます。
 // 制御されます。アセンブリに関連付けられている情報を変更するには、
