@@ -1,6 +1,6 @@
 using System;
 using Xunit;
-using MinformsMVP.Samples.ToDoDemo;
+using WinformsMVP.Samples.ToDoDemo;
 using WindowsMVP.Samples.Tests.Mocks;
 using WindowsMVP.Samples.Tests.TestHelpers;
 

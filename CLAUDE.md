@@ -33,7 +33,7 @@ dotnet test src/WindowsMVP.Samples.Tests/WindowsMVP.Samples.Tests.csproj -v deta
 ### Running the Sample Application
 ```bash
 # Build and run the sample WinForms application
-dotnet run --project src/MinformsMVP.Samples/MinformsMVP.Samples.csproj
+dotnet run --project src/WinformsMVP.Samples/WinformsMVP.Samples.csproj
 ```
 
 ### Restore NuGet Packages
@@ -475,7 +475,7 @@ _binder.AddRange(mapping);
 
 **Complete Examples:**
 
-See `src/MinformsMVP.Samples/ViewActionExample.cs` for a comprehensive example demonstrating:
+See `src/WinformsMVP.Samples/ViewActionExample.cs` for a comprehensive example demonstrating:
 - Global and module-specific static ActionKey classes
 - ViewActionBinder declarative binding
 - CanExecute predicates for dynamic enable/disable
@@ -483,22 +483,22 @@ See `src/MinformsMVP.Samples/ViewActionExample.cs` for a comprehensive example d
 - Multiple controls bound to the same action
 - Proper dependency injection with IMessageService
 
-See `src/MinformsMVP.Samples/ViewActionWithParametersExample.cs` for parameterized action examples.
+See `src/WinformsMVP.Samples/ViewActionWithParametersExample.cs` for parameterized action examples.
 
-See `src/MinformsMVP.Samples/ViewActionStateChangedExample.cs` for state-driven update examples:
+See `src/WinformsMVP.Samples/ViewActionStateChangedExample.cs` for state-driven update examples:
 - Using RaiseCanExecuteChanged() for state changes
 - Handling view events (SelectionChanged, DataChanged)
 - Async operations with state updates
 - Comparison between action-driven and state-driven patterns
 
-See `src/MinformsMVP.Samples/CheckBoxDemo/` for CheckBox/RadioButton examples:
+See `src/WinformsMVP.Samples/CheckBoxDemo/` for CheckBox/RadioButton examples:
 - CheckBox binding with CheckedChanged events
 - RadioButton groups for theme selection
 - CanExecute controlling Enabled state
 - Proper MVP separation (no UI types in interface)
 - Settings UI pattern with Apply/Reset buttons
 
-See `src/MinformsMVP.Samples/BulkBindingDemo/` for bulk binding examples:
+See `src/WinformsMVP.Samples/BulkBindingDemo/` for bulk binding examples:
 - AddRange with tuples for efficient binding
 - AddRange with dictionary for alternative syntax
 - Handling surveys/questionnaires with many options
@@ -1939,7 +1939,7 @@ Console.WriteLine(tracker.CurrentValue.Address.City);  // "Osaka" (期待値: "T
   - `Services/`: Application service interfaces and implementations
   - `Common/`: Shared utilities, events, helpers
 
-- `src/MinformsMVP.Samples/`: Sample WinForms application (SDK-style project)
+- `src/WinformsMVP.Samples/`: Sample WinForms application (SDK-style project)
 
 - `src/WindowsMVP.Samples.Tests/`: xUnit test project (SDK-style project)
 

@@ -26,7 +26,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\WinformsMVP\WinformsMVP.csproj" />
-    <ProjectReference Include="..\MinformsMVP.Samples\MinformsMVP.Samples.csproj" />
+    <ProjectReference Include="..\WinformsMVP.Samples\WinformsMVP.Samples.csproj" />
   </ItemGroup>
 
   <ItemGroup>
