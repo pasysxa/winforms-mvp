@@ -87,13 +87,22 @@ public class MyForm : Form, IMyView
 ```csharp
 public class ExecutionRequestEventArgs<T, TResult> : EventArgs
 {
-    public T Param { get; }                    // ✅ 业务数据参数
-    public Action<TResult> Callback { get; }   // ✅ 回调函数
+    public T Param { get; }                                         // ✅ 业务数据参数
+    public Action<TResult> Callback { get; }                        // ✅ 回调函数（Callback 版本）
+    public Func<T, ExecutionResult<TResult>> Executor { get; }      // ✅ 执行器（Executor 版本）
 
+    // 构造函数 - Callback 版本（向后兼容）
     public ExecutionRequestEventArgs(T param, Action<TResult> callback)
     {
         Param = param;
         Callback = callback;
+    }
+
+    // 构造函数 - Executor 版本（用于遗留窗体集成）
+    public ExecutionRequestEventArgs(Func<T, ExecutionResult<TResult>> executor, T param)
+    {
+        Executor = executor;
+        Param = param;
     }
 }
 ```
@@ -398,3 +407,334 @@ private void OnEditCustomerRequested(object sender,
 4. 逐步从 ExecutionRequest 迁移到服务接口
 
 **记住：ExecutionRequest 本身没有问题，问题在于使用时违反了三条铁律！**
+
+---
+
+## 🚀 ExecutionResult - 遗留窗体集成（Executor 版本）
+
+`ExecutionResult<TResult>` 是为打开遗留窗体（非MVP窗体）设计的辅助类，支持：
+- 管理窗体的事件订阅生命周期（IDisposable）
+- 获取窗体的最终返回结果
+- 支持模态和非模态窗体
+
+### ExecutionResult 类定义
+
+```csharp
+public class ExecutionResult<TResult> : IDisposable
+{
+    public TResult Result { get; private set; }           // 窗体返回的最终结果
+    public event EventHandler<TResult> Completed;         // 非模态窗体关闭时触发
+
+    // 构造1: 模态窗体 - 传结果和清理逻辑
+    public ExecutionResult(TResult result, Action disposeAction) { }
+
+    // 构造2: 模态窗体 - 直接传 Form（最常用）
+    public ExecutionResult(TResult result, IDisposable disposable) { }
+
+    // 构造3: 非模态窗体 - 传清理逻辑
+    public ExecutionResult(Action disposeAction) { }
+
+    // 构造4: 非模态窗体 - 直接传 Form
+    public ExecutionResult(IDisposable disposable) { }
+
+    // 设置结果并触发 Completed 事件（非模态窗体用）
+    public void SetResult(TResult result) { }
+
+    public void Dispose() { }  // 自动清理事件订阅和释放资源
+}
+```
+
+### 使用场景对比
+
+| 维度 | Callback 版本 | Executor 版本 |
+|------|---------------|---------------|
+| **用途** | 通用业务逻辑 | 打开遗留窗体 |
+| **事件订阅** | 手动管理 | 自动管理（IDisposable） |
+| **窗体类型** | 不直接涉及 | 支持模态和非模态 |
+| **复杂度** | 简单 | 稍复杂（适合遗留集成） |
+| **推荐场景** | 一般业务逻辑 | 遗留窗体集成 |
+
+---
+
+## 📚 完整示例：模态遗留窗体集成
+
+### 场景：打开旧系统的客户编辑窗体
+
+#### 1. View 接口定义
+
+```csharp
+public interface ICustomerManagementView : IWindowView
+{
+    // 使用 Executor 版本，专门用于打开遗留窗体
+    event EventHandler<ExecutionRequestEventArgs<CustomerData, CustomerData>>
+        EditLegacyCustomerRequested;
+
+    void ShowCustomerInfo(CustomerData data);
+    void BindActions(ViewActionDispatcher dispatcher);
+}
+```
+
+#### 2. View 实现 - 触发事件（打开遗留窗体）
+
+```csharp
+public class CustomerManagementForm : Form, ICustomerManagementView
+{
+    public event EventHandler<ExecutionRequestEventArgs<CustomerData, CustomerData>>
+        EditLegacyCustomerRequested;
+
+    private void OnEditButtonClick(object sender, EventArgs e)
+    {
+        var currentCustomer = GetCurrentCustomer();
+
+        // ✅ 使用 Executor 版本的构造函数
+        var args = new ExecutionRequestEventArgs<CustomerData, CustomerData>(
+            executor: (initialData) =>
+            {
+                // ★ 创建遗留窗体
+                var legacyForm = new LegacyCustomerEditForm();
+
+                // ★ 预填充数据
+                if (initialData != null)
+                {
+                    legacyForm.txtName.Text = initialData.Name;
+                    legacyForm.txtEmail.Text = initialData.Email;
+                    legacyForm.numAge.Value = initialData.Age;
+                }
+
+                // ★ 订阅中间事件（实时验证）
+                EventHandler<string> validationHandler = (s, msg) =>
+                {
+                    this.statusLabel.Text = msg;  // 更新主窗体状态栏
+                };
+                legacyForm.ValidationMessageReceived += validationHandler;
+
+                // ★ 显示模态窗体（阻塞）
+                var dialogResult = legacyForm.ShowDialog();
+
+                // ★ 获取最终结果
+                CustomerData result = null;
+                if (dialogResult == DialogResult.OK)
+                {
+                    result = new CustomerData
+                    {
+                        Name = legacyForm.txtName.Text,
+                        Email = legacyForm.txtEmail.Text,
+                        Age = (int)legacyForm.numAge.Value
+                    };
+                }
+
+                // ★ 返回 ExecutionResult（自动管理资源）
+                return new ExecutionResult<CustomerData>(result, () =>
+                {
+                    // 清理：解除事件订阅
+                    legacyForm.ValidationMessageReceived -= validationHandler;
+                    legacyForm.Dispose();
+                });
+            },
+            param: currentCustomer
+        );
+
+        EditLegacyCustomerRequested?.Invoke(this, args);
+    }
+}
+```
+
+#### 3. Presenter 处理 - 使用 Executor
+
+```csharp
+public class CustomerManagementPresenter : WindowPresenterBase<ICustomerManagementView>
+{
+    protected override void OnViewAttached()
+    {
+        View.EditLegacyCustomerRequested += OnEditLegacyCustomerRequested;
+    }
+
+    private void OnEditLegacyCustomerRequested(object sender,
+        ExecutionRequestEventArgs<CustomerData, CustomerData> e)
+    {
+        // ★ 调用 Executor（View 会打开窗体并管理事件）
+        using var execResult = e.Executor(e.Param);
+
+        // ★ 拿到最终结果
+        var result = execResult.Result;
+
+        if (result != null)
+        {
+            // 业务逻辑验证
+            if (!IsValidEmail(result.Email))
+            {
+                Messages.ShowWarning("邮箱格式不正确", "验证失败");
+                return;
+            }
+
+            // 保存到数据库
+            SaveCustomerToDatabase(result);
+
+            // 更新 View 显示
+            View.ShowCustomerInfo(result);
+
+            Messages.ShowInfo("客户信息已保存", "成功");
+        }
+        else
+        {
+            Messages.ShowInfo("操作已取消", "提示");
+        }
+
+        // ← using 结束，自动调用 Dispose，清理事件订阅
+    }
+}
+```
+
+#### 4. 遗留窗体（非MVP）
+
+```csharp
+public class LegacyCustomerEditForm : Form
+{
+    public TextBox txtName;
+    public TextBox txtEmail;
+    public NumericUpDown numAge;
+
+    // 中间事件（实时验证）
+    public event EventHandler<string> ValidationMessageReceived;
+
+    public LegacyCustomerEditForm()
+    {
+        InitializeComponent();
+
+        // 实时验证触发中间事件
+        txtEmail.TextChanged += (s, e) =>
+        {
+            if (!string.IsNullOrEmpty(txtEmail.Text))
+            {
+                bool valid = txtEmail.Text.Contains("@");
+                ValidationMessageReceived?.Invoke(this,
+                    valid ? "邮箱格式正确" : "邮箱格式不正确");
+            }
+        };
+    }
+
+    private void btnSave_Click(object sender, EventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(txtName.Text))
+        {
+            MessageBox.Show("姓名不能为空", "错误");
+            return;
+        }
+
+        this.DialogResult = DialogResult.OK;
+        this.Close();
+    }
+}
+```
+
+### 关键优势
+
+1. **自动资源管理**：`using` 语句自动清理事件订阅
+2. **中间事件支持**：可以订阅窗体的进度、验证等事件
+3. **符合MVP原则**：Presenter 调用抽象的 Executor，不直接依赖窗体类型
+4. **简洁直观**：90% 场景只需直接传 Form 即可
+
+---
+
+## 🔄 推荐方案对比：ExecutionResult vs 服务接口
+
+虽然 `ExecutionResult` 提供了便利的遗留窗体集成，但**服务接口包装**仍然是长期维护的推荐方案。
+
+### 方案1：ExecutionResult（过渡方案）
+
+**优点**：
+- ✅ 快速集成遗留窗体
+- ✅ 支持订阅中间事件
+- ✅ 自动管理资源
+
+**缺点**：
+- ⚠️ MVP 纯度较低（Executor 仍然接触 UI）
+- ⚠️ 不易于单元测试
+- ⚠️ 不便于替换实现
+
+**适用场景**：
+- 临时集成遗留窗体，未来会重构
+- 需要订阅窗体的中间事件
+- 快速原型开发
+
+### 方案2：服务接口包装（推荐）
+
+```csharp
+// 步骤1：定义服务接口
+public interface ILegacyCustomerService
+{
+    CustomerData EditCustomer(CustomerData initialData);
+}
+
+// 步骤2：实现服务（可以使用 UI 类型）
+public class LegacyCustomerService : ILegacyCustomerService
+{
+    public CustomerData EditCustomer(CustomerData initialData)
+    {
+        var form = new LegacyCustomerEditForm();
+        if (initialData != null)
+        {
+            form.SetData(initialData);
+        }
+
+        var result = form.ShowDialog();
+        return result == DialogResult.OK ? form.GetData() : null;
+    }
+}
+
+// 步骤3：Presenter 使用服务
+public class CustomerManagementPresenter : WindowPresenterBase<ICustomerManagementView>
+{
+    private readonly ILegacyCustomerService _legacyCustomerService;
+
+    public CustomerManagementPresenter(ILegacyCustomerService legacyCustomerService)
+    {
+        _legacyCustomerService = legacyCustomerService;
+    }
+
+    private void OnEditCustomerAction()
+    {
+        var result = _legacyCustomerService.EditCustomer(_currentCustomer);
+        if (result != null)
+        {
+            View.ShowCustomerInfo(result);
+        }
+    }
+}
+```
+
+**优点**：
+- ✅ 完全符合 MVP 原则
+- ✅ 易于单元测试（可以 Mock）
+- ✅ 易于替换实现
+- ✅ 隐藏了所有 UI 类型
+
+**缺点**：
+- ⚠️ 需要额外定义接口
+- ⚠️ 代码量稍多
+
+**适用场景**：
+- ✅ 长期维护的遗留代码
+- ✅ 需要高度可测试性
+- ✅ 希望逐步重构遗留代码
+
+### 何时使用哪种方案
+
+| 场景 | ExecutionResult | 服务接口包装 |
+|------|----------------|-------------|
+| 快速原型 | ✅ 推荐 | ❌ 太重 |
+| 临时集成（会重构） | ✅ 推荐 | ⚠️ 可选 |
+| 长期维护 | ⚠️ 不推荐 | ✅ 强烈推荐 |
+| 需要订阅中间事件 | ✅ 推荐 | ⚠️ 需手动管理 |
+| 需要单元测试 | ⚠️ 难测试 | ✅ 易测试 |
+| 团队协作 | ⚠️ 需文档 | ✅ 接口自说明 |
+
+---
+
+## 📖 最佳实践建议
+
+1. **新功能开发**：优先使用框架提供的服务接口（`IDialogProvider`、`IMessageService` 等）
+2. **遗留代码集成（短期）**：使用 `ExecutionResult` 快速集成
+3. **遗留代码集成（长期）**：创建服务接口包装，逐步重构
+4. **学习 MVP 模式**：使用 `ExecutionRequest` 理解 View → Presenter 通信
+5. **始终遵守三条铁律**：无论使用哪种方式，都必须只使用业务数据类型

@@ -1,6 +1,5 @@
 using System;
 using System.Drawing;
-using System.Windows.Forms;
 using WinformsMVP.MVP.Presenters;
 using WinformsMVP.MVP.ViewActions;
 
@@ -60,8 +59,7 @@ namespace WinformsMVP.Samples.MessageBoxDemo
 
         private void OnShowAtTopRight()
         {
-            var screen = Screen.PrimaryScreen.WorkingArea;
-            var location = new Point(screen.Right - 450, 100);
+            var location = new Point(1000, 100);
             Messages.ShowWarningAt(
                 "This is a WARNING at Top-Right!\n\n" +
                 "Using native MessageBox with positioning via CBT Hook.",
@@ -71,8 +69,7 @@ namespace WinformsMVP.Samples.MessageBoxDemo
 
         private void OnShowAtBottomLeft()
         {
-            var screen = Screen.PrimaryScreen.WorkingArea;
-            var location = new Point(100, screen.Bottom - 250);
+            var location = new Point(100, 600);
             Messages.ShowErrorAt(
                 "This is an ERROR at Bottom-Left!\n\n" +
                 "System error icon and theme are automatically applied.",
@@ -82,8 +79,7 @@ namespace WinformsMVP.Samples.MessageBoxDemo
 
         private void OnShowAtBottomRight()
         {
-            var screen = Screen.PrimaryScreen.WorkingArea;
-            var location = new Point(screen.Right - 450, screen.Bottom - 250);
+            var location = new Point(1000, 600);
             Messages.ShowInfoAt(
                 "This is at Bottom-Right!\n\n" +
                 "Perfect positioning using Windows API.",
@@ -93,12 +89,12 @@ namespace WinformsMVP.Samples.MessageBoxDemo
 
         private void OnShowAtMouse()
         {
-            var mousePos = Control.MousePosition;
+            var location = new Point(500, 400);
             Messages.ShowInfoAt(
-                "This MessageBox appears at your mouse cursor!\n\n" +
-                $"Mouse position: ({mousePos.X}, {mousePos.Y})",
-                mousePos,
-                "Mouse Position");
+                "This MessageBox appears at a specific position!\n\n" +
+                "Demonstrates custom positioning capability.",
+                location,
+                "Custom Position");
         }
 
         private void OnShowCentered()
@@ -113,26 +109,26 @@ namespace WinformsMVP.Samples.MessageBoxDemo
 
         private void OnShowConfirmAtMouse()
         {
-            var mousePos = Control.MousePosition;
+            var location = new Point(400, 300);
             bool confirmed = Messages.ConfirmYesNoAt(
                 "Do you want to proceed?\n\n" +
-                "This is a Yes/No confirmation dialog at mouse position.\n\n" +
+                "This is a Yes/No confirmation dialog at a specific position.\n\n" +
                 "Try pressing Y (Yes) or N (No) on keyboard!",
-                mousePos,
+                location,
                 "Confirm Action");
 
             if (confirmed)
             {
                 Messages.ShowInfoAt(
                     "You clicked YES! ✓",
-                    new Point(mousePos.X + 50, mousePos.Y + 50),
+                    new Point(450, 350),
                     "Confirmed");
             }
             else
             {
                 Messages.ShowWarningAt(
                     "You clicked NO! ✗",
-                    new Point(mousePos.X + 50, mousePos.Y + 50),
+                    new Point(450, 350),
                     "Cancelled");
             }
         }

@@ -1,5 +1,4 @@
 using System;
-using System.Windows.Forms;
 using WinformsMVP.Core.Views;
 using WinformsMVP.MVP.Presenters;
 using WinformsMVP.MVP.ViewActions;
@@ -22,15 +21,54 @@ namespace WinformsMVP.Samples
 
     #region View Interface
 
+    /// <summary>
+    /// View interface for document editor.
+    /// Demonstrates proper MVP separation - no UI elements exposed.
+    ///
+    /// IMPORTANT:
+    /// - No Button, ComboBox or any UI control types
+    /// - Only data properties and behavior methods
+    /// - Presenter has NO knowledge of UI implementation
+    /// </summary>
     public interface IDocumentEditorView : IWindowView
     {
-        Button OpenButton { get; }
-        Button SaveAsButton { get; }
-        Button ExportButton { get; }
-        ComboBox ExportFormatComboBox { get; }
+        // ========================================
+        // Data Properties (no UI types!)
+        // ========================================
 
+        /// <summary>
+        /// Path to the currently loaded document
+        /// </summary>
         string DocumentPath { get; set; }
+
+        /// <summary>
+        /// Whether a document is currently loaded
+        /// </summary>
         bool IsDocumentLoaded { get; }
+
+        /// <summary>
+        /// Selected export format (e.g., "PDF", "HTML", "Markdown")
+        /// </summary>
+        string SelectedExportFormat { get; set; }
+
+        // ========================================
+        // View Behaviors
+        // ========================================
+
+        /// <summary>
+        /// Update the status message
+        /// </summary>
+        void UpdateStatus(string message);
+
+        // ========================================
+        // ViewAction Integration
+        // ========================================
+
+        /// <summary>
+        /// Bind UI controls to the ViewActionDispatcher.
+        /// Form implementation will map buttons to actions internally.
+        /// </summary>
+        void BindActions(ViewActionDispatcher dispatcher);
     }
 
     #endregion
@@ -38,129 +76,141 @@ namespace WinformsMVP.Samples
     /// <summary>
     /// Example presenter demonstrating ViewAction with typed parameters.
     /// Shows how to use the ViewActionDispatcher's generic Register method.
-    /// Best practice: Uses IMessageService instead of MessageBox (follows MVP principle).
+    ///
+    /// Best practices demonstrated:
+    /// - Uses IMessageService instead of MessageBox (MVP principle)
+    /// - Uses IDialogProvider instead of new OpenFileDialog/SaveFileDialog
+    /// - No direct access to UI elements (Button, ComboBox, etc.)
+    /// - All UI interactions through View interface abstraction
     /// </summary>
     public class DocumentEditorPresenter : WindowPresenterBase<IDocumentEditorView>
     {
-        private readonly ViewActionBinder _binder = new ViewActionBinder();
         private readonly IMessageService _messageService;
+        private readonly IDialogProvider _dialogProvider;
 
-        public DocumentEditorPresenter(IMessageService messageService)
+        public DocumentEditorPresenter(IMessageService messageService, IDialogProvider dialogProvider)
         {
             _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
+            _dialogProvider = dialogProvider ?? throw new ArgumentNullException(nameof(dialogProvider));
         }
 
         protected override void OnViewAttached()
         {
-            _binder.Add(DocumentActions.Open, View.OpenButton);
-            _binder.Add(DocumentActions.SaveAs, View.SaveAsButton);
-            _binder.Add(DocumentActions.Export, View.ExportButton);
+            // Nothing to do - View will bind UI controls internally
         }
 
         protected override void RegisterViewActions()
         {
-            // Register action with string parameter
-            _dispatcher.Register<string>(
+            // Register actions with handlers and CanExecute predicates
+            _dispatcher.Register(
                 DocumentActions.Open,
                 OnOpenDocument,
                 canExecute: () => true);
 
-            // Register action with string parameter and CanExecute
-            _dispatcher.Register<string>(
+            _dispatcher.Register(
                 DocumentActions.SaveAs,
                 OnSaveDocumentAs,
                 canExecute: () => View.IsDocumentLoaded);
 
-            // Register action with custom type parameter
-            _dispatcher.Register<ExportOptions>(
+            _dispatcher.Register(
                 DocumentActions.Export,
                 OnExportDocument,
                 canExecute: () => View.IsDocumentLoaded);
 
-            // Bind controls to dispatcher
-            _binder.Bind(_dispatcher);
-
-            // Wire up button clicks to dispatch with parameters
-            WireUpParameterizedActions();
+            // Let the View bind its UI controls to the dispatcher
+            // View implementation will map buttons internally
+            View.BindActions(_dispatcher);
         }
 
         protected override void OnInitialize()
         {
-            // Initialize
-        }
-
-        private void WireUpParameterizedActions()
-        {
-            // For parameterized actions, you need to manually wire the parameter passing
-            // The binder handles the click event, but parameter construction is custom
-
-            // Alternative approach: Don't use binder for these, wire directly
-            View.OpenButton.Click += (s, e) =>
-            {
-                using (var dialog = new OpenFileDialog())
-                {
-                    if (dialog.ShowDialog() == DialogResult.OK)
-                    {
-                        _dispatcher.Dispatch(DocumentActions.Open, dialog.FileName);
-                    }
-                }
-            };
-
-            View.SaveAsButton.Click += (s, e) =>
-            {
-                using (var dialog = new SaveFileDialog())
-                {
-                    if (dialog.ShowDialog() == DialogResult.OK)
-                    {
-                        _dispatcher.Dispatch(DocumentActions.SaveAs, dialog.FileName);
-                    }
-                }
-            };
-
-            View.ExportButton.Click += (s, e) =>
-            {
-                var options = new ExportOptions
-                {
-                    Format = View.ExportFormatComboBox.SelectedItem?.ToString() ?? "PDF",
-                    IncludeImages = true
-                };
-                _dispatcher.Dispatch(DocumentActions.Export, options);
-            };
+            // Initialize view state
+            View.UpdateStatus("Ready. Select actions from the toolbar.");
         }
 
         #region Action Handlers
 
-        private void OnOpenDocument(string filePath)
+        /// <summary>
+        /// Open document action handler.
+        /// Uses IDialogProvider to show file dialog (MVP best practice).
+        /// </summary>
+        private void OnOpenDocument()
         {
-            View.DocumentPath = filePath;
-            // Best practice: Use IMessageService instead of MessageBox (MVP principle)
-            _messageService.ShowInfo($"Opening document: {filePath}");
+            var options = new WinformsMVP.Services.Implementations.DialogOptions.OpenFileDialogOptions
+            {
+                Filter = "Text Files|*.txt|All Files|*.*",
+                Title = "Open Document"
+            };
 
-            // Note: UI state automatically updates after action execution
+            var result = _dialogProvider.ShowOpenFileDialog(options);
+
+            if (result.Status == WinformsMVP.Common.InteractionStatus.Ok)
+            {
+                View.DocumentPath = result.Value;
+                View.UpdateStatus($"Opened: {System.IO.Path.GetFileName(result.Value)}");
+
+                // Best practice: Use IMessageService instead of MessageBox
+                _messageService.ShowInfo($"Document opened successfully:\n{result.Value}", "Success");
+
+                // Note: UI state automatically updates after action execution
+                // CanExecute predicates will be re-evaluated
+            }
+            else
+            {
+                View.UpdateStatus("Open cancelled.");
+            }
         }
 
-        private void OnSaveDocumentAs(string filePath)
+        /// <summary>
+        /// Save As document action handler.
+        /// Uses IDialogProvider to show file dialog (MVP best practice).
+        /// </summary>
+        private void OnSaveDocumentAs()
         {
-            // Best practice: Use IMessageService instead of MessageBox (MVP principle)
-            _messageService.ShowInfo($"Saving document as: {filePath}");
+            var options = new WinformsMVP.Services.Implementations.DialogOptions.SaveFileDialogOptions
+            {
+                Filter = "Text Files|*.txt|All Files|*.*",
+                Title = "Save Document As",
+                FileName = System.IO.Path.GetFileName(View.DocumentPath)
+            };
+
+            var result = _dialogProvider.ShowSaveFileDialog(options);
+
+            if (result.Status == WinformsMVP.Common.InteractionStatus.Ok)
+            {
+                View.DocumentPath = result.Value;
+                View.UpdateStatus($"Saved as: {System.IO.Path.GetFileName(result.Value)}");
+
+                // Best practice: Use IMessageService instead of MessageBox
+                _messageService.ShowInfo($"Document saved successfully:\n{result.Value}", "Success");
+            }
+            else
+            {
+                View.UpdateStatus("Save cancelled.");
+            }
         }
 
-        private void OnExportDocument(ExportOptions options)
+        /// <summary>
+        /// Export document action handler.
+        /// Gets export format from View property (no ComboBox access).
+        /// </summary>
+        private void OnExportDocument()
         {
-            // Best practice: Use IMessageService instead of MessageBox (MVP principle)
-            _messageService.ShowInfo($"Exporting document to {options.Format}");
+            var format = View.SelectedExportFormat ?? "PDF";
+
+            // Simulate export operation
+            View.UpdateStatus($"Exporting to {format}...");
+
+            // Best practice: Use IMessageService instead of MessageBox
+            _messageService.ShowInfo(
+                $"Document exported successfully!\n\n" +
+                $"Format: {format}\n" +
+                $"Source: {System.IO.Path.GetFileName(View.DocumentPath)}",
+                "Export Complete");
+
+            View.UpdateStatus($"Export to {format} completed.");
         }
 
         #endregion
-    }
-
-    /// <summary>
-    /// Example of a custom parameter type for actions.
-    /// </summary>
-    public class ExportOptions
-    {
-        public string Format { get; set; }
-        public bool IncludeImages { get; set; }
-        public int Quality { get; set; } = 90;
     }
 }

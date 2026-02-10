@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Windows.Forms;
 using WinformsMVP.Common.Events;
 using WinformsMVP.MVP.Presenters;
 using WinformsMVP.MVP.ViewActions;
@@ -56,7 +55,7 @@ namespace WinformsMVP.Samples.ExecutionRequestDemo
 
         protected override void OnInitialize()
         {
-            View.UpdateStatus("准备就绪。场景1、3 使用 ExecutionRequest（学习工具），场景2 使用 IDialogProvider（推荐）。", true);
+            View.UpdateStatus("准备就绪。场景1 使用 ExecutionRequest（学习工具，View打开遗留窗体），场景2 使用 IDialogProvider（推荐）。", true);
         }
 
         #region ViewAction Handlers
@@ -104,29 +103,58 @@ namespace WinformsMVP.Samples.ExecutionRequestDemo
         /// <summary>
         /// 场景1：处理编辑客户信息的请求
         /// ✅ 符合铁律：参数和返回值都是业务数据类型（CustomerData）
+        ///
+        /// 正确的ExecutionRequest流程：
+        /// 1. View自己打开遗留窗体获取用户输入（View负责UI）
+        /// 2. View将编辑后的业务数据通过ExecutionRequest事件传递给Presenter
+        /// 3. Presenter处理业务逻辑（验证、保存等）
+        /// 4. Presenter通过回调返回处理结果
         /// </summary>
         private void OnEditCustomerRequested(object sender,
             ExecutionRequestEventArgs<CustomerData, CustomerData> e)
         {
             try
             {
-                // Presenter 自己决定如何编辑（可以打开遗留窗体、新窗体、Web 页面等）
-                var initialData = e.Param;  // ✅ 业务数据
-                var result = EditCustomerUsingLegacyForm(initialData);
+                // View已经打开遗留窗体并获取了编辑后的数据
+                // Presenter只负责业务逻辑处理
+                var editedData = e.Param;  // ✅ View传递的业务数据
 
-                // 通过回调返回结果
-                e.Callback?.Invoke(result);  // ✅ 返回业务数据或 null
+                if (editedData != null)
+                {
+                    // 执行业务逻辑（验证、处理等）
+                    // 这里可以添加验证逻辑
+                    if (string.IsNullOrWhiteSpace(editedData.Name))
+                    {
+                        Messages.ShowWarning("客户姓名不能为空", "验证失败");
+                        e.Callback?.Invoke(null);
+                        return;
+                    }
+
+                    // 保存当前数据
+                    _currentCustomer = editedData;
+
+                    // 更新 CanExecute
+                    _dispatcher.RaiseCanExecuteChanged();
+
+                    // 返回处理后的数据
+                    e.Callback?.Invoke(editedData);  // ✅ 返回业务数据
+                }
+                else
+                {
+                    // 用户取消编辑
+                    e.Callback?.Invoke(null);
+                }
             }
             catch (Exception ex)
             {
-                Messages.ShowError($"编辑失败: {ex.Message}", "错误");
+                Messages.ShowError($"处理失败: {ex.Message}", "错误");
                 e.Callback?.Invoke(null);  // ✅ 失败返回 null
             }
         }
 
 
         /// <summary>
-        /// 场景3：处理保存数据请求
+        /// 场景2：处理保存数据请求
         /// ✅ 符合铁律：参数和返回值都是业务数据类型
         /// </summary>
         private void OnSaveDataRequested(object sender,
@@ -134,7 +162,7 @@ namespace WinformsMVP.Samples.ExecutionRequestDemo
         {
             try
             {
-                // Presenter 自己执行逻辑
+                // Presenter 执行业务逻辑
                 var result = SaveCustomerData(e.Param);
                 e.Callback?.Invoke(result);  // ✅ 返回 bool
             }
@@ -150,54 +178,10 @@ namespace WinformsMVP.Samples.ExecutionRequestDemo
         #region Business Logic - Presenter 的业务逻辑实现
 
         /// <summary>
-        /// 使用遗留窗体编辑客户信息
-        /// ✅ 注意：这个方法在 Presenter 内部，可以使用 UI 类型（Form、DialogResult）
-        /// ✅ 但它不暴露给外部，接口层仍然是纯业务数据
-        /// </summary>
-        private CustomerData EditCustomerUsingLegacyForm(CustomerData initialData)
-        {
-            // 创建遗留窗体实例
-            var form = new LegacyCustomerForm();
-
-            // 如果有初始数据，预填充
-            if (initialData != null)
-            {
-                form.CustomerName = initialData.Name;
-                form.Email = initialData.Email;
-                form.Age = initialData.Age;
-            }
-
-            // 以模态方式打开（这里可以使用 UI 类型，因为是实现细节）
-            var dialogResult = form.ShowDialog();
-
-            // 获取结果
-            if (dialogResult == System.Windows.Forms.DialogResult.OK)
-            {
-                var editedData = new CustomerData
-                {
-                    Name = form.CustomerName,
-                    Email = form.Email,
-                    Age = form.Age
-                };
-
-                // 保存当前数据
-                _currentCustomer = editedData;
-
-                // 更新 CanExecute
-                _dispatcher.RaiseCanExecuteChanged();
-
-                return editedData;  // ✅ 返回业务数据
-            }
-
-            form.Dispose();
-            return null;  // ✅ 用户取消返回 null（不使用 DialogResult）
-        }
-
-
-        /// <summary>
         /// Presenter提供的保存数据逻辑
+        /// ✅ 只处理业务逻辑，不涉及UI
         /// </summary>
-        public bool SaveCustomerData(CustomerData data)
+        private bool SaveCustomerData(CustomerData data)
         {
             try
             {
