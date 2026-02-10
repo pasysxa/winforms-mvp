@@ -537,6 +537,295 @@ var window = navigator.ShowWindow<TPresenter>(
 - Framework checks `CanClose()` before allowing user-initiated closes
 - Results are retrieved via `TryGetResult()` and wrapped in `InteractionResult<T>`
 
+### View Mapping Register
+
+**ViewMappingRegister** (`IViewMappingRegister`) manages the mapping between View interfaces and their Form implementations. WindowNavigator uses this mapping to automatically create View instances.
+
+#### Why View Mapping?
+
+When using WindowNavigator, you want to write code like this:
+
+```csharp
+var presenter = new SimpleDialogPresenter();
+navigator.ShowWindowAsModal(presenter);  // How does it know which Form to create?
+```
+
+The framework needs to know: `ISimpleDialogView` → `SimpleDialogForm`
+
+This is where ViewMappingRegister comes in!
+
+#### Registration Patterns
+
+**Pattern 1: Manual Registration (Explicit Control)**
+
+```csharp
+var viewMappingRegister = new ViewMappingRegister();
+
+// Register each View explicitly
+viewMappingRegister.Register<ISimpleDialogView, SimpleDialogForm>();
+viewMappingRegister.Register<IInputDialogView, InputDialogForm>();
+viewMappingRegister.Register<IConfirmDialogView, ConfirmDialogForm>();
+
+var navigator = new WindowNavigator(viewMappingRegister);
+```
+
+**When to use:**
+- ✅ Small applications (< 10 Views)
+- ✅ When you want explicit control
+- ✅ When Views have custom initialization
+
+**Pattern 2: Automatic Assembly Scanning (Recommended)**
+
+```csharp
+var viewMappingRegister = new ViewMappingRegister();
+
+// Automatically scan and register all Views in the assembly
+int registered = viewMappingRegister.RegisterFromAssembly(Assembly.GetExecutingAssembly());
+// Scans for all Forms implementing IWindowView/IViewBase and registers them
+
+var navigator = new WindowNavigator(viewMappingRegister);
+```
+
+**When to use:**
+- ✅ Medium to large applications (10+ Views)
+- ✅ Convention-based development
+- ✅ Reduce boilerplate code
+
+**Pattern 3: Namespace-Scoped Scanning**
+
+```csharp
+var viewMappingRegister = new ViewMappingRegister();
+
+// Only scan specific namespaces
+viewMappingRegister.RegisterFromNamespace(
+    Assembly.GetExecutingAssembly(),
+    "MyApp.Dialogs");  // Only Views in MyApp.Dialogs.*
+
+var navigator = new WindowNavigator(viewMappingRegister);
+```
+
+**When to use:**
+- ✅ Large applications with multiple modules
+- ✅ Avoid accidental registration of test Views
+- ✅ Organize Views by feature/module
+
+#### Factory Method Registration (Advanced)
+
+For Views that require constructor parameters or special initialization:
+
+```csharp
+// Scenario: ComplexDialogForm needs a configuration object
+public class ComplexDialogForm : Form, IComplexDialogView
+{
+    public ComplexDialogForm(AppSettings settings)  // Needs parameter!
+    {
+        _settings = settings;
+        InitializeComponent();
+    }
+}
+
+// Solution: Use factory method
+var settings = LoadAppSettings();
+viewMappingRegister.Register<IComplexDialogView>(() => new ComplexDialogForm(settings));
+
+// Now WindowNavigator can create it with parameters
+var presenter = new ComplexDialogPresenter();
+navigator.ShowWindowAsModal(presenter);  // Works! Uses factory to create View
+```
+
+**When to use:**
+- ✅ Views need constructor parameters
+- ✅ Views need dependency injection
+- ✅ Views require special initialization logic
+
+#### Override Registration (Testing)
+
+Replace real Views with mocks for testing:
+
+```csharp
+// Production registration
+viewMappingRegister.Register<ISimpleDialogView, SimpleDialogForm>();
+
+// Test override
+viewMappingRegister.Register<ISimpleDialogView, MockSimpleDialogForm>(allowOverride: true);
+// Now WindowNavigator will use MockSimpleDialogForm instead
+```
+
+#### Auto-Scan Requirements
+
+For `RegisterFromAssembly()` to work, your Form classes must:
+
+1. ✅ Inherit from `System.Windows.Forms.Form`
+2. ✅ Implement an interface that extends `IWindowView` or `IViewBase`
+3. ✅ Have a **public parameterless constructor** (or use factory registration)
+4. ✅ Not be abstract
+
+**Example:**
+```csharp
+// ✅ Will be auto-registered
+public class SimpleDialogForm : Form, ISimpleDialogView
+{
+    public SimpleDialogForm()  // Parameterless constructor
+    {
+        InitializeComponent();
+    }
+}
+
+// ❌ Will NOT be auto-registered (needs parameters)
+public class ComplexDialogForm : Form, IComplexDialogView
+{
+    public ComplexDialogForm(AppSettings settings)  // Has parameters
+    {
+        InitializeComponent();
+    }
+}
+// Solution: Use factory registration for ComplexDialogForm
+```
+
+#### Complete Setup Example
+
+**In Program.cs:**
+```csharp
+static class Program
+{
+    [STAThread]
+    static void Main()
+    {
+        Application.EnableVisualStyles();
+        Application.SetCompatibleTextRenderingDefault(false);
+
+        // Setup ViewMappingRegister
+        var viewMappingRegister = new ViewMappingRegister();
+
+        // Option A: Auto-scan (recommended for most apps)
+        viewMappingRegister.RegisterFromAssembly(Assembly.GetExecutingAssembly());
+
+        // Option B: Manual registration (more control)
+        // viewMappingRegister.Register<IMainView, MainForm>();
+        // viewMappingRegister.Register<IAboutView, AboutForm>();
+
+        // Option C: Factory registration for special cases
+        var settings = LoadSettings();
+        viewMappingRegister.Register<ISettingsView>(() => new SettingsForm(settings));
+
+        // Create WindowNavigator
+        var navigator = new WindowNavigator(viewMappingRegister);
+
+        // Create and show main window
+        var mainPresenter = new MainPresenter(navigator);
+        navigator.ShowWindow(mainPresenter);
+
+        Application.Run();
+    }
+}
+```
+
+#### Checking Registration Status
+
+```csharp
+// Check if a View is registered
+if (viewMappingRegister.IsRegistered(typeof(ISimpleDialogView)))
+{
+    Console.WriteLine("SimpleDialogView is registered");
+}
+
+// Get registered count from auto-scan
+int count = viewMappingRegister.RegisterFromAssembly(Assembly.GetExecutingAssembly());
+Console.WriteLine($"Registered {count} Views automatically");
+```
+
+#### Common Patterns
+
+**Pattern: Module-Based Registration**
+
+```csharp
+// For large apps, organize by module
+public static class ViewMappingConfiguration
+{
+    public static void ConfigureViews(IViewMappingRegister register)
+    {
+        // Core dialogs
+        RegisterCoreViews(register);
+
+        // Feature modules
+        RegisterUserManagementViews(register);
+        RegisterReportingViews(register);
+        RegisterSettingsViews(register);
+    }
+
+    private static void RegisterCoreViews(IViewMappingRegister register)
+    {
+        register.RegisterFromNamespace(Assembly.GetExecutingAssembly(), "MyApp.Core.Dialogs");
+    }
+
+    private static void RegisterUserManagementViews(IViewMappingRegister register)
+    {
+        register.RegisterFromNamespace(Assembly.GetExecutingAssembly(), "MyApp.UserManagement.Views");
+    }
+
+    // ...
+}
+```
+
+**Pattern: Test Mocking**
+
+```csharp
+public class MyPresenterTests
+{
+    [Fact]
+    public void Test_ShowDialog()
+    {
+        // Arrange
+        var viewMappingRegister = new ViewMappingRegister();
+
+        // Use mock Views instead of real Forms
+        viewMappingRegister.Register<ISimpleDialogView, MockSimpleDialogForm>();
+
+        var navigator = new WindowNavigator(viewMappingRegister);
+        var presenter = new MyPresenter(navigator);
+
+        // Act
+        presenter.ShowDialog();
+
+        // Assert
+        // ...
+    }
+}
+```
+
+#### Key Benefits
+
+| Benefit | Manual Registration | Auto-Scan | Factory Method |
+|---------|---------------------|-----------|----------------|
+| **Type Safety** | ✅ Compile-time | ✅ Runtime | ✅ Compile-time |
+| **Less Code** | ❌ Verbose | ✅ Minimal | ⚠️ Moderate |
+| **Explicit Control** | ✅ Full control | ❌ Convention-based | ✅ Full control |
+| **Constructor Parameters** | ❌ Not supported | ❌ Not supported | ✅ Fully supported |
+| **Best For** | Small apps | Medium/large apps | Complex Views |
+
+#### Troubleshooting
+
+**Error: "View インターフェース IXxxView に対応する実装型が見つかりません"**
+
+Solution:
+1. Check that you registered the View: `viewMappingRegister.Register<IXxxView, XxxForm>();`
+2. Or use auto-scan: `viewMappingRegister.RegisterFromAssembly(Assembly.GetExecutingAssembly());`
+3. Verify XxxForm has a parameterless constructor
+
+**Error: "既に登録されています"**
+
+Solution:
+- Remove duplicate registrations, OR
+- Use `allowOverride: true` if you want to replace existing mapping
+
+**Auto-scan finds 0 Views**
+
+Check that your Forms:
+1. Implement an interface extending `IWindowView` or `IViewBase`
+2. Have public parameterless constructors
+3. Are not abstract classes
+4. Are in the correct assembly/namespace
+
 ### Services Layer
 
 Common application services accessed via `ICommonServices`. These services are essential for maintaining MVP principles by abstracting WinForms UI dependencies.
@@ -638,6 +927,803 @@ public class MyPresenter : WindowPresenterBase<IMyView>
     }
 }
 ```
+
+### Dependency Injection Patterns
+
+The framework supports **three dependency injection patterns** to accommodate different scenarios from legacy code to modern practices.
+
+#### Pattern 1: Service Locator (Recommended for Simple Presenters)
+
+Use the built-in `PlatformServices.Default` for platform services. No constructor needed!
+
+```csharp
+public class SimpleDemoPresenter : WindowPresenterBase<ISimpleDemoView>
+{
+    // No constructor - uses PlatformServices.Default automatically
+
+    protected override void OnInitialize()
+    {
+        // Direct access via convenience properties
+        Messages.ShowInfo("Hello!");
+        var file = Dialogs.ShowOpenFileDialog();
+    }
+}
+```
+
+**When to use:**
+- ✅ Simple presenters that only need platform services (IMessageService, IDialogProvider, IFileService)
+- ✅ Rapid prototyping
+- ✅ Legacy code migration (no constructor changes needed)
+
+**Advantages:**
+- Zero boilerplate - no constructor needed
+- Automatic service access via properties (`Messages`, `Dialogs`, `Files`)
+- Easy for beginners
+
+**Disadvantages:**
+- Harder to unit test (requires `WithPlatformServices()` helper)
+- Global state dependency
+
+#### Pattern 2: Constructor Injection (Recommended for Testable Code)
+
+Explicitly inject dependencies through the constructor for better testability and clarity.
+
+```csharp
+public class UserEditorPresenter : WindowPresenterBase<IUserEditorView>
+{
+    private readonly IMessageService _messageService;
+    private readonly IUserRepository _userRepository;
+
+    public UserEditorPresenter(
+        IMessageService messageService,
+        IUserRepository userRepository)
+    {
+        _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
+        _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+    }
+
+    protected override void OnInitialize()
+    {
+        var users = _userRepository.GetAll();
+        View.Users = users;
+    }
+
+    private void OnSave()
+    {
+        _userRepository.Save(userData);
+        _messageService.ShowInfo("User saved!", "Success");
+    }
+}
+```
+
+**When to use:**
+- ✅ Production code that needs unit testing
+- ✅ When you have custom business services (IUserRepository, IOrderService, etc.)
+- ✅ When dependencies are explicit and documented
+
+**Advantages:**
+- Excellent testability - easy to inject mocks
+- Explicit dependencies visible in constructor
+- Follows SOLID principles
+- Platform services still available via `Messages`, `Dialogs`, `Files` properties
+
+**Disadvantages:**
+- More boilerplate code
+- Requires manual instantiation or DI container
+
+#### Pattern 3: Hybrid Pattern (Best of Both Worlds)
+
+Use constructor injection for business services, convenience properties for platform services.
+
+```csharp
+public class OrderProcessorPresenter : WindowPresenterBase<IOrderProcessorView>
+{
+    private readonly IOrderService _orderService;  // Business service via constructor
+
+    public OrderProcessorPresenter(IOrderService orderService)
+    {
+        _orderService = orderService;
+    }
+
+    protected override void OnInitialize()
+    {
+        var orders = _orderService.GetPendingOrders();
+        View.Orders = orders;
+    }
+
+    private void OnProcess()
+    {
+        try
+        {
+            _orderService.ProcessOrders(selectedOrders);
+            Messages.ShowInfo("Orders processed!", "Success");  // Platform service via property
+        }
+        catch (Exception ex)
+        {
+            Messages.ShowError($"Processing failed: {ex.Message}", "Error");
+        }
+    }
+
+    private void OnExport()
+    {
+        var result = Dialogs.ShowSaveFileDialog("Export Orders");  // Platform service via property
+        if (result.IsSuccess)
+        {
+            _orderService.ExportTo(result.Value);
+        }
+    }
+}
+```
+
+**When to use:**
+- ✅ Most production scenarios
+- ✅ Mix of business logic and UI interactions
+- ✅ Keep constructor focused on business dependencies
+
+**Advantages:**
+- Clean constructor (only business services)
+- Easy access to platform services (Messages, Dialogs, Files)
+- Great testability
+- Best readability
+
+#### Migration from Legacy Code
+
+**Scenario 1: Migrating from MessageBox.Show()**
+
+Before (Legacy WinForms):
+```csharp
+private void btnSave_Click(object sender, EventArgs e)
+{
+    try
+    {
+        SaveData();
+        MessageBox.Show("Data saved!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+    }
+    catch (Exception ex)
+    {
+        MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+    }
+}
+```
+
+After (MVP with Service Locator - easiest migration):
+```csharp
+public class MyPresenter : WindowPresenterBase<IMyView>
+{
+    // No constructor change needed!
+
+    private void OnSave()
+    {
+        try
+        {
+            SaveData();
+            Messages.ShowInfo("Data saved!", "Success");  // Replace MessageBox with Messages property
+        }
+        catch (Exception ex)
+        {
+            Messages.ShowError($"Error: {ex.Message}", "Error");
+        }
+    }
+}
+```
+
+After (MVP with Constructor Injection - better testability):
+```csharp
+public class MyPresenter : WindowPresenterBase<IMyView>
+{
+    private readonly IMessageService _messageService;
+
+    public MyPresenter(IMessageService messageService)
+    {
+        _messageService = messageService;
+    }
+
+    private void OnSave()
+    {
+        try
+        {
+            SaveData();
+            _messageService.ShowInfo("Data saved!", "Success");
+        }
+        catch (Exception ex)
+        {
+            _messageService.ShowError($"Error: {ex.Message}", "Error");
+        }
+    }
+}
+```
+
+**Scenario 2: Migrating from OpenFileDialog**
+
+Before (Legacy):
+```csharp
+private void btnOpen_Click(object sender, EventArgs e)
+{
+    using (var dialog = new OpenFileDialog())
+    {
+        dialog.Filter = "Text files (*.txt)|*.txt";
+        if (dialog.ShowDialog() == DialogResult.OK)
+        {
+            LoadFile(dialog.FileName);
+        }
+    }
+}
+```
+
+After (MVP):
+```csharp
+private void OnOpenFile()
+{
+    var result = Dialogs.ShowOpenFileDialog(new OpenFileDialogOptions
+    {
+        Filter = "Text files (*.txt)|*.txt"
+    });
+
+    if (result.IsSuccess)
+    {
+        LoadFile(result.Value);
+    }
+}
+```
+
+#### Testing Patterns
+
+**Testing with Service Locator (requires helper):**
+
+```csharp
+[Fact]
+public void Test_SimpleDemoPresenter()
+{
+    // Arrange
+    var mockServices = new MockPlatformServices();
+    var mockView = new MockSimpleDemoView();
+
+    var presenter = new SimpleDemoPresenter()
+        .WithPlatformServices(mockServices);  // Inject mocks before Initialize
+
+    // Act
+    presenter.AttachView(mockView);
+    presenter.Initialize();
+
+    // Assert
+    Assert.True(mockServices.MessageService.InfoMessageShown);
+}
+```
+
+**Testing with Constructor Injection (natural):**
+
+```csharp
+[Fact]
+public void Test_UserEditorPresenter()
+{
+    // Arrange
+    var mockMessageService = new MockMessageService();
+    var mockUserRepository = new MockUserRepository();
+    var mockView = new MockUserEditorView();
+
+    var presenter = new UserEditorPresenter(mockMessageService, mockUserRepository);
+
+    // Act
+    presenter.AttachView(mockView);
+    presenter.Initialize();
+
+    // Assert
+    Assert.True(mockMessageService.InfoMessageShown);
+    Assert.Equal(3, mockView.Users.Count);
+}
+```
+
+#### Integration with Microsoft.Extensions.DependencyInjection (Optional)
+
+For projects that want to use a full DI container, you can integrate `Microsoft.Extensions.DependencyInjection` while maintaining compatibility with legacy code.
+
+**1. Setup in Program.cs:**
+
+```csharp
+using Microsoft.Extensions.DependencyInjection;
+
+static class Program
+{
+    [STAThread]
+    static void Main()
+    {
+        Application.EnableVisualStyles();
+        Application.SetCompatibleTextRenderingDefault(false);
+
+        // Build DI container
+        var services = new ServiceCollection();
+
+        // Register framework services
+        services.AddSingleton<IPlatformServices, DefaultPlatformServices>();
+        services.AddSingleton<IMessageService, MessageService>();
+        services.AddSingleton<IDialogProvider, DialogProvider>();
+        services.AddSingleton<IFileService, FileService>();
+
+        // Register business services
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IOrderService, OrderService>();
+
+        // Register presenters
+        services.AddTransient<UserEditorPresenter>();
+        services.AddTransient<OrderProcessorPresenter>();
+
+        var serviceProvider = services.BuildServiceProvider();
+
+        // Configure PlatformServices to use the container
+        PlatformServices.Default = serviceProvider.GetRequiredService<IPlatformServices>();
+
+        // Create and show main form
+        var mainForm = new MainForm(serviceProvider);
+        Application.Run(mainForm);
+    }
+}
+```
+
+**2. Using the container in MainForm:**
+
+```csharp
+public class MainForm : Form
+{
+    private readonly IServiceProvider _serviceProvider;
+
+    public MainForm(IServiceProvider serviceProvider)
+    {
+        _serviceProvider = serviceProvider;
+        InitializeComponent();
+    }
+
+    private void btnEditUser_Click(object sender, EventArgs e)
+    {
+        // Resolve presenter from container
+        var presenter = _serviceProvider.GetRequiredService<UserEditorPresenter>();
+
+        // Show window using WindowNavigator
+        var navigator = new WindowNavigator();
+        navigator.ShowWindowAsModal(presenter);
+    }
+}
+```
+
+**Benefits of DI container integration:**
+- ✅ Centralized service registration
+- ✅ Lifetime management (Singleton, Scoped, Transient)
+- ✅ Automatic dependency resolution
+- ✅ Legacy code still works (uses PlatformServices.Default)
+
+**Important:** DI container integration is **optional**. The framework works perfectly without it using Service Locator or manual Constructor Injection.
+
+#### Choosing the Right Pattern
+
+| Scenario | Recommended Pattern | Reason |
+|----------|---------------------|--------|
+| Simple demo/prototype | Service Locator | Fastest, least code |
+| Legacy code migration | Service Locator | No constructor changes |
+| Testable business logic | Constructor Injection | Explicit dependencies |
+| Production app (mixed) | Hybrid | Business services in constructor, platform services via properties |
+| Large enterprise app | DI Container + Constructor Injection | Centralized configuration, automatic resolution |
+
+### Error Handling Best Practices
+
+The framework provides **multiple layers of error handling** to ensure robust applications and good user experience.
+
+#### Layer 1: IMessageService - User-Facing Error Display
+
+Always use `IMessageService` instead of `MessageBox.Show()` for displaying errors to users.
+
+**Basic error display:**
+
+```csharp
+private void OnSave()
+{
+    try
+    {
+        ValidateInput();
+        SaveData();
+        Messages.ShowInfo("Data saved successfully!", "Success");
+    }
+    catch (ValidationException ex)
+    {
+        Messages.ShowWarning(ex.Message, "Validation Failed");
+    }
+    catch (Exception ex)
+    {
+        Messages.ShowError($"Failed to save data: {ex.Message}", "Error");
+    }
+}
+```
+
+**Confirmation before destructive actions:**
+
+```csharp
+private void OnDelete()
+{
+    if (!Messages.ConfirmYesNo("Are you sure you want to delete this item?", "Confirm Delete"))
+    {
+        return;  // User cancelled
+    }
+
+    try
+    {
+        DeleteItem();
+        Messages.ShowInfo("Item deleted.", "Success");
+    }
+    catch (Exception ex)
+    {
+        Messages.ShowError($"Failed to delete: {ex.Message}", "Error");
+    }
+}
+```
+
+**Available methods:**
+- `ShowInfo(text, caption)` - Informational messages
+- `ShowWarning(text, caption)` - Warnings that don't block workflow
+- `ShowError(text, caption)` - Error messages
+- `ConfirmYesNo(text, caption)` - Returns `true` if user clicks Yes
+- `ShowToast(text, type, duration)` - Non-blocking notifications (optional)
+
+#### Layer 2: InteractionResult<T> - Operation Result Wrapping
+
+Use `InteractionResult<T>` for operations that can fail (dialogs, file I/O, network calls).
+
+**File operations:**
+
+```csharp
+private void OnOpenFile()
+{
+    var result = Dialogs.ShowOpenFileDialog(new OpenFileDialogOptions
+    {
+        Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*",
+        Title = "Select a file to open"
+    });
+
+    if (result.IsSuccess)
+    {
+        LoadFile(result.Value);  // result.Value is the file path
+    }
+    else if (result.IsCancelled)
+    {
+        // User clicked Cancel - no action needed
+        return;
+    }
+    else if (result.IsError)
+    {
+        Messages.ShowError(result.ErrorMessage, "Error");
+    }
+}
+```
+
+**Custom operations:**
+
+```csharp
+public InteractionResult<Customer> LoadCustomer(int customerId)
+{
+    try
+    {
+        var customer = _repository.GetById(customerId);
+        if (customer == null)
+        {
+            return InteractionResult<Customer>.Error("Customer not found");
+        }
+        return InteractionResult<Customer>.Ok(customer);
+    }
+    catch (Exception ex)
+    {
+        return InteractionResult<Customer>.Error("Failed to load customer", ex);
+    }
+}
+
+// Usage
+private void OnEditCustomer(int id)
+{
+    var result = LoadCustomer(id);
+    if (result.IsSuccess)
+    {
+        View.Customer = result.Value;
+    }
+    else
+    {
+        Messages.ShowError(result.ErrorMessage, "Error");
+    }
+}
+```
+
+**Benefits:**
+- ✅ Avoids exception-based control flow
+- ✅ Explicit success/cancel/error states
+- ✅ Preserves exception information when needed
+- ✅ Composable and chainable
+
+#### Layer 3: Centralized Error Messages (DialogDefaults)
+
+Use `DialogDefaults` to configure error messages globally for consistency.
+
+**Setup in Program.cs or app startup:**
+
+```csharp
+static void Main()
+{
+    // Configure default error messages
+    DialogDefaults.FileOpenErrorMessage = "ファイルを開くに失敗しました";
+    DialogDefaults.FileSaveErrorMessage = "ファイルの保存に失敗しました";
+    DialogDefaults.FolderBrowseErrorMessage = "フォルダの選択に失敗しました";
+    DialogDefaults.DefaultErrorCaption = "エラー";
+
+    Application.Run(new MainForm());
+}
+```
+
+**Benefits:**
+- ✅ Consistent error messages across the app
+- ✅ Easy localization
+- ✅ Single place to update messages
+
+#### Layer 4: Global Exception Handler (Optional)
+
+For catching unhandled exceptions at the application level.
+
+**Setup in Program.cs:**
+
+```csharp
+static class Program
+{
+    [STAThread]
+    static void Main()
+    {
+        // Configure global exception handlers
+        Application.ThreadException += OnThreadException;
+        Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
+        AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
+
+        Application.EnableVisualStyles();
+        Application.SetCompatibleTextRenderingDefault(false);
+        Application.Run(new MainForm());
+    }
+
+    private static void OnThreadException(object sender, ThreadExceptionEventArgs e)
+    {
+        HandleUnhandledException(e.Exception);
+    }
+
+    private static void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
+    {
+        if (e.ExceptionObject is Exception ex)
+        {
+            HandleUnhandledException(ex);
+        }
+    }
+
+    private static void HandleUnhandledException(Exception ex)
+    {
+        // Log the exception (use your logging framework)
+        LogException(ex);
+
+        // Show user-friendly message
+        var messageService = PlatformServices.Default.MessageService;
+        messageService.ShowError(
+            $"An unexpected error occurred:\n\n{ex.Message}\n\nThe application may be in an unstable state.",
+            "Unhandled Error");
+
+        // Optionally exit the application
+        // Application.Exit();
+    }
+
+    private static void LogException(Exception ex)
+    {
+        // TODO: Integrate with logging framework (NLog, Serilog, etc.)
+        System.Diagnostics.Debug.WriteLine($"UNHANDLED EXCEPTION: {ex}");
+    }
+}
+```
+
+**When to use:**
+- ✅ Production applications that need crash reporting
+- ✅ When integrating with logging frameworks
+- ✅ To prevent application crashes from unknown bugs
+
+**Caution:**
+- Catching all exceptions can hide bugs during development
+- Consider using only in Release builds or with conditional compilation
+
+#### Error Handling Patterns by Scenario
+
+**Scenario 1: Validation Errors**
+
+```csharp
+private void OnSave()
+{
+    // Validate early, fail fast
+    var validationErrors = ValidateInput();
+    if (validationErrors.Any())
+    {
+        var errorMessage = string.Join("\n", validationErrors);
+        Messages.ShowWarning(errorMessage, "Validation Failed");
+        return;  // Don't proceed with save
+    }
+
+    try
+    {
+        SaveData();
+        Messages.ShowInfo("Data saved!", "Success");
+    }
+    catch (Exception ex)
+    {
+        Messages.ShowError($"Failed to save: {ex.Message}", "Error");
+    }
+}
+```
+
+**Scenario 2: Network/Database Operations**
+
+```csharp
+private async void OnRefreshData()
+{
+    View.ShowLoadingIndicator(true);
+
+    try
+    {
+        var data = await _repository.GetDataAsync();
+        View.Data = data;
+        Messages.ShowInfo($"Loaded {data.Count} items", "Success");
+    }
+    catch (TimeoutException)
+    {
+        Messages.ShowError("The operation timed out. Please check your network connection.", "Timeout");
+    }
+    catch (UnauthorizedAccessException)
+    {
+        Messages.ShowError("You don't have permission to access this data.", "Access Denied");
+    }
+    catch (Exception ex)
+    {
+        Messages.ShowError($"Failed to load data: {ex.Message}", "Error");
+    }
+    finally
+    {
+        View.ShowLoadingIndicator(false);
+    }
+}
+```
+
+**Scenario 3: File Operations with InteractionResult**
+
+```csharp
+private void OnExport()
+{
+    var fileResult = Dialogs.ShowSaveFileDialog(new SaveFileDialogOptions
+    {
+        Filter = "CSV files (*.csv)|*.csv",
+        DefaultExt = "csv",
+        Title = "Export Data"
+    });
+
+    if (fileResult.IsCancelled)
+    {
+        return;  // User cancelled
+    }
+
+    if (fileResult.IsError)
+    {
+        Messages.ShowError(fileResult.ErrorMessage, "Error");
+        return;
+    }
+
+    try
+    {
+        ExportToCsv(fileResult.Value);
+        Messages.ShowInfo($"Data exported to {Path.GetFileName(fileResult.Value)}", "Success");
+    }
+    catch (IOException ex)
+    {
+        Messages.ShowError($"Failed to write file: {ex.Message}", "Export Failed");
+    }
+}
+```
+
+**Scenario 4: Long-Running Operations with Progress**
+
+```csharp
+private async void OnProcessBatch()
+{
+    var itemsToProcess = View.SelectedItems;
+    if (!itemsToProcess.Any())
+    {
+        Messages.ShowWarning("Please select items to process.", "No Selection");
+        return;
+    }
+
+    View.ShowProgress(true);
+    int successCount = 0;
+    int errorCount = 0;
+
+    foreach (var item in itemsToProcess)
+    {
+        try
+        {
+            await ProcessItemAsync(item);
+            successCount++;
+            View.UpdateProgress(successCount, itemsToProcess.Count);
+        }
+        catch (Exception ex)
+        {
+            errorCount++;
+            // Log error but continue processing
+            LogError($"Failed to process item {item.Id}: {ex.Message}");
+        }
+    }
+
+    View.ShowProgress(false);
+
+    // Show summary
+    var summary = $"Processing complete:\n\nSuccess: {successCount}\nFailed: {errorCount}";
+    if (errorCount > 0)
+    {
+        Messages.ShowWarning(summary, "Processing Complete");
+    }
+    else
+    {
+        Messages.ShowInfo(summary, "Success");
+    }
+}
+```
+
+#### Testing Error Handling
+
+**Testing that errors are displayed correctly:**
+
+```csharp
+[Fact]
+public void OnSave_WhenExceptionThrown_ShowsError()
+{
+    // Arrange
+    var mockMessageService = new MockMessageService();
+    var mockRepository = new MockUserRepository();
+    mockRepository.SaveShouldThrow = true;  // Simulate exception
+
+    var presenter = new UserEditorPresenter(mockMessageService, mockRepository);
+    presenter.AttachView(new MockUserEditorView());
+    presenter.Initialize();
+
+    // Act
+    presenter.OnSave();
+
+    // Assert
+    Assert.True(mockMessageService.ErrorMessageShown);
+    Assert.Contains("Failed to save", mockMessageService.LastErrorMessage);
+}
+```
+
+**Testing InteractionResult handling:**
+
+```csharp
+[Fact]
+public void OnOpenFile_WhenUserCancels_DoesNotLoadFile()
+{
+    // Arrange
+    var mockDialogs = new MockDialogProvider();
+    mockDialogs.OpenFileDialogResult = InteractionResult<string>.Cancel();
+
+    var presenter = new MyPresenter(mockDialogs);
+    presenter.AttachView(new MockMyView());
+    presenter.Initialize();
+
+    // Act
+    presenter.OnOpenFile();
+
+    // Assert
+    Assert.False(presenter.FileWasLoaded);
+}
+```
+
+#### Key Principles
+
+1. **Never use MessageBox.Show() in presenters** - Always use `IMessageService`
+2. **Use InteractionResult<T> for failable operations** - Avoid exception-based control flow
+3. **Validate early** - Check inputs before expensive operations
+4. **Handle specific exceptions first** - Catch specific exceptions before generic `Exception`
+5. **Always inform the user** - Don't silently swallow exceptions
+6. **Log errors for debugging** - Especially in production
+7. **Test error paths** - Write unit tests for error scenarios
+8. **Keep error messages user-friendly** - No stack traces to end users
 
 ### Change Tracking
 

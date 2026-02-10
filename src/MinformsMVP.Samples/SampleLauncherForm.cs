@@ -253,13 +253,19 @@ namespace MinformsMVP.Samples
 
             // Create and configure ViewMappingRegister
             var viewMappingRegister = new ViewMappingRegister();
-            viewMappingRegister.Register<INavigatorDemoView, NavigatorDemoForm>();
-            viewMappingRegister.Register<ISimpleDialogView, SimpleDialogForm>();
-            viewMappingRegister.Register<IInputDialogView, InputDialogForm>();
-            viewMappingRegister.Register<IConfirmDialogView, ConfirmDialogForm>();
-            viewMappingRegister.Register<INonModalWindowView, NonModalWindowForm>();
-            viewMappingRegister.Register<ICallbackWindowView, CallbackWindowForm>();
-            viewMappingRegister.Register<ISingletonWindowView, SingletonWindowForm>();
+
+            // Option 1: Manual registration (commented out - old way)
+            // viewMappingRegister.Register<INavigatorDemoView, NavigatorDemoForm>();
+            // viewMappingRegister.Register<ISimpleDialogView, SimpleDialogForm>();
+            // viewMappingRegister.Register<IInputDialogView, InputDialogForm>();
+            // viewMappingRegister.Register<IConfirmDialogView, ConfirmDialogForm>();
+            // viewMappingRegister.Register<INonModalWindowView, NonModalWindowForm>();
+            // viewMappingRegister.Register<ICallbackWindowView, CallbackWindowForm>();
+            // viewMappingRegister.Register<ISingletonWindowView, SingletonWindowForm>();
+
+            // Option 2: Automatic assembly scanning (NEW - recommended!)
+            int registered = viewMappingRegister.RegisterFromAssembly(System.Reflection.Assembly.GetExecutingAssembly());
+            System.Diagnostics.Debug.WriteLine($"ViewMappingRegister: Auto-registered {registered} Views from assembly");
 
             var navigator = new WindowNavigator(viewMappingRegister);
             var view = new NavigatorDemoForm();

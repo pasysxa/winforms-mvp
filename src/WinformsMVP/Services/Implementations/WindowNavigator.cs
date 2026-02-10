@@ -445,10 +445,14 @@ namespace WinformsMVP.Services.Implementations
 
         private Form CreateAndBindForm(IPresenter presenter, Type viewInterfaceType, bool callInitialize = true)
         {
-            // 1. View インスタンスの作成 (查找映射和创建实例)
-            Type viewImplType = _viewMappingRegister.GetViewImplementationType(viewInterfaceType);
-            var newForm = Activator.CreateInstance(viewImplType) as Form;
-            if (newForm == null) return null;
+            // 1. View インスタンスの作成 (ViewMappingRegisterを使用してインスタンス化)
+            var newForm = _viewMappingRegister.CreateInstance(viewInterfaceType) as Form;
+            if (newForm == null)
+            {
+                throw new InvalidOperationException(
+                    $"View インターフェース {viewInterfaceType.Name} の実装が Form ではありません。" +
+                    $"WindowNavigator で使用する View は System.Windows.Forms.Form を継承する必要があります。");
+            }
 
             // 关键：确保 View 实现了 IWindowView 接口
             if (!(newForm is IWindowView))
