@@ -13,8 +13,9 @@ namespace WinformsMVP.Common.Events
 
     public class ActionRequestEventArgs<T> : ActionRequestEventArgs, IActionRequestEventArgsWithValue
     {
-        public ActionRequestEventArgs(ViewAction actionKey) : base(actionKey)
+        public ActionRequestEventArgs(ViewAction actionKey, T value) : base(actionKey)
         {
+            Value = value;
         }
 
         public T Value { get; }
