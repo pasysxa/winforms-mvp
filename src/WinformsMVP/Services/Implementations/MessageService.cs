@@ -50,63 +50,42 @@ namespace WinformsMVP.Services.Implementations
 
         #endregion
 
-        #region Positioned Message Dialogs
+        #region Positioned Message Dialogs (using Windows API Hook)
 
         public bool ConfirmOkCancelAt(string text, Point location, string caption = "")
         {
             caption = string.IsNullOrEmpty(caption) ? DialogDefaults.DefaultMessageCaption : caption;
-            using (var dialog = new PositionedMessageBox(text, caption, MessageBoxButtons.OKCancel, MessageBoxIcon.Question, location))
-            {
-                dialog.ShowDialog();
-                return dialog.Result == DialogResult.OK;
-            }
+            return PositionableMessageBox.Show(text, caption, MessageBoxButtons.OKCancel, MessageBoxIcon.Question, location) == DialogResult.OK;
         }
 
         public bool ConfirmYesNoAt(string text, Point location, string caption = "")
         {
             caption = string.IsNullOrEmpty(caption) ? DialogDefaults.DefaultMessageCaption : caption;
-            using (var dialog = new PositionedMessageBox(text, caption, MessageBoxButtons.YesNo, MessageBoxIcon.Question, location))
-            {
-                dialog.ShowDialog();
-                return dialog.Result == DialogResult.Yes;
-            }
+            return PositionableMessageBox.Show(text, caption, MessageBoxButtons.YesNo, MessageBoxIcon.Question, location) == DialogResult.Yes;
         }
 
         public DialogResult ConfirmYesNoCancelAt(string text, Point location, string caption = "")
         {
             caption = string.IsNullOrEmpty(caption) ? DialogDefaults.DefaultMessageCaption : caption;
-            using (var dialog = new PositionedMessageBox(text, caption, MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question, location))
-            {
-                dialog.ShowDialog();
-                return dialog.Result;
-            }
+            return PositionableMessageBox.Show(text, caption, MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question, location);
         }
 
         public void ShowErrorAt(string text, Point location, string caption = "")
         {
             caption = string.IsNullOrEmpty(caption) ? DialogDefaults.DefaultMessageCaption : caption;
-            using (var dialog = new PositionedMessageBox(text, caption, MessageBoxButtons.OK, MessageBoxIcon.Error, location))
-            {
-                dialog.ShowDialog();
-            }
+            PositionableMessageBox.Show(text, caption, MessageBoxButtons.OK, MessageBoxIcon.Error, location);
         }
 
         public void ShowInfoAt(string text, Point location, string caption = "")
         {
             caption = string.IsNullOrEmpty(caption) ? DialogDefaults.DefaultMessageCaption : caption;
-            using (var dialog = new PositionedMessageBox(text, caption, MessageBoxButtons.OK, MessageBoxIcon.Information, location))
-            {
-                dialog.ShowDialog();
-            }
+            PositionableMessageBox.Show(text, caption, MessageBoxButtons.OK, MessageBoxIcon.Information, location);
         }
 
         public void ShowWarningAt(string text, Point location, string caption = "")
         {
             caption = string.IsNullOrEmpty(caption) ? DialogDefaults.DefaultMessageCaption : caption;
-            using (var dialog = new PositionedMessageBox(text, caption, MessageBoxButtons.OK, MessageBoxIcon.Warning, location))
-            {
-                dialog.ShowDialog();
-            }
+            PositionableMessageBox.Show(text, caption, MessageBoxButtons.OK, MessageBoxIcon.Warning, location);
         }
 
         #endregion

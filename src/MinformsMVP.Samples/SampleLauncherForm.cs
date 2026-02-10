@@ -7,6 +7,7 @@ using MinformsMVP.Samples.BulkBindingDemo;
 using MinformsMVP.Samples.NavigatorDemo;
 using MinformsMVP.Samples.MVPComparisonDemo;
 using MinformsMVP.Samples.ExecutionRequestDemo;
+using MinformsMVP.Samples.MessageBoxDemo;
 using WinformsMVP.Services;
 using WinformsMVP.Services.Implementations;
 
@@ -26,7 +27,7 @@ namespace MinformsMVP.Samples
         {
             // Form settings
             this.Text = "WinForms MVP - Sample Launcher";
-            this.Size = new Size(500, 720);
+            this.Size = new Size(500, 810);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.Font = new Font("Segoe UI", 9f);
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -196,6 +197,30 @@ namespace MinformsMVP.Samples
                 TextAlign = ContentAlignment.MiddleCenter
             };
 
+            // MessageBox Positioning Demo Button
+            var messageBoxButton = new Button
+            {
+                Text = "MessageBox Positioning Demo",
+                Location = new Point(100, 660),
+                Size = new Size(300, 50),
+                Font = new Font("Segoe UI", 11f),
+                BackColor = Color.FromArgb(255, 140, 0),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Cursor = Cursors.Hand
+            };
+            messageBoxButton.FlatAppearance.BorderSize = 0;
+            messageBoxButton.Click += (s, e) => LaunchMessageBoxDemo();
+
+            var messageBoxInfoLabel = new Label
+            {
+                Text = "Native MessageBox • Windows API Hook • Positioning",
+                Location = new Point(100, 715),
+                Size = new Size(300, 20),
+                ForeColor = Color.DarkGray,
+                TextAlign = ContentAlignment.MiddleCenter
+            };
+
             // Add controls
             this.Controls.AddRange(new Control[] {
                 titleLabel, subtitleLabel,
@@ -204,7 +229,8 @@ namespace MinformsMVP.Samples
                 bulkBindingButton, bulkBindingInfoLabel,
                 navigatorButton, navigatorInfoLabel,
                 mvpComparisonButton, mvpComparisonInfoLabel,
-                executionRequestButton, executionRequestInfoLabel
+                executionRequestButton, executionRequestInfoLabel,
+                messageBoxButton, messageBoxInfoLabel
             });
         }
 
@@ -292,6 +318,19 @@ namespace MinformsMVP.Samples
         {
             var view = new ExecutionRequestDemoForm();
             var presenter = new ExecutionRequestDemoPresenter();
+
+            presenter.AttachView(view);
+            presenter.Initialize();
+            view.Show();
+
+            this.Hide();
+            view.FormClosed += (s, e) => this.Show();
+        }
+
+        private void LaunchMessageBoxDemo()
+        {
+            var view = new MessageBoxDemoForm();
+            var presenter = new MessageBoxDemoPresenter();
 
             presenter.AttachView(view);
             presenter.Initialize();
