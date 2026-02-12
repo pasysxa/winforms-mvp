@@ -25,7 +25,12 @@
       "Bash(fi)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(git push)",
+      "Bash(grep:*)",
+      "Bash(done)",
+      "Bash(git push:*)",
+      "Bash(ls:*)"
     ]
   }
 }
