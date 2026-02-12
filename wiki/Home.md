@@ -2,77 +2,152 @@
 
 Welcome to the **WinForms MVP Framework** wiki! This documentation provides comprehensive guides and examples for building clean, testable WinForms applications using the MVP (Model-View-Presenter) pattern.
 
-## 📖 Table of Contents
+## 📖 Available Pages
 
-### Getting Started
-- [Home](Home) - You are here
-- [Quick Start Guide](Quick-Start-Guide)
-- [Core Concepts](Core-Concepts)
-- [Architecture Overview](Architecture-Overview)
+### 🎯 Example Applications (Click to view detailed tutorials)
 
-### Core Framework Features
-- [ViewAction System](ViewAction-System) - WPF-style command binding for WinForms
-- [Service Layer](Service-Layer) - IMessageService, IDialogProvider, and more
-- [Window Navigation](Window-Navigation) - Modal/non-modal window management
-- [Change Tracking](Change-Tracking) - Edit/cancel support for forms
-- [Dependency Injection](Dependency-Injection) - DI patterns and best practices
+#### Advanced Examples ⭐
+- **[Master-Detail Pattern](Example-Master-Detail)** 👥 - Parent-child data relationships (Customers → Orders)
+  - Coordinated UI updates across master and detail views
+  - Real-time calculations and cascading deletes
+  - State-driven CanExecute patterns
 
-### Example Applications
+- **[Complex Validation](Example-Validation)** ✅ - Real-time multi-field validation
+  - Field-level, cross-field, and pattern validation
+  - Visual error feedback with colored fields
+  - Testing validation logic
 
-#### Basic Examples
-- [ViewAction Example](Example-ViewAction) - Basic ViewAction usage
-- [CheckBox Demo](Example-CheckBox) - CheckBox and RadioButton binding
-- [Bulk Binding Demo](Example-Bulk-Binding) - Efficient multi-control binding
+- **[Async Operations](Example-Async-Operations)** ⚡ - Proper async/await patterns in MVP
+  - Progress tracking with cancellation support
+  - Thread-safe UI updates
+  - Error handling in async methods
 
-#### Intermediate Examples
-- [ToDo CRUD Demo](Example-ToDo) - Full CRUD operations with state management
-- [Navigator Demo](Example-Navigator) - Window lifecycle and navigation patterns
-- [MessageBox Positioning](Example-MessageBox) - Native MessageBox with positioning
+## 🚀 Quick Start
 
-#### Advanced Examples
-- [Master-Detail Pattern](Example-Master-Detail) 👥 **NEW!** - Parent-child data relationships
-- [Complex Validation](Example-Validation) ✅ **NEW!** - Real-time multi-field validation
-- [Async Operations](Example-Async-Operations) ⚡ **NEW!** - Async/await patterns
+### Running the Examples
 
-#### Pattern Comparisons
-- [MVP Pattern Comparison](Example-MVP-Comparison) - Passive View vs Supervising Controller
+All examples are located in the sample application:
 
-### Best Practices
-- [MVP Principles](Best-Practices-MVP) - Maintaining clean separation of concerns
-- [Testing Presenters](Best-Practices-Testing) - Unit testing strategies
-- [Error Handling](Best-Practices-Error-Handling) - Robust error handling patterns
-- [Performance Tips](Best-Practices-Performance) - Optimizing WinForms MVP apps
+1. Open `src/winforms-mvp.sln` in Visual Studio
+2. Set `WinformsMVP.Samples` as startup project
+3. Run the application (F5)
+4. The main form will show all available demos
 
-### Advanced Topics
-- [Custom ViewAction Strategies](Advanced-Custom-Actions) - Extending the ViewAction system
-- [Async Validation](Advanced-Async-Validation) - Server-side validation patterns
-- [Multi-Window Coordination](Advanced-Multi-Window) - Complex window interactions
-- [Legacy Code Migration](Advanced-Legacy-Migration) - Migrating existing WinForms apps
+### Key Framework Concepts
 
-## 🚀 Quick Links
+**MVP Pattern**: Separation of UI (View) from business logic (Presenter)
+- **View Interface**: Defines what the View can do (no UI types like Button, TextBox)
+- **Presenter**: Contains all business logic, no knowledge of WinForms
+- **Form Implementation**: Implements View interface, owns UI controls
 
-### Most Popular Pages
-1. [ViewAction System](ViewAction-System) - Learn the command binding pattern
-2. [Master-Detail Example](Example-Master-Detail) - Parent-child data relationships
-3. [Validation Example](Example-Validation) - Complex validation patterns
-4. [Async Operations](Example-Async-Operations) - Proper async/await in MVP
+**ViewAction System**: WPF-style command binding for WinForms
+- Declarative action binding via `ActionBinder` property
+- Automatic enable/disable based on `CanExecute` predicates
+- No more manual button click handlers!
 
-### Common Questions
-- **Q: How do I show a MessageBox from a Presenter?**
-  A: Use [IMessageService](Service-Layer#imessageservice) instead of `MessageBox.Show()`
+**Service Abstraction**: Never use `MessageBox.Show()` directly
+- `IMessageService` for dialogs and messages
+- `IDialogProvider` for file/folder dialogs
+- Fully testable with mock services
 
-- **Q: How do I bind buttons to actions?**
-  A: Use the [ViewActionBinder](ViewAction-System#viewactionbinder) property pattern
+## 📚 Documentation
 
-- **Q: How do I validate form input?**
-  A: Check out the [Validation Example](Example-Validation)
+### Framework Architecture
+See **[CLAUDE.md](https://github.com/pasysxa/winforms-mvp/blob/master/CLAUDE.md)** in the repository for comprehensive documentation:
+- ViewAction System deep dive
+- Service layer design
+- Navigation system
+- Change tracking
+- Best practices and anti-patterns
 
-- **Q: How do I handle async operations?**
-  A: See the [Async Operations Example](Example-Async-Operations)
+### README
+See **[README.md](https://github.com/pasysxa/winforms-mvp/blob/master/README.md)** for:
+- Feature overview with code examples
+- Architecture diagrams (Mermaid)
+- Quick start guide
+- All example descriptions
+
+## 💡 Common Questions
+
+**Q: How do I show a MessageBox from a Presenter?**
+
+A: Use `IMessageService` instead of `MessageBox.Show()`:
+```csharp
+// ❌ Wrong - Direct UI dependency
+MessageBox.Show("Saved!", "Success");
+
+// ✅ Correct - Service abstraction
+Messages.ShowInfo("Saved!", "Success");
+```
+
+**Q: How do I bind buttons to actions?**
+
+A: Use the `ActionBinder` property pattern:
+```csharp
+// In Presenter
+protected override void RegisterViewActions()
+{
+    _dispatcher.Register(CommonActions.Save, OnSave,
+        canExecute: () => View.HasUnsavedChanges);
+
+    View.ActionBinder.Bind(_dispatcher);
+}
+
+// In Form (private UI controls)
+private void InitializeActionBindings()
+{
+    _binder = new ViewActionBinder();
+    _binder.Add(CommonActions.Save, _saveButton);
+}
+```
+
+**Q: How do I validate form input?**
+
+A: See the **[Validation Example](Example-Validation)** for comprehensive patterns including:
+- Real-time validation as user types
+- Cross-field validation (password confirmation)
+- Pattern matching (email, phone)
+- Visual error feedback
+
+**Q: How do I handle async operations?**
+
+A: See the **[Async Operations Example](Example-Async-Operations)** for:
+- Proper async/await in Presenters
+- Progress tracking with `IProgress<T>`
+- Cancellation with `CancellationToken`
+- Thread-safe UI updates
+
+## 🔗 External Links
+
+- **[GitHub Repository](https://github.com/pasysxa/winforms-mvp)** - Source code
+- **[CLAUDE.md](https://github.com/pasysxa/winforms-mvp/blob/master/CLAUDE.md)** - Architecture documentation
+- **[Sample Code](https://github.com/pasysxa/winforms-mvp/tree/master/src/WinformsMVP.Samples)** - All examples
+
+## 📦 Project Structure
+
+```
+src/
+├── WinformsMVP/                    # Core framework
+│   ├── MVP/Presenters/             # Presenter base classes
+│   ├── MVP/Views/                  # View interfaces
+│   ├── MVP/ViewActions/            # ViewAction system
+│   ├── Services/                   # Service abstractions
+│   └── Common/                     # Utilities (ChangeTracker, etc.)
+│
+├── WinformsMVP.Samples/            # Example applications
+│   ├── MasterDetailDemo/           # Master-Detail pattern
+│   ├── ValidationDemo/             # Complex validation
+│   ├── AsyncDemo/                  # Async operations
+│   ├── ToDoDemo/                   # CRUD operations
+│   ├── NavigatorDemo/              # Window navigation
+│   └── ... more examples
+│
+└── WinformsMVP.Samples.Tests/      # Unit tests (41 tests)
+```
 
 ## 🤝 Contributing
 
-Found an error or want to improve the documentation? Contributions are welcome!
+Found an error or want to improve the documentation?
 
 1. Fork the repository
 2. Make your changes
