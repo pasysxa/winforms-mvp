@@ -30,7 +30,8 @@
       "Bash(grep:*)",
       "Bash(done)",
       "Bash(git push:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(chmod:*)"
     ]
   }
 }
