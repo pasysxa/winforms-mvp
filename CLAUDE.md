@@ -245,6 +245,184 @@ A command/action dispatch system that decouples UI events from presenter logic. 
 - **ViewActionBinder**: Declaratively maps UI controls (buttons, menu items) to action keys
 - **ViewActionDispatcher**: Routes actions to registered handlers with optional CanExecute predicates
 
+#### Why ActionBinder Property Belongs in IViewBase
+
+`ActionBinder` is a **property** (not a method) that exposes the View's `ViewActionBinder` instance. This is a **framework-level abstraction**, similar to WPF's `ICommand` binding. It should be defined in `IViewBase` for these reasons:
+
+**1. Properties Prevent Accidental Code Execution**
+- **Property access doesn't execute business logic** - it just returns data
+- **Testing is safer and faster** - accessing `View.ActionBinder` won't trigger database calls or network requests
+- **Prevents abuse** - developers can't hide complex logic in a property getter (it would be a code smell)
+
+**2. It maintains better MVP separation than exposing UI controls**
+
+❌ **Anti-Pattern (Violates MVP):**
+```csharp
+// View interface exposes UI controls - WRONG!
+public interface IMyView : IWindowView
+{
+    Button SaveButton { get; }  // ❌ Leaks UI implementation
+    Button DeleteButton { get; }
+}
+
+// Presenter knows about Button - WRONG!
+protected override void OnViewAttached()
+{
+    _binder.Add(CommonActions.Save, View.SaveButton);  // ❌ Couples to WinForms
+}
+```
+
+✅ **Recommended Pattern (Follows MVP):**
+```csharp
+// View interface stays pure - CORRECT!
+public interface IMyView : IWindowView
+{
+    ViewActionBinder ActionBinder { get; }  // ✅ Framework abstraction (property!)
+}
+
+// Presenter doesn't know about buttons - CORRECT!
+protected override void OnViewAttached()
+{
+    View.ActionBinder.Bind(Dispatcher);  // ✅ Delegates binding to View
+}
+
+// View implementation handles UI details internally - CORRECT!
+private ViewActionBinder _binder;
+public ViewActionBinder ActionBinder => _binder;
+
+public MyForm()
+{
+    InitializeComponent();
+    InitializeActionBindings();  // Set up bindings in constructor
+}
+
+private void InitializeActionBindings()
+{
+    _binder = new ViewActionBinder();
+    _binder.Add(CommonActions.Save, _saveButton);  // Internal UI detail
+    _binder.Add(CommonActions.Delete, _deleteButton);
+    // No Bind() call here - Presenter will call it!
+}
+```
+
+**3. Clear separation of responsibilities**
+
+| Component | Responsibility | Knowledge |
+|-----------|---------------|-----------|
+| **Presenter** | Business logic, when to execute actions, calls `View.ActionBinder.Bind()` | ViewAction keys, execution timing |
+| **ViewActionDispatcher** | Route actions to handlers | Action → Handler mapping |
+| **IViewBase/View Interface** | Exposes ActionBinder property | Needs to connect UI to actions |
+| **View Implementation** | UI details, configures ActionBinder in constructor | Which buttons map to which actions |
+| **ViewActionBinder** | Technical binding mechanism | Control events → Action dispatching |
+
+**4. Testability - Even Better Than Method Approach**
+
+Mock views can provide a simple property without any logic:
+
+```csharp
+public class MockMyView : IMyView
+{
+    public ViewActionBinder ActionBinder { get; } = new ViewActionBinder();
+}
+
+[Fact]
+public void OnViewAttached_ShouldBindActionBinder()
+{
+    var mockView = new MockMyView();
+    var presenter = new MyPresenter();
+
+    presenter.AttachView(mockView);
+
+    // Verify that the ActionBinder was bound (Presenter called Bind)
+    Assert.NotNull(mockView.ActionBinder);
+}
+```
+
+**Key Principle:** `ActionBinder` property is to ViewAction what `ICommand` is to WPF - a framework-level abstraction that maintains clean separation. Using a **property instead of a method** prevents accidental execution of business logic during testing or initialization.
+
+**5. Critical: InitializeActionBindings() is for UI binding ONLY**
+
+⚠️ **WARNING:** The private `InitializeActionBindings()` method in your Form must contain **ONLY** declarative UI binding code. Do NOT include any business logic, database operations, or expensive computations.
+
+❌ **WRONG - Business logic in InitializeActionBindings:**
+```csharp
+private void InitializeActionBindings()
+{
+    _binder = new ViewActionBinder();
+    _binder.Add(CommonActions.Save, _saveButton);
+
+    // ❌ WRONG - Database operation in InitializeActionBindings!
+    var users = _database.GetAllUsers();  // DON'T DO THIS
+
+    // ❌ WRONG - Business logic in InitializeActionBindings!
+    if (users.Count > 0)
+    {
+        _binder.Add(UserActions.Delete, _deleteButton);
+    }
+}
+```
+
+✅ **CORRECT - Pure UI binding only:**
+```csharp
+private void InitializeActionBindings()
+{
+    _binder = new ViewActionBinder();
+
+    // ✅ CORRECT - Only declarative binding
+    _binder.Add(CommonActions.Save, _saveButton);
+    _binder.Add(CommonActions.Delete, _deleteButton);
+    _binder.Add(UserActions.Edit, _editButton);
+
+    // ✅ No Bind() call here - Presenter will call View.ActionBinder.Bind()
+}
+```
+
+**Why this matters:**
+
+| Aspect | Why Property is Better |
+|--------|------------------------|
+| **Performance** | Property access won't execute database calls (they'd be obviously wrong in a getter) |
+| **Architecture** | View layer should NOT contain business logic - properties make this clearer |
+| **Testability** | Accessing a property in tests is safer than calling a method (no hidden side effects) |
+| **Maintainability** | Properties are expected to be simple - complex logic stands out as a code smell |
+| **Threading** | Property access won't accidentally freeze the UI thread |
+
+**Think of ActionBinder like a data property:**
+- You wouldn't put database queries in a property getter
+- `ActionBinder` is just data (a configured binder object)
+- Business logic belongs in the Presenter, not in View property getters or private init methods
+
+**If you need conditional binding based on data:**
+
+Do the data loading in the **Presenter**, then use CanExecute predicates:
+
+```csharp
+// Presenter - loads data and controls View state
+protected override void OnInitialize()
+{
+    var users = _userRepository.GetAll();
+    View.HasUsers = users.Count > 0;  // Set View property
+}
+
+protected override void RegisterViewActions()
+{
+    _dispatcher.Register(
+        UserActions.Delete,
+        OnDelete,
+        canExecute: () => View.HasUsers);  // Use CanExecute, not conditional binding
+
+    View.ActionBinder.Bind(_dispatcher);  // Bind the pre-configured ActionBinder
+}
+
+// View - pure binding, no business logic
+private void InitializeActionBindings()
+{
+    _binder = new ViewActionBinder();
+    _binder.Add(UserActions.Delete, _deleteButton);  // Always bind
+    // CanExecute controls Enabled state, not conditional Add()
+}
+```
+
 #### Best Practices
 
 **1. Use Static Classes for ActionKeys**
@@ -270,21 +448,68 @@ public static class UserEditorActions
 }
 ```
 
-**2. Declarative UI Binding with ViewActionBinder**
+**2. Declarative UI Binding with ActionBinder Property Pattern (Recommended)**
 
-Use `ViewActionBinder` to map controls to actions in `OnViewAttached()`:
+Use the `ActionBinder` property to let the View expose its pre-configured action bindings, keeping the Presenter decoupled from UI elements:
 
+**View Interface:**
 ```csharp
-private readonly ViewActionBinder _binder = new ViewActionBinder();
-
-protected override void OnViewAttached()
+public interface IMyView : IWindowView
 {
-    // Multiple controls can bind to the same action
-    _binder.Add(CommonActions.Save, View.SaveButton, View.SaveMenuItem);
-    _binder.Add(CommonActions.Delete, View.DeleteButton, View.DeleteMenuItem);
-    _binder.Add(UserEditorActions.EditUser, View.EditButton);
+    string Name { get; set; }
+
+    // Expose ActionBinder property - framework-level abstraction
+    ViewActionBinder ActionBinder { get; }
 }
 ```
+
+**Presenter:**
+```csharp
+protected override void OnViewAttached()
+{
+    // Presenter accesses property and calls Bind - doesn't know about buttons!
+    View.ActionBinder.Bind(Dispatcher);
+}
+```
+
+**View Implementation (Form):**
+```csharp
+public class MyForm : Form, IMyView
+{
+    // Private UI controls - NOT exposed through interface
+    private Button _saveButton;
+    private Button _deleteButton;
+    private ToolStripMenuItem _saveMenuItem;
+    private ViewActionBinder _binder;  // Internal to Form
+
+    public ViewActionBinder ActionBinder => _binder;
+
+    public MyForm()
+    {
+        InitializeComponent();
+        InitializeActionBindings();
+    }
+
+    private void InitializeActionBindings()
+    {
+        _binder = new ViewActionBinder();
+
+        // Multiple controls can bind to the same action
+        _binder.Add(CommonActions.Save, _saveButton, _saveMenuItem);
+        _binder.Add(CommonActions.Delete, _deleteButton);
+
+        // No Bind() call here - Presenter will call it!
+    }
+}
+```
+
+**Why this is better:**
+- ✅ Presenter has ZERO knowledge of Button, TextBox, or any UI elements
+- ✅ View interface stays pure (no UI types)
+- ✅ Form owns all UI binding logic internally (configured in constructor)
+- ✅ Follows WPF ICommand pattern (similar to `Command` binding)
+- ✅ Easy to test - mock View just returns a simple property
+- ✅ **Property access won't execute unexpected code** (safer than calling a method)
 
 **3. Register Action Handlers with CanExecute**
 
@@ -308,7 +533,7 @@ protected override void RegisterViewActions()
         canExecute: () => View.HasSelectedItem);
 
     // Bind to dispatcher for automatic CanExecute support
-    _binder.Bind(_dispatcher);
+    View.ActionBinder.Bind(_dispatcher);
 }
 ```
 
@@ -477,11 +702,12 @@ _binder.AddRange(mapping);
 
 See `src/WinformsMVP.Samples/ViewActionExample.cs` for a comprehensive example demonstrating:
 - Global and module-specific static ActionKey classes
-- ViewActionBinder declarative binding
+- **ActionBinder property pattern for proper MVP separation** (recommended)
 - CanExecute predicates for dynamic enable/disable
 - Automatic UI state updates after action execution
 - Multiple controls bound to the same action
 - Proper dependency injection with IMessageService
+- View Interface with ActionBinder property (no UI types exposed)
 
 See `src/WinformsMVP.Samples/ViewActionWithParametersExample.cs` for parameterized action examples.
 
@@ -495,7 +721,7 @@ See `src/WinformsMVP.Samples/CheckBoxDemo/` for CheckBox/RadioButton examples:
 - CheckBox binding with CheckedChanged events
 - RadioButton groups for theme selection
 - CanExecute controlling Enabled state
-- Proper MVP separation (no UI types in interface)
+- **Proper MVP separation using ActionBinder property pattern** (no UI types in interface)
 - Settings UI pattern with Apply/Reset buttons
 
 See `src/WinformsMVP.Samples/BulkBindingDemo/` for bulk binding examples:
@@ -503,6 +729,8 @@ See `src/WinformsMVP.Samples/BulkBindingDemo/` for bulk binding examples:
 - AddRange with dictionary for alternative syntax
 - Handling surveys/questionnaires with many options
 - Best practices for binding multiple similar controls
+
+**Important:** All sample code uses the **ActionBinder property pattern** as the recommended approach. Avoid exposing UI controls (Button, TextBox, etc.) through View interfaces - let the View implementation configure action bindings internally in its constructor via `InitializeActionBindings()`, and expose them through the `ActionBinder` property.
 
 ### Navigation System
 
@@ -1984,15 +2212,16 @@ public interface IMyView : IWindowView
     // Events for state changes
     event EventHandler SelectionChanged;
 
-    // ViewAction integration (allows Form to bind UI controls internally)
-    void BindActions(ViewActionDispatcher dispatcher);
+    // ViewAction integration (Form exposes configured action binder)
+    ViewActionBinder ActionBinder { get; }
 }
 ```
 
 **✅ Presenter interacts only through abstracted interfaces:**
 - Inject services (IMessageService, IDialogProvider, etc.) via constructor
 - Access View only through the interface (data properties and methods)
-- Call `View.BindActions(dispatcher)` to let View bind its UI controls
+- Call `View.ActionBinder.Bind(Dispatcher)` to bind the View's pre-configured action mappings
+- Use ViewAction system for command binding (see "ViewAction System" section)
 - Presenter has ZERO knowledge of Button, TextBox, or any UI elements
 
 **✅ View implementation (Form) owns UI elements:**
@@ -2004,12 +2233,20 @@ public class MyForm : Form, IMyView
     private TextBox _nameTextBox;
     private ViewActionBinder _binder;  // Internal to Form
 
-    // Implement BindActions - Form knows about buttons, Presenter doesn't
-    public void BindActions(ViewActionDispatcher dispatcher)
+    public ViewActionBinder ActionBinder => _binder;
+
+    public MyForm()
+    {
+        InitializeComponent();
+        InitializeActionBindings();
+    }
+
+    // Configure action bindings in constructor - Form knows about buttons, Presenter doesn't
+    private void InitializeActionBindings()
     {
         _binder = new ViewActionBinder();
         _binder.Add(MyActions.Save, _saveButton);  // Map button to action
-        _binder.Bind(dispatcher);  // Enable CanExecute support
+        // No Bind() call here - Presenter will call View.ActionBinder.Bind(Dispatcher)
     }
 }
 ```

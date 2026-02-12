@@ -17,6 +17,7 @@ namespace WinformsMVP.Samples.NavigatorDemo
         public InputDialogForm()
         {
             InitializeComponent();
+            InitializeActionBindings();
         }
 
         private void InitializeComponent()
@@ -75,14 +76,15 @@ namespace WinformsMVP.Samples.NavigatorDemo
             return _inputTextBox.Text;
         }
 
-        public void BindActions(ViewActionDispatcher dispatcher)
+        public ViewActionBinder ActionBinder => _binder;
+
+        private void InitializeActionBindings()
         {
             _binder = new ViewActionBinder();
             _binder.AddRange(
                 (InputDialogActions.Ok, _okButton),
                 (InputDialogActions.Cancel, _cancelButton)
             );
-            _binder.Bind(dispatcher);
         }
 
         bool IWindowView.IsDisposed => base.IsDisposed;

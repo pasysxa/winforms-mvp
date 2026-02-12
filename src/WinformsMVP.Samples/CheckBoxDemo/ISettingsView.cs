@@ -54,16 +54,6 @@ namespace WinformsMVP.Samples.CheckBoxDemo
         void ShowSettingsSummary(string summary);
 
         // ========================================
-        // ViewAction Integration
-        // ========================================
-
-        /// <summary>
-        /// Bind UI controls to the ViewActionDispatcher.
-        /// Form implementation will map CheckBox/RadioButton controls to actions.
-        /// </summary>
-        void BindActions(ViewActionDispatcher dispatcher);
-
-        // ========================================
         // Events (for state-driven updates)
         // ========================================
 

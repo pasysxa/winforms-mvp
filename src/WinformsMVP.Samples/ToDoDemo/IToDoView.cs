@@ -79,19 +79,5 @@ namespace WinformsMVP.Samples.ToDoDemo
         /// Raised when data changes
         /// </summary>
         event EventHandler DataChanged;
-
-        // ========================================
-        // ViewAction Integration
-        // ========================================
-
-        /// <summary>
-        /// Bind UI controls to the ViewActionDispatcher.
-        /// This allows the view implementation to map UI elements (buttons, menu items)
-        /// to actions registered in the dispatcher.
-        ///
-        /// The Presenter calls this method after registering all actions,
-        /// but has no knowledge of what specific UI controls are being bound.
-        /// </summary>
-        void BindActions(WinformsMVP.MVP.ViewActions.ViewActionDispatcher dispatcher);
     }
 }

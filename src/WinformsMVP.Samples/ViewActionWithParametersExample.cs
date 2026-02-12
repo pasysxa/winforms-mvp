@@ -59,16 +59,6 @@ namespace WinformsMVP.Samples
         /// Update the status message
         /// </summary>
         void UpdateStatus(string message);
-
-        // ========================================
-        // ViewAction Integration
-        // ========================================
-
-        /// <summary>
-        /// Bind UI controls to the ViewActionDispatcher.
-        /// Form implementation will map buttons to actions internally.
-        /// </summary>
-        void BindActions(ViewActionDispatcher dispatcher);
     }
 
     #endregion
@@ -119,7 +109,7 @@ namespace WinformsMVP.Samples
 
             // Let the View bind its UI controls to the dispatcher
             // View implementation will map buttons internally
-            View.BindActions(_dispatcher);
+            View.ActionBinder.Bind(_dispatcher);
         }
 
         protected override void OnInitialize()

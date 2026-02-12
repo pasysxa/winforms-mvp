@@ -22,6 +22,7 @@ namespace WinformsMVP.Samples.MessageBoxDemo
         public MessageBoxDemoForm()
         {
             InitializeComponent();
+            InitializeActionBindings();
         }
 
         private void InitializeComponent()
@@ -160,7 +161,9 @@ namespace WinformsMVP.Samples.MessageBoxDemo
 
         #region IMessageBoxDemoView Implementation
 
-        public void BindActions(ViewActionDispatcher dispatcher)
+        public ViewActionBinder ActionBinder => _binder;
+
+        private void InitializeActionBindings()
         {
             _binder = new ViewActionBinder();
 
@@ -171,8 +174,6 @@ namespace WinformsMVP.Samples.MessageBoxDemo
             _binder.Add(MessageBoxDemoActions.ShowAtMouse, _btnAtMouse);
             _binder.Add(MessageBoxDemoActions.ShowCentered, _btnCentered);
             _binder.Add(MessageBoxDemoActions.ShowConfirmAtMouse, _btnConfirmAtMouse);
-
-            _binder.Bind(dispatcher);
         }
 
         #endregion

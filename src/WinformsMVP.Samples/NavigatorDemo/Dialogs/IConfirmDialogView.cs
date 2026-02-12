@@ -8,6 +8,5 @@ namespace WinformsMVP.Samples.NavigatorDemo
         void SetTitle(string title);
         void SetMessage(string message);
         void SetDefaultButton(bool yesIsDefault);
-        void BindActions(ViewActionDispatcher dispatcher);
     }
 }

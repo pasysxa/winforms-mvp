@@ -68,7 +68,7 @@ namespace WinformsMVP.Samples.CheckBoxDemo
                 canExecute: () => View.HasSettings);
 
             // Bind UI controls to dispatcher
-            View.BindActions(_dispatcher);
+            View.ActionBinder.Bind(_dispatcher);
         }
 
         protected override void OnInitialize()

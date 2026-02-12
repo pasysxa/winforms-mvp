@@ -38,6 +38,7 @@ namespace WinformsMVP.Samples.CheckBoxDemo
         public SettingsDemoForm()
         {
             InitializeComponent();
+            InitializeActionBindings();
         }
 
         private void InitializeComponent()
@@ -239,8 +240,26 @@ namespace WinformsMVP.Samples.CheckBoxDemo
 
         public bool HasSettings => _hasSettings;
 
-        public void BindActions(ViewActionDispatcher dispatcher)
+        public ViewActionBinder ActionBinder => _viewActionBinder;
+
+        private void InitializeActionBindings()
         {
+            // ========================================
+            // CRITICAL: This method should contain ONLY UI binding code!
+            //
+            // ✅ DO:
+            //    - Map controls to actions (_binder.Add(...))
+            //    - Bind to dispatcher (_binder.Bind(...))
+            //
+            // ❌ DO NOT:
+            //    - Call database operations
+            //    - Execute business logic
+            //    - Perform expensive computations
+            //    - Make network calls
+            //
+            // Think of this like WPF's InitializeComponent() - pure UI infrastructure only.
+            // ========================================
+
             _viewActionBinder = new ViewActionBinder();
 
             // Bind CheckBox controls - will use CheckedChanged event
@@ -256,7 +275,6 @@ namespace WinformsMVP.Samples.CheckBoxDemo
             _viewActionBinder.Add(SettingsDemoActions.ApplySettings, _applyButton);
             _viewActionBinder.Add(SettingsDemoActions.ResetSettings, _resetButton);
 
-            _viewActionBinder.Bind(dispatcher);
         }
 
         public void UpdateStatus(string message)

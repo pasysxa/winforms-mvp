@@ -27,7 +27,7 @@ namespace WinformsMVP.Samples.NavigatorDemo
             _dispatcher.Register(SingletonWindowActions.ShowInfo, OnShowInfo);
             _dispatcher.Register(SingletonWindowActions.Close, OnClose);
 
-            View.BindActions(_dispatcher);
+            View.ActionBinder.Bind(_dispatcher);
         }
 
         protected override void OnInitialize()

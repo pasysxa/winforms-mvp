@@ -19,10 +19,5 @@ namespace WinformsMVP.Samples.BulkBindingDemo
         /// Show survey results
         /// </summary>
         void ShowResults(string results);
-
-        /// <summary>
-        /// Bind UI controls to the ViewActionDispatcher
-        /// </summary>
-        void BindActions(ViewActionDispatcher dispatcher);
     }
 }

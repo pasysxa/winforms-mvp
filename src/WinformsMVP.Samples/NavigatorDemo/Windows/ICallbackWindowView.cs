@@ -7,6 +7,5 @@ namespace WinformsMVP.Samples.NavigatorDemo
     {
         void SetMessage(string message);
         string GetText();
-        void BindActions(ViewActionDispatcher dispatcher);
     }
 }

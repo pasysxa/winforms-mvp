@@ -54,8 +54,6 @@ namespace WinformsMVP.Samples
         event EventHandler SortRequested;
         event EventHandler SearchRequested;
         // ... 可能还有更多操作
-
-        void BindActions(ViewActionDispatcher dispatcher);
     }
 
     /// <summary>
@@ -67,7 +65,6 @@ namespace WinformsMVP.Samples
         // ✅ 只需要一个事件！
         event EventHandler<ActionRequestEventArgs> ActionRequested;
 
-        void BindActions(ViewActionDispatcher dispatcher);
         void UpdateStatus(string message);
     }
 
@@ -100,7 +97,7 @@ namespace WinformsMVP.Samples
             _dispatcher.Register(ComplexDataGridActions.Sort, OnSort);
             _dispatcher.Register(ComplexDataGridActions.Search, OnSearch);
 
-            View.BindActions(_dispatcher);
+            View.ActionBinder.Bind(_dispatcher);
         }
 
         protected override void OnInitialize()
@@ -215,7 +212,6 @@ namespace WinformsMVP.Samples
         // 带参数的操作（如搜索关键字）
         event EventHandler<ActionRequestEventArgs<string>> SearchActionRequested;
 
-        void BindActions(ViewActionDispatcher dispatcher);
         void UpdateStatus(string message);
     }
 
@@ -241,7 +237,7 @@ namespace WinformsMVP.Samples
                 SearchActions.FilterByCategory,
                 OnFilterByCategory);
 
-            View.BindActions(_dispatcher);
+            View.ActionBinder.Bind(_dispatcher);
         }
 
         protected override void OnInitialize()

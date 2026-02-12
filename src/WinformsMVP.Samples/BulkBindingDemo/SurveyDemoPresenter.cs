@@ -67,7 +67,7 @@ namespace WinformsMVP.Samples.BulkBindingDemo
             _dispatcher.Register(SurveyActions.Submit, OnSubmit);
 
             // Bind UI controls
-            View.BindActions(_dispatcher);
+            View.ActionBinder.Bind(_dispatcher);
         }
 
         protected override void OnInitialize()

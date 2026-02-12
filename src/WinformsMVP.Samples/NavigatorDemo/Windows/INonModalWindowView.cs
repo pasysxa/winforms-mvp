@@ -6,6 +6,5 @@ namespace WinformsMVP.Samples.NavigatorDemo
     public interface INonModalWindowView : IWindowView
     {
         void SetCounter(int value);
-        void BindActions(ViewActionDispatcher dispatcher);
     }
 }

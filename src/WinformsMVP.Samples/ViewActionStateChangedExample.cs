@@ -23,19 +23,31 @@ namespace WinformsMVP.Samples
 
     #region View Interface
 
+    /// <summary>
+    /// View interface for data grid editor.
+    /// Demonstrates proper MVP separation - no UI elements exposed.
+    ///
+    /// IMPORTANT:
+    /// - No Button or any UI control types
+    /// - Only data properties and events
+    /// - BindActions method for ViewAction integration
+    /// </summary>
     public interface IDataGridEditorView : IWindowView
     {
-        Button AddRowButton { get; }
-        Button EditRowButton { get; }
-        Button DeleteRowButton { get; }
-        Button ExportButton { get; }
-
-        event EventHandler SelectionChanged;
-        event EventHandler DataChanged;
+        // ========================================
+        // Data Properties (no UI types!)
+        // ========================================
 
         bool HasSelectedRow { get; }
         bool HasData { get; }
         int SelectedRowCount { get; }
+
+        // ========================================
+        // Events (for state-driven updates)
+        // ========================================
+
+        event EventHandler SelectionChanged;
+        event EventHandler DataChanged;
     }
 
     #endregion
@@ -47,10 +59,13 @@ namespace WinformsMVP.Samples
     /// 2. State-driven updates (manual via RaiseCanExecuteChanged)
     ///
     /// This is similar to WPF's ICommand.CanExecuteChanged pattern.
+    ///
+    /// IMPORTANT:
+    /// - Presenter has ZERO knowledge of Button or any UI elements
+    /// - Uses BindActions() pattern for proper MVP separation
     /// </summary>
     public class DataGridEditorPresenter : WindowPresenterBase<IDataGridEditorView>
     {
-        private readonly ViewActionBinder _binder = new ViewActionBinder();
         private readonly IMessageService _messageService;
 
         public DataGridEditorPresenter(IMessageService messageService)
@@ -60,11 +75,7 @@ namespace WinformsMVP.Samples
 
         protected override void OnViewAttached()
         {
-            // Declarative binding
-            _binder.Add(DataGridActions.AddRow, View.AddRowButton);
-            _binder.Add(DataGridActions.EditRow, View.EditRowButton);
-            _binder.Add(DataGridActions.DeleteRow, View.DeleteRowButton);
-            _binder.Add(DataGridActions.ExportData, View.ExportButton);
+            // Nothing to do here - View will handle UI binding internally
         }
 
         protected override void RegisterViewActions()
@@ -90,7 +101,8 @@ namespace WinformsMVP.Samples
                 OnExportData,
                 canExecute: () => View.HasData);
 
-            _binder.Bind(_dispatcher);
+            // Let the View bind its UI controls to the dispatcher
+            View.ActionBinder.Bind(_dispatcher);
         }
 
         protected override void OnInitialize()
@@ -174,20 +186,33 @@ namespace WinformsMVP.Samples
         public static readonly ViewAction CancelOperation = Factory.Create("Cancel");
     }
 
+    /// <summary>
+    /// View interface for async operation demo.
+    /// Demonstrates proper MVP separation - no UI elements exposed.
+    ///
+    /// IMPORTANT:
+    /// - No Button, ProgressBar, or any UI control types
+    /// - Only data properties (bool for operation state)
+    /// - BindActions method for ViewAction integration
+    /// </summary>
     public interface IAsyncOperationView : IWindowView
     {
-        Button StartButton { get; }
-        Button CancelButton { get; }
-        ProgressBar ProgressBar { get; }
+        // ========================================
+        // Data Properties (no UI types!)
+        // ========================================
+
         bool IsOperationRunning { get; set; }
     }
 
     /// <summary>
     /// Example showing how to handle async operations with state-driven updates.
+    ///
+    /// IMPORTANT:
+    /// - Presenter has ZERO knowledge of Button, ProgressBar, or any UI elements
+    /// - Uses BindActions() pattern for proper MVP separation
     /// </summary>
     public class AsyncOperationPresenter : WindowPresenterBase<IAsyncOperationView>
     {
-        private readonly ViewActionBinder _binder = new ViewActionBinder();
         private readonly IMessageService _messageService;
         private bool _isRunning;
 
@@ -198,8 +223,7 @@ namespace WinformsMVP.Samples
 
         protected override void OnViewAttached()
         {
-            _binder.Add(AsyncOperationActions.StartOperation, View.StartButton);
-            _binder.Add(AsyncOperationActions.CancelOperation, View.CancelButton);
+            // Nothing to do here - View will handle UI binding internally
         }
 
         protected override void RegisterViewActions()
@@ -216,7 +240,8 @@ namespace WinformsMVP.Samples
                 OnCancelOperation,
                 canExecute: () => _isRunning);
 
-            _binder.Bind(_dispatcher);
+            // Let the View bind its UI controls to the dispatcher
+            View.ActionBinder.Bind(_dispatcher);
         }
 
         protected override void OnInitialize()

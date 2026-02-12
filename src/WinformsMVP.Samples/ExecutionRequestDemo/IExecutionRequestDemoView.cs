@@ -56,11 +56,6 @@ namespace WinformsMVP.Samples.ExecutionRequestDemo
         /// 更新状态
         /// </summary>
         void UpdateStatus(string message, bool isSuccess);
-
-        /// <summary>
-        /// 绑定ViewActions
-        /// </summary>
-        void BindActions(ViewActionDispatcher dispatcher);
     }
 
     /// <summary>

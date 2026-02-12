@@ -77,7 +77,7 @@ namespace WinformsMVP.Samples.ToDoDemo
 
             // Ask the view to bind its UI controls to the dispatcher
             // We don't know (or care) what controls the view uses
-            View.BindActions(_dispatcher);
+            View.ActionBinder.Bind(_dispatcher);
         }
 
         protected override void OnInitialize()

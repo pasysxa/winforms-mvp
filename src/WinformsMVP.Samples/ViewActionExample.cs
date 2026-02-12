@@ -41,21 +41,44 @@ namespace WinformsMVP.Samples
 
     #region View Interface
 
+    /// <summary>
+    /// View interface for user editor.
+    /// Demonstrates proper MVP separation - no UI elements exposed.
+    ///
+    /// IMPORTANT MVP PRINCIPLES:
+    /// - No Button, ToolStripMenuItem, or any UI control types
+    /// - Only data properties (string, bool, etc.)
+    /// - Behavior methods for UI updates
+    /// - BindActions method for ViewAction integration (framework-level abstraction)
+    /// </summary>
     public interface IUserEditorView : IWindowView
     {
-        Button SaveButton { get; }
-        Button CancelButton { get; }
-        Button DeleteButton { get; }
-        Button AddUserButton { get; }
-        Button EditUserButton { get; }
-        Button ChangePasswordButton { get; }
-
-        ToolStripMenuItem SaveMenuItem { get; }
-        ToolStripMenuItem DeleteMenuItem { get; }
+        // ========================================
+        // Data Properties (no UI types!)
+        // ========================================
 
         string UserName { get; set; }
         bool HasUnsavedChanges { get; }
         bool HasSelectedUser { get; }
+
+        // ========================================
+        // ViewAction Integration
+        // ========================================
+
+        /// <summary>
+        /// Bind UI controls to the ViewActionDispatcher.
+        /// Form implementation will map buttons/menu items to actions internally.
+        /// Presenter has ZERO knowledge of Button or ToolStripMenuItem.
+        ///
+        /// CRITICAL: This method must contain ONLY UI binding code.
+        /// DO NOT include:
+        /// - Database operations (use Presenter.OnInitialize instead)
+        /// - Business logic (belongs in Presenter)
+        /// - Expensive computations
+        /// - Network calls
+        ///
+        /// Think of this like WPF's InitializeComponent() - pure UI infrastructure only.
+        /// </summary>
     }
 
     #endregion
@@ -64,13 +87,13 @@ namespace WinformsMVP.Samples
     /// Example presenter demonstrating ViewAction best practices:
     /// 1. Using static ActionKey classes instead of raw strings
     /// 2. Implementing CanExecute predicates for dynamic enable/disable
-    /// 3. Using ViewActionBinder for declarative UI binding
+    /// 3. Using BindActions() pattern for proper MVP separation
     /// 4. Automatic UI state updates after action execution
     /// 5. Using IMessageService instead of MessageBox (follows MVP principle)
+    /// 6. ZERO knowledge of UI controls (Button, ToolStripMenuItem, etc.)
     /// </summary>
     public class UserEditorPresenter : WindowPresenterBase<IUserEditorView>
     {
-        private readonly ViewActionBinder _binder = new ViewActionBinder();
         private readonly IMessageService _messageService;
 
         public UserEditorPresenter(IMessageService messageService)
@@ -80,20 +103,15 @@ namespace WinformsMVP.Samples
 
         protected override void OnViewAttached()
         {
-            // Setup bindings declaratively
-            // Multiple controls can be bound to the same action
-            _binder.Add(CommonActions.Save, View.SaveButton, View.SaveMenuItem);
-            _binder.Add(CommonActions.Cancel, View.CancelButton);
-            _binder.Add(CommonActions.Delete, View.DeleteButton, View.DeleteMenuItem);
-            _binder.Add(UserEditorActions.AddUser, View.AddUserButton);
-            _binder.Add(UserEditorActions.EditUser, View.EditUserButton);
-            _binder.Add(UserEditorActions.ChangePassword, View.ChangePasswordButton);
+            // Nothing to do here - View will handle UI binding internally
+            // Presenter has NO access to Button, ToolStripMenuItem, or any UI elements
         }
 
         protected override void RegisterViewActions()
         {
             // Register action handlers with CanExecute predicates
-            // The binder will automatically enable/disable controls based on these predicates
+            // The View's BindActions implementation will automatically enable/disable
+            // controls based on these predicates
 
             // Save is only enabled when there are unsaved changes
             _dispatcher.Register(
@@ -129,9 +147,9 @@ namespace WinformsMVP.Samples
                 OnChangePassword,
                 canExecute: () => View.HasSelectedUser);
 
-            // Bind all controls to the dispatcher
-            // This enables automatic CanExecute support
-            _binder.Bind(_dispatcher);
+            // Let the View bind its UI controls to the dispatcher
+            // View implementation will map buttons/menu items internally
+            View.ActionBinder.Bind(_dispatcher);
         }
 
         protected override void OnInitialize()

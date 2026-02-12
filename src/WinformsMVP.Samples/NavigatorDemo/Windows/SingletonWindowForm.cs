@@ -17,6 +17,7 @@ namespace WinformsMVP.Samples.NavigatorDemo
         public SingletonWindowForm()
         {
             InitializeComponent();
+            InitializeActionBindings();
         }
 
         private void InitializeComponent()
@@ -71,14 +72,15 @@ namespace WinformsMVP.Samples.NavigatorDemo
             _messageLabel.Text = message;
         }
 
-        public void BindActions(ViewActionDispatcher dispatcher)
+        public ViewActionBinder ActionBinder => _binder;
+
+        private void InitializeActionBindings()
         {
             _binder = new ViewActionBinder();
             _binder.AddRange(
                 (SingletonWindowActions.ShowInfo, _infoButton),
                 (SingletonWindowActions.Close, _closeButton)
             );
-            _binder.Bind(dispatcher);
         }
 
         bool IWindowView.IsDisposed => base.IsDisposed;

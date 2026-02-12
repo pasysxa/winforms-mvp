@@ -6,6 +6,5 @@ namespace WinformsMVP.Samples.NavigatorDemo
     public interface ISimpleDialogView : IWindowView
     {
         void SetMessage(string message);
-        void BindActions(ViewActionDispatcher dispatcher);
     }
 }

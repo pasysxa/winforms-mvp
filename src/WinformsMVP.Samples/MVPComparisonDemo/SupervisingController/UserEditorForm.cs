@@ -38,6 +38,7 @@ namespace WinformsMVP.Samples.MVPComparisonDemo.SupervisingController
         public UserEditorForm()
         {
             InitializeComponent();
+            InitializeActionBindings();
         }
 
         private void InitializeComponent()
@@ -263,13 +264,14 @@ namespace WinformsMVP.Samples.MVPComparisonDemo.SupervisingController
             _statusLabel.Text = message;
         }
 
-        public void BindActions(ViewActionDispatcher dispatcher)
+        public ViewActionBinder ActionBinder => _viewActionBinder;
+
+        private void InitializeActionBindings()
         {
             _viewActionBinder = new ViewActionBinder();
             _viewActionBinder.Add(UserEditorActions.Save, _saveButton);
             _viewActionBinder.Add(UserEditorActions.Reset, _resetButton);
             _viewActionBinder.Add(UserEditorActions.Close, _closeButton);
-            _viewActionBinder.Bind(dispatcher);
         }
 
         #endregion

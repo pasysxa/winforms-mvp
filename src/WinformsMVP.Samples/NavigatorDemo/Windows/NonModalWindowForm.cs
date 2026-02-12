@@ -16,6 +16,7 @@ namespace WinformsMVP.Samples.NavigatorDemo
         public NonModalWindowForm()
         {
             InitializeComponent();
+            InitializeActionBindings();
         }
 
         private void InitializeComponent()
@@ -65,14 +66,15 @@ namespace WinformsMVP.Samples.NavigatorDemo
             _counterLabel.Text = $"Counter: {value}";
         }
 
-        public void BindActions(ViewActionDispatcher dispatcher)
+        public ViewActionBinder ActionBinder => _binder;
+
+        private void InitializeActionBindings()
         {
             _binder = new ViewActionBinder();
             _binder.AddRange(
                 (NonModalWindowActions.Increment, _incrementButton),
                 (NonModalWindowActions.Close, _closeButton)
             );
-            _binder.Bind(dispatcher);
         }
 
         bool IWindowView.IsDisposed => base.IsDisposed;

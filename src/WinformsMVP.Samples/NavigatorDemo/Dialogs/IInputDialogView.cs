@@ -7,6 +7,5 @@ namespace WinformsMVP.Samples.NavigatorDemo
     {
         void SetPrompt(string prompt);
         string GetInput();
-        void BindActions(ViewActionDispatcher dispatcher);
     }
 }

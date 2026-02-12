@@ -26,7 +26,7 @@ namespace WinformsMVP.Samples.NavigatorDemo
             _dispatcher.Register(InputDialogActions.Ok, OnOk);
             _dispatcher.Register(InputDialogActions.Cancel, OnCancel);
 
-            View.BindActions(_dispatcher);
+            View.ActionBinder.Bind(_dispatcher);
         }
 
         protected override void OnInitialize()

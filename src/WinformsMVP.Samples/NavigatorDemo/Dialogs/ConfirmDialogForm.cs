@@ -17,6 +17,7 @@ namespace WinformsMVP.Samples.NavigatorDemo
         public ConfirmDialogForm()
         {
             InitializeComponent();
+            InitializeActionBindings();
         }
 
         private void InitializeComponent()
@@ -81,7 +82,9 @@ namespace WinformsMVP.Samples.NavigatorDemo
             this.AcceptButton = yesIsDefault ? _yesButton : _noButton;
         }
 
-        public void BindActions(ViewActionDispatcher dispatcher)
+        public ViewActionBinder ActionBinder => _binder;
+
+        private void InitializeActionBindings()
         {
             _binder = new ViewActionBinder();
             _binder.AddRange(
@@ -89,7 +92,6 @@ namespace WinformsMVP.Samples.NavigatorDemo
                 (ConfirmDialogActions.No, _noButton),
                 (ConfirmDialogActions.Cancel, _cancelButton)
             );
-            _binder.Bind(dispatcher);
         }
 
         bool IWindowView.IsDisposed => base.IsDisposed;

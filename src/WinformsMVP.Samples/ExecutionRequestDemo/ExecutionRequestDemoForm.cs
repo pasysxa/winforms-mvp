@@ -34,6 +34,7 @@ namespace WinformsMVP.Samples.ExecutionRequestDemo
         public ExecutionRequestDemoForm()
         {
             InitializeComponent();
+            InitializeActionBindings();
         }
 
         private void InitializeComponent()
@@ -243,13 +244,14 @@ namespace WinformsMVP.Samples.ExecutionRequestDemo
                 : Color.Red;
         }
 
-        public void BindActions(ViewActionDispatcher dispatcher)
+        public ViewActionBinder ActionBinder => _viewActionBinder;
+
+        private void InitializeActionBindings()
         {
             _viewActionBinder = new ViewActionBinder();
             _viewActionBinder.Add(ExecutionRequestDemoActions.EditCustomer, _openLegacyButton);
             _viewActionBinder.Add(ExecutionRequestDemoActions.SelectFile, _selectFileButton);  // 直接触发 ViewAction，Presenter 用 IDialogProvider
             _viewActionBinder.Add(ExecutionRequestDemoActions.SaveData, _saveDataButton);
-            _viewActionBinder.Bind(dispatcher);
 
             // 场景1和场景3使用 ExecutionRequest
             // 场景2直接通过 ViewAction + IDialogProvider

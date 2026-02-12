@@ -42,6 +42,7 @@ namespace WinformsMVP.Samples.BulkBindingDemo
         public SurveyDemoForm()
         {
             InitializeComponent();
+            InitializeActionBindings();
         }
 
         private void InitializeComponent()
@@ -210,8 +211,26 @@ namespace WinformsMVP.Samples.BulkBindingDemo
 
         #region ISurveyView Implementation
 
-        public void BindActions(ViewActionDispatcher dispatcher)
+        public ViewActionBinder ActionBinder => _viewActionBinder;
+
+        private void InitializeActionBindings()
         {
+            // ========================================
+            // CRITICAL: This method should contain ONLY UI binding code!
+            //
+            // ✅ DO:
+            //    - Map controls to actions (_binder.Add(...), _binder.AddRange(...))
+            //    - Bind to dispatcher (_binder.Bind(...))
+            //
+            // ❌ DO NOT:
+            //    - Call database operations
+            //    - Execute business logic
+            //    - Perform expensive computations
+            //    - Make network calls
+            //
+            // Think of this like WPF's InitializeComponent() - pure UI infrastructure only.
+            // ========================================
+
             _viewActionBinder = new ViewActionBinder();
 
             // ============================================
@@ -243,7 +262,6 @@ namespace WinformsMVP.Samples.BulkBindingDemo
             // Submit button
             _viewActionBinder.Add(SurveyActions.Submit, _submitButton);
 
-            _viewActionBinder.Bind(dispatcher);
         }
 
         public void UpdateStatus(string message)

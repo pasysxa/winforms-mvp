@@ -25,6 +25,7 @@ namespace WinformsMVP.Samples.NavigatorDemo
         public NavigatorDemoForm()
         {
             InitializeComponent();
+            InitializeActionBindings();
         }
 
         private void InitializeComponent()
@@ -170,7 +171,9 @@ namespace WinformsMVP.Samples.NavigatorDemo
             _logTextBox.AppendText($"[{timestamp}] {message}\r\n");
         }
 
-        public void BindActions(ViewActionDispatcher dispatcher)
+        public ViewActionBinder ActionBinder => _viewActionBinder;
+
+        private void InitializeActionBindings()
         {
             _viewActionBinder = new ViewActionBinder();
 
@@ -184,7 +187,6 @@ namespace WinformsMVP.Samples.NavigatorDemo
                 (NavigatorDemoActions.ClearLog, _clearLogButton)
             );
 
-            _viewActionBinder.Bind(dispatcher);
         }
 
         #endregion

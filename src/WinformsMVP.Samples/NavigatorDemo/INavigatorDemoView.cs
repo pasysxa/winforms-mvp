@@ -12,10 +12,5 @@ namespace WinformsMVP.Samples.NavigatorDemo
         /// Update the log/output area
         /// </summary>
         void AppendLog(string message);
-
-        /// <summary>
-        /// Bind UI controls to actions
-        /// </summary>
-        void BindActions(ViewActionDispatcher dispatcher);
     }
 }

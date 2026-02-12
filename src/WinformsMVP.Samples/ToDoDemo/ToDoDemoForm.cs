@@ -43,6 +43,7 @@ namespace WinformsMVP.Samples.ToDoDemo
         public ToDoDemoForm()
         {
             InitializeComponent();
+            InitializeActionBindings();
         }
 
         private void InitializeComponent()
@@ -226,8 +227,26 @@ namespace WinformsMVP.Samples.ToDoDemo
         /// This is where the Form maps its buttons to the actions registered by the Presenter.
         /// The Presenter has no knowledge of these buttons - only the Form does.
         /// </summary>
-        public void BindActions(ViewActionDispatcher dispatcher)
+        public ViewActionBinder ActionBinder => _viewActionBinder;
+
+        private void InitializeActionBindings()
         {
+            // ========================================
+            // CRITICAL: This method should contain ONLY UI binding code!
+            //
+            // ✅ DO:
+            //    - Map controls to actions (_binder.Add(...))
+            //    - Bind to dispatcher (_binder.Bind(...))
+            //
+            // ❌ DO NOT:
+            //    - Call database operations
+            //    - Execute business logic
+            //    - Perform expensive computations
+            //    - Make network calls
+            //
+            // Think of this like WPF's InitializeComponent() - pure UI infrastructure only.
+            // ========================================
+
             // Create the binder
             _viewActionBinder = new ViewActionBinder();
 
@@ -240,7 +259,6 @@ namespace WinformsMVP.Samples.ToDoDemo
 
             // Bind to the dispatcher
             // This enables automatic CanExecute support
-            _viewActionBinder.Bind(dispatcher);
         }
 
         // ========================================

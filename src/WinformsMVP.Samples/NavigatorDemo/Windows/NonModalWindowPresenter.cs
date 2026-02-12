@@ -22,7 +22,7 @@ namespace WinformsMVP.Samples.NavigatorDemo
             _dispatcher.Register(NonModalWindowActions.Increment, OnIncrement);
             _dispatcher.Register(NonModalWindowActions.Close, OnClose);
 
-            View.BindActions(_dispatcher);
+            View.ActionBinder.Bind(_dispatcher);
         }
 
         protected override void OnInitialize()

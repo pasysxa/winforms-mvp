@@ -80,11 +80,7 @@ namespace WinformsMVP.Samples.Tests.Mocks
             StatusMessages.Add(message);
         }
 
-        public void BindActions(ViewActionDispatcher dispatcher)
-        {
-            MethodCalls.Add("BindActions()");
-            // Mock不需要实际绑定
-        }
+        public ViewActionBinder ActionBinder { get; } = new ViewActionBinder(); // Mock does not need actual binder
 
         // Events
         public event EventHandler SelectionChanged;

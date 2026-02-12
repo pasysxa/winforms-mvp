@@ -42,11 +42,5 @@ namespace WinformsMVP.Samples.MVPComparisonDemo.PassiveView
         /// Update the status message
         /// </summary>
         void UpdateStatus(string message);
-
-        // ========================================
-        // ViewAction Integration
-        // ========================================
-
-        void BindActions(ViewActionDispatcher dispatcher);
     }
 }

@@ -7,6 +7,5 @@ namespace WinformsMVP.Samples.NavigatorDemo
     {
         void SetInstanceId(int id);
         void SetMessage(string message);
-        void BindActions(ViewActionDispatcher dispatcher);
     }
 }

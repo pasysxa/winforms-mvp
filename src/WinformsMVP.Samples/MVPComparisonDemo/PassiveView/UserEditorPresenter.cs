@@ -56,7 +56,7 @@ namespace WinformsMVP.Samples.MVPComparisonDemo.PassiveView
             _dispatcher.Register(UserEditorActions.Reset, OnReset);
             _dispatcher.Register(UserEditorActions.Close, OnClose);
 
-            View.BindActions(_dispatcher);
+            View.ActionBinder.Bind(_dispatcher);
         }
 
         protected override void OnInitialize()

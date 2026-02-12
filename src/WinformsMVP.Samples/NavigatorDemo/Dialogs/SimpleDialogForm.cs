@@ -16,6 +16,7 @@ namespace WinformsMVP.Samples.NavigatorDemo
         public SimpleDialogForm()
         {
             InitializeComponent();
+            InitializeActionBindings();
         }
 
         private void InitializeComponent()
@@ -63,14 +64,15 @@ namespace WinformsMVP.Samples.NavigatorDemo
             _messageLabel.Text = message;
         }
 
-        public void BindActions(ViewActionDispatcher dispatcher)
+        public ViewActionBinder ActionBinder => _binder;
+
+        private void InitializeActionBindings()
         {
             _binder = new ViewActionBinder();
             _binder.AddRange(
                 (SimpleDialogActions.Ok, _okButton),
                 (SimpleDialogActions.Cancel, _cancelButton)
             );
-            _binder.Bind(dispatcher);
         }
 
         bool IWindowView.IsDisposed => base.IsDisposed;

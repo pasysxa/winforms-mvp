@@ -52,7 +52,7 @@ namespace WinformsMVP.Samples.NavigatorDemo
             _dispatcher.Register(NavigatorDemoActions.ShowSingletonWindow, OnShowSingletonWindow);
             _dispatcher.Register(NavigatorDemoActions.ClearLog, OnClearLog);
 
-            View.BindActions(_dispatcher);
+            View.ActionBinder.Bind(_dispatcher);
         }
 
         protected override void OnInitialize()

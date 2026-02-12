@@ -17,6 +17,7 @@ namespace WinformsMVP.Samples.NavigatorDemo
         public CallbackWindowForm()
         {
             InitializeComponent();
+            InitializeActionBindings();
         }
 
         private void InitializeComponent()
@@ -67,14 +68,15 @@ namespace WinformsMVP.Samples.NavigatorDemo
             return _textBox.Text;
         }
 
-        public void BindActions(ViewActionDispatcher dispatcher)
+        public ViewActionBinder ActionBinder => _binder;
+
+        private void InitializeActionBindings()
         {
             _binder = new ViewActionBinder();
             _binder.AddRange(
                 (CallbackWindowActions.SaveAndClose, _saveButton),
                 (CallbackWindowActions.Cancel, _cancelButton)
             );
-            _binder.Bind(dispatcher);
         }
 
         bool IWindowView.IsDisposed => base.IsDisposed;

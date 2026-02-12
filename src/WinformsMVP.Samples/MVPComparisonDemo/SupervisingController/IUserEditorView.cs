@@ -39,11 +39,5 @@ namespace WinformsMVP.Samples.MVPComparisonDemo.SupervisingController
         // Notice: No ShowValidationErrors/ClearValidationErrors needed!
         // The View binds directly to Model.ValidationErrors
         // When the model changes, the view updates automatically
-
-        // ========================================
-        // ViewAction Integration
-        // ========================================
-
-        void BindActions(ViewActionDispatcher dispatcher);
     }
 }

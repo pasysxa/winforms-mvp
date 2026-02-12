@@ -5,6 +5,5 @@ namespace WinformsMVP.Samples.MessageBoxDemo
 {
     public interface IMessageBoxDemoView : IWindowView
     {
-        void BindActions(ViewActionDispatcher dispatcher);
     }
 }

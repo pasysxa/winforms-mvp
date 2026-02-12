@@ -35,7 +35,7 @@ namespace WinformsMVP.Samples.MessageBoxDemo
             _dispatcher.Register(MessageBoxDemoActions.ShowCentered, OnShowCentered);
             _dispatcher.Register(MessageBoxDemoActions.ShowConfirmAtMouse, OnShowConfirmAtMouse);
 
-            View.BindActions(_dispatcher);
+            View.ActionBinder.Bind(_dispatcher);
         }
 
         protected override void OnInitialize()
