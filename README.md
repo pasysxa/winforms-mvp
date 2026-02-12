@@ -388,6 +388,29 @@ The repository includes comprehensive examples:
 - Supervising Controller pattern
 - Side-by-side comparison
 
+### 👥 [Master-Detail Pattern](src/WinformsMVP.Samples/MasterDetailDemo) **NEW!**
+- Parent-child data relationships (Customers → Orders)
+- Coordinated UI updates across master and detail views
+- Cascading delete with confirmation
+- Real-time total calculation
+- State-driven CanExecute for CRUD operations
+
+### ✅ [Complex Validation](src/WinformsMVP.Samples/ValidationDemo) **NEW!**
+- Real-time field-level validation
+- Cross-field validation (password confirmation)
+- Pattern matching (email, phone number)
+- Business rule validation (age restrictions)
+- Visual error feedback with colored fields
+- Validation summary display
+
+### ⚡ [Async Operations](src/WinformsMVP.Samples/AsyncDemo) **NEW!**
+- Proper async/await patterns in Presenters
+- Progress tracking with progress bar
+- Cancellation support (CancellationToken)
+- Error handling in async methods
+- Long-running operations without UI freezing
+- Multiple async operation patterns
+
 ---
 
 ## 🧪 Testing
