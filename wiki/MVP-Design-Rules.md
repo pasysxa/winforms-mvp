@@ -408,6 +408,67 @@ This is acceptable because:
 2. It's only for framework operations (`Close()`, `Show()`, `Hide()`)
 3. There's no alternative way to close a window through `IViewBase`
 
+### What About IWin32Window?
+
+**IWin32Window does NOT violate Rule 4.** Here's why:
+
+```csharp
+// ✅ IWin32Window in IWindowNavigator is acceptable
+public interface IWindowNavigator
+{
+    InteractionResult ShowWindowAsModal<TPresenter>(
+        TPresenter presenter,
+        IWin32Window owner = null)  // ✅ OK - Window handle abstraction
+        where TPresenter : IPresenter;
+}
+```
+
+**Why IWin32Window is acceptable:**
+
+1. **Not a UI Control Type**
+   - `IWin32Window` is a window handle abstraction, not a UI implementation detail
+   - It's equivalent to `readonly struct { IntPtr Handle; }`
+   - Compare: `Button` exposes UI implementation (text, color, events), `IWin32Window` only exposes OS window handle
+
+2. **OS-Level Concept**
+   - Window ownership is an operating system concept, not WinForms-specific
+   - Modal dialog positioning requires parent window handle (HWND on Windows)
+   - This is platform infrastructure, not UI framework detail
+
+3. **Already an Interface**
+   - `IWin32Window` itself is an abstraction with a single member: `IntPtr Handle { get; }`
+   - It provides type safety over raw `IntPtr`
+   - Creating `IWindowOwner` would be redundant - same single property, same purpose
+
+4. **Framework-Level Dependency**
+   - This is **WinformsMVP** framework - WinForms dependency is by design
+   - If cross-platform support is needed, much more than this interface would need changing
+   - The framework's purpose is to bring MVP pattern to WinForms
+
+**What Rule 4 Actually Prohibits:**
+
+| ❌ Prohibited | ✅ Allowed |
+|--------------|-----------|
+| `Button`, `TextBox`, `DataGridView` - UI controls | `IWin32Window` - Window handle |
+| `Control`, `Form` in View interface members | `IWin32Window` for modal ownership |
+| UI implementation details | OS/Platform abstractions |
+
+**Real Violation Example:**
+```csharp
+// ❌ This WOULD violate Rule 4
+public interface IMyView : IWindowView
+{
+    Button SaveButton { get; }      // ❌ UI control type
+    TextBox NameBox { get; }        // ❌ UI control type
+}
+
+// ✅ IWin32Window is different - it's infrastructure
+public interface IWindowNavigator
+{
+    void ShowModal(IPresenter p, IWin32Window owner);  // ✅ OK
+}
+```
+
 ### Benefits of Following This Rule
 
 | Aspect | Benefit |
