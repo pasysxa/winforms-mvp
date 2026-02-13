@@ -40,8 +40,8 @@ namespace WinformsMVP.Samples.EmailDemo
 
         protected override void OnViewAttached()
         {
-            // Subscribe to View input change events
-            View.PropertyChanged += OnViewPropertyChanged;
+            // Subscribe to semantic email data change event
+            View.EmailDataChanged += OnEmailDataChanged;
         }
 
         protected override void RegisterViewActions()
@@ -112,25 +112,24 @@ namespace WinformsMVP.Samples.EmailDemo
 
         #region Event Handlers
 
-        private void OnViewPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        /// <summary>
+        /// Called when email data (To, Subject, Body) changes.
+        /// Updates the ChangeTracker and triggers CanExecute re-evaluation for Send/SaveDraft buttons.
+        /// </summary>
+        private void OnEmailDataChanged(object sender, EventArgs e)
         {
-            // When View input changes, update ChangeTracker
-            if (e.PropertyName == nameof(View.To) ||
-                e.PropertyName == nameof(View.Subject) ||
-                e.PropertyName == nameof(View.Body))
+            // Update ChangeTracker with current email values
+            var currentEmail = new EmailMessage
             {
-                var currentEmail = new EmailMessage
-                {
-                    To = View.To,
-                    Subject = View.Subject,
-                    Body = View.Body
-                };
+                To = View.To,
+                Subject = View.Subject,
+                Body = View.Body
+            };
 
-                _changeTracker.UpdateCurrentValue(currentEmail);
+            _changeTracker.UpdateCurrentValue(currentEmail);
 
-                // Trigger CanExecute update
-                _dispatcher.RaiseCanExecuteChanged();
-            }
+            // Trigger CanExecute update for Send and SaveDraft actions
+            _dispatcher.RaiseCanExecuteChanged();
         }
 
         #endregion

@@ -67,8 +67,9 @@ namespace WinformsMVP.Samples.EmailDemo
 
         private void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            // Propagate PropertyChanged events from ViewModel to View
-            OnPropertyChanged(e.PropertyName);
+            // Raise semantic event when email data changes
+            // This hides the technical INotifyPropertyChanged from the View interface
+            EmailDataChanged?.Invoke(this, EventArgs.Empty);
         }
 
         #region IComposeEmailView Implementation
@@ -147,14 +148,13 @@ namespace WinformsMVP.Samples.EmailDemo
 
         #endregion
 
-        #region INotifyPropertyChanged Implementation
+        #region Semantic Events
 
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        protected virtual void OnPropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
+        /// <summary>
+        /// Raised when email data (To, Subject, Body) changes via ViewModel binding.
+        /// Follows semantic event pattern - see ToDoDemo.DataChanged, MainEmailView.EmailSelectionChanged.
+        /// </summary>
+        public event EventHandler EmailDataChanged;
 
         #endregion
 
