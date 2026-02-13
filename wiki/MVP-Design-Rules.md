@@ -1,8 +1,15 @@
 # MVP Design Rules
 
-**📋 14 Essential Rules for Clean MVP Architecture**
+**📋 15 Essential Rules for Clean MVP Architecture**
 
 This guide covers the complete set of Model-View-Presenter design rules based on the Supervising Controller pattern. These rules ensure maintainable, testable, and well-structured WinForms applications.
+
+## 📚 Reference
+
+These design rules are based on the classic MVP pattern as described in:
+- **[Design Rules for Model-View-Presenter](http://st-www.cs.illinois.edu/users/smarch/st-docs/mvc.html)** by S. March (University of Illinois)
+
+The rules have been adapted and extended for the WinForms MVP Framework with modern .NET practices.
 
 ---
 
@@ -11,17 +18,18 @@ This guide covers the complete set of Model-View-Presenter design rules based on
 1. [Rule 1: View Naming Convention](#rule-1-view-naming-convention)
 2. [Rule 2: Presenter Naming Convention](#rule-2-presenter-naming-convention)
 3. [Rule 3: Responsibility Separation](#rule-3-responsibility-separation)
-4. [Rule 4: OnXxx() Naming for Event Handlers](#rule-4-onxxx-naming-for-event-handlers)
-5. [Rule 5: Minimize View-to-Presenter Calls](#rule-5-minimize-view-to-presenter-calls)
-6. [Rule 6: No Return Values from Presenter Methods](#rule-6-no-return-values-from-presenter-methods)
-7. [Rule 7: Access View Only Through Interface](#rule-7-access-view-only-through-interface)
-8. [Rule 8: View Method Visibility](#rule-8-view-method-visibility)
-9. [Rule 9: Only Presenter Accesses View](#rule-9-only-presenter-accesses-view)
-10. [Rule 10: Long Meaningful Names](#rule-10-long-meaningful-names)
-11. [Rule 11: Prefer Methods Over Properties](#rule-11-prefer-methods-over-properties)
-12. [Rule 12: All Data in Model](#rule-12-all-data-in-model)
-13. [Rule 13: No UI Control Names in Interface](#rule-13-no-ui-control-names-in-interface)
-14. [Rule 14: Domain-Driven Naming](#rule-14-domain-driven-naming)
+4. [Rule 4: No UI Element Types in View Interfaces and Presenters](#rule-4-no-ui-element-types-in-view-interfaces-and-presenters)
+5. [Rule 5: OnXxx() Naming for Event Handlers](#rule-5-onxxx-naming-for-event-handlers)
+6. [Rule 6: Minimize View-to-Presenter Calls](#rule-6-minimize-view-to-presenter-calls)
+7. [Rule 7: No Return Values from Presenter Methods](#rule-7-no-return-values-from-presenter-methods)
+8. [Rule 8: Access View Only Through Interface](#rule-8-access-view-only-through-interface)
+9. [Rule 9: View Method Visibility](#rule-9-view-method-visibility)
+10. [Rule 10: Only Presenter Accesses View](#rule-10-only-presenter-accesses-view)
+11. [Rule 11: Long Meaningful Names](#rule-11-long-meaningful-names)
+12. [Rule 12: Prefer Methods Over Properties](#rule-12-prefer-methods-over-properties)
+13. [Rule 13: All Data in Model](#rule-13-all-data-in-model)
+14. [Rule 14: No UI Control Names in Interface](#rule-14-no-ui-control-names-in-interface)
+15. [Rule 15: Domain-Driven Naming](#rule-15-domain-driven-naming)
 
 ---
 
@@ -193,7 +201,237 @@ The analyzer detects when Presenters create UI control instances (`new Button()`
 
 ---
 
-## Rule 4: OnXxx() Naming for Event Handlers
+## Rule 4: No UI Element Types in View Interfaces and Presenters
+
+**View interfaces and Presenters must NEVER expose WinForms UI types (Button, TextBox, Control, etc.) in properties, fields, parameters, or return types.**
+
+This is a **fundamental rule** for maintaining proper separation of concerns and testability.
+
+### Why This Rule Exists
+
+Exposing UI element types breaks the abstraction layer:
+- **View interfaces** should define behavior and data, not UI implementation
+- **Presenters** should work with domain concepts, not UI controls
+- Both must remain testable without requiring WinForms infrastructure
+
+### ✅ Correct Examples
+
+```csharp
+// ✅ View interface - no UI types
+public interface ITaskView : IWindowView
+{
+    // Properties expose data, not controls
+    string TaskTitle { get; set; }
+    DateTime DueDate { get; set; }
+    bool IsHighPriority { get; set; }
+
+    // Methods describe behavior, not UI details
+    void DisplayTasks(IEnumerable<TaskModel> tasks);
+    void HighlightTask(int taskId);
+    void ShowValidationError(string message);
+
+    // Events for state changes
+    event EventHandler TaskSelected;
+}
+
+// ✅ Presenter - no UI types
+public class TaskPresenter : WindowPresenterBase<ITaskView>
+{
+    // Fields contain business logic dependencies
+    private readonly ITaskRepository _repository;
+    private readonly IMessageService _messageService;
+
+    // Methods work with domain models
+    private void OnSave()
+    {
+        var task = new TaskModel
+        {
+            Title = View.TaskTitle,
+            DueDate = View.DueDate,
+            IsHighPriority = View.IsHighPriority
+        };
+
+        _repository.Save(task);
+        _messageService.ShowInfo("Task saved!");
+    }
+}
+```
+
+### ❌ Incorrect Examples
+
+```csharp
+// ❌ View interface exposing UI types - WRONG!
+public interface ITaskView : IWindowView
+{
+    Button SaveButton { get; }           // ❌ Exposes Button
+    TextBox TitleTextBox { get; }        // ❌ Exposes TextBox
+    DataGridView TaskGrid { get; }       // ❌ Exposes DataGridView
+
+    // ❌ Methods with UI types in signature
+    void UpdateButton(Button button);    // ❌ Button parameter
+    Control GetControl(string name);     // ❌ Returns Control
+}
+
+// ❌ Presenter with UI types - WRONG!
+public class TaskPresenter : WindowPresenterBase<ITaskView>
+{
+    // ❌ Fields with UI types
+    private Button _saveButton;          // ❌ UI element in Presenter
+    private TextBox _titleTextBox;       // ❌ UI element in Presenter
+
+    // ❌ Methods with UI types
+    private void ConfigureButton(Button button)  // ❌ Button parameter
+    {
+        button.Text = "Save";            // ❌ Direct UI manipulation
+        button.BackColor = Color.Blue;   // ❌ Direct UI manipulation
+    }
+}
+```
+
+### Real-World Migration Example
+
+**Before (Violates Rule 4):**
+```csharp
+// ❌ Bad design
+public interface IUserEditorView : IWindowView
+{
+    TextBox NameTextBox { get; }        // ❌ Exposes TextBox
+    Button SaveButton { get; }          // ❌ Exposes Button
+}
+
+public class UserEditorPresenter : WindowPresenterBase<IUserEditorView>
+{
+    protected override void OnViewAttached()
+    {
+        // ❌ Presenter manipulates UI controls directly
+        View.SaveButton.Click += (s, e) => OnSave();
+        View.NameTextBox.TextChanged += (s, e) => ValidateName();
+    }
+}
+```
+
+**After (Follows Rule 4):**
+```csharp
+// ✅ Good design
+public interface IUserEditorView : IWindowView
+{
+    string UserName { get; set; }       // ✅ Exposes data, not control
+
+    event EventHandler SaveRequested;   // ✅ Events for user actions
+    event EventHandler NameChanged;
+
+    void BindActions(ViewActionDispatcher dispatcher);  // ✅ Framework abstraction
+}
+
+public class UserEditorPresenter : WindowPresenterBase<IUserEditorView>
+{
+    protected override void OnViewAttached()
+    {
+        // ✅ Presenter works through interface
+        View.SaveRequested += (s, e) => OnSave();
+        View.NameChanged += (s, e) => ValidateName();
+        View.BindActions(Dispatcher);
+    }
+
+    private void ValidateName()
+    {
+        // ✅ Works with data, not controls
+        if (string.IsNullOrEmpty(View.UserName))
+        {
+            View.ShowValidationError("Name is required");
+        }
+    }
+}
+
+// View implementation - UI details hidden
+public class UserEditorForm : Form, IUserEditorView
+{
+    // ✅ Private UI controls - not exposed through interface
+    private TextBox _nameTextBox;
+    private Button _saveButton;
+
+    public string UserName
+    {
+        get => _nameTextBox.Text;
+        set => _nameTextBox.Text = value;
+    }
+
+    public event EventHandler SaveRequested
+    {
+        add => _saveButton.Click += value;
+        remove => _saveButton.Click -= value;
+    }
+}
+```
+
+### Common UI Types to Avoid
+
+Never expose these types in View interfaces or Presenters:
+
+**Basic Controls:**
+- `Button`, `TextBox`, `Label`, `CheckBox`, `RadioButton`
+- `ComboBox`, `ListBox`, `NumericUpDown`, `DateTimePicker`
+
+**Container Controls:**
+- `Panel`, `GroupBox`, `TabControl`, `SplitContainer`
+- `FlowLayoutPanel`, `TableLayoutPanel`
+
+**Complex Controls:**
+- `DataGridView`, `TreeView`, `ListView`
+- `RichTextBox`, `WebBrowser`, `PropertyGrid`
+
+**Base Types:**
+- `Control`, `UserControl`, `Form`
+- `ToolStrip`, `MenuStrip`, `StatusStrip`
+
+### Exception: Framework Operations Only
+
+The only acceptable use of `Form` or `Control` is for framework operations, and only within the Presenter implementation (not in interfaces):
+
+```csharp
+// ✅ Acceptable pattern for window operations
+public class MyPresenter : WindowPresenterBase<IMyView>
+{
+    private void OnClose()
+    {
+        // ✅ Pattern matching for Close operation
+        if (View is Form form)
+        {
+            form.Close();  // Framework operation, no alternative
+        }
+    }
+}
+```
+
+This is acceptable because:
+1. It's not in the View interface (internal implementation)
+2. It's only for framework operations (`Close()`, `Show()`, `Hide()`)
+3. There's no alternative way to close a window through `IViewBase`
+
+### Benefits of Following This Rule
+
+| Aspect | Benefit |
+|--------|---------|
+| **Testability** | Mock Views don't need WinForms infrastructure |
+| **Portability** | Can implement View with different UI frameworks |
+| **Encapsulation** | View controls can change without affecting Presenter |
+| **Maintainability** | Clear contracts make refactoring safer |
+| **Team Development** | Presenter developers don't need UI knowledge |
+
+### Analyzer Support
+
+**Diagnostic**: `MVP004`
+**Severity**: Error
+
+The analyzer automatically detects UI element types in:
+- View interface properties and method signatures
+- Presenter fields, properties, and method signatures
+
+**Detected types**: Button, TextBox, Label, Control, Form, and 30+ more WinForms types
+
+---
+
+## Rule 5: OnXxx() Naming for Event Handlers
 
 **Private/protected methods that handle events should be named `OnXxx()`.**
 
@@ -258,7 +496,7 @@ private void RequestClose() { }  // Framework method for IRequestClose
 
 ---
 
-## Rule 5: Minimize View-to-Presenter Calls
+## Rule 6: Minimize View-to-Presenter Calls
 
 **View should rarely call Presenter methods directly. Use ViewAction system instead.**
 
@@ -336,7 +574,7 @@ public class TaskPresenter : WindowPresenterBase<ITaskView>
 
 ---
 
-## Rule 6: No Return Values from Presenter Methods
+## Rule 7: No Return Values from Presenter Methods
 
 **Public Presenter methods should return `void` (Tell, Don't Ask principle).**
 
@@ -425,7 +663,7 @@ private bool IsValid() { return true; }
 
 ---
 
-## Rule 7: Access View Only Through Interface
+## Rule 8: Access View Only Through Interface
 
 **Presenter must never reference concrete Form types. Always use View interfaces.**
 
@@ -499,7 +737,7 @@ The analyzer detects fields and properties with concrete Form types in Presenter
 
 ---
 
-## Rule 8: View Method Visibility
+## Rule 9: View Method Visibility
 
 **Public methods in View implementations must be defined in the View interface.**
 
@@ -585,7 +823,7 @@ public void InitializeComponent() { }  // Designer-generated
 
 ---
 
-## Rule 9: Only Presenter Accesses View
+## Rule 10: Only Presenter Accesses View
 
 **View should never be accessed from outside the Presenter.**
 
@@ -634,7 +872,7 @@ public class ReportGenerator
 
 ---
 
-## Rule 10: Long Meaningful Names
+## Rule 11: Long Meaningful Names
 
 **Use descriptive, domain-specific names that clearly express intent.**
 
@@ -688,7 +926,7 @@ public interface IOrderView : IWindowView
 
 ---
 
-## Rule 11: Prefer Methods Over Properties
+## Rule 12: Prefer Methods Over Properties
 
 **Interfaces should contain methods, not properties. Exception: WinForms data binding scenarios.**
 
@@ -796,7 +1034,7 @@ public interface IReportView : IWindowView
 
 ---
 
-## Rule 12: All Data in Model
+## Rule 13: All Data in Model
 
 **Business data should be in Model classes, not just in UI controls.**
 
@@ -899,7 +1137,7 @@ public class UserEditorPresenter : WindowPresenterBase<IUserEditorView>
 
 ---
 
-## Rule 13: No UI Control Names in Interface
+## Rule 14: No UI Control Names in Interface
 
 **View interface methods should use domain-specific names, not UI control type names.**
 
@@ -990,7 +1228,7 @@ The analyzer automatically detects UI control type names in interface methods.
 
 ---
 
-## Rule 14: Domain-Driven Naming
+## Rule 15: Domain-Driven Naming
 
 **Use business domain language throughout the interface, not technical UI terms.**
 

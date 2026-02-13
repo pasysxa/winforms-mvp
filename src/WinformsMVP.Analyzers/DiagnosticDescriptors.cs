@@ -40,6 +40,16 @@ namespace WinformsMVP.Analyzers
             isEnabledByDefault: true,
             description: "Presenters must handle use-case logic only, not View logic. Creating UI controls is a View responsibility. This is Rule 3 of MVP design rules.");
 
+        // Rule 4: No UI element types in View interfaces and Presenters
+        public static readonly DiagnosticDescriptor MVPRule04NoUIElementTypes = new DiagnosticDescriptor(
+            id: "MVP004",
+            title: "No UI element types in View interfaces and Presenters",
+            messageFormat: "{0} '{1}' contains UI element type '{2}'. View interfaces and Presenters must not expose UI types.",
+            category: Category,
+            defaultSeverity: DiagnosticSeverity.Error,
+            isEnabledByDefault: true,
+            description: "View interfaces and Presenters must never expose WinForms UI types (Button, TextBox, etc.) in properties, fields, parameters, or return types. This ensures proper separation of concerns and testability. This is Rule 4 of MVP design rules.");
+
         // Rule 6: No return values from public Presenter methods
         public static readonly DiagnosticDescriptor MVPRule06NoReturnValues = new DiagnosticDescriptor(
             id: "MVP006",
