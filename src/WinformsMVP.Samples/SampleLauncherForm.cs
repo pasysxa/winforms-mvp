@@ -275,27 +275,19 @@ namespace WinformsMVP.Samples
 
         private void LaunchNavigatorDemo()
         {
-            var messageService = new MessageService();
-
             // Create and configure ViewMappingRegister
             var viewMappingRegister = new ViewMappingRegister();
 
-            // Option 1: Manual registration (commented out - old way)
-            // viewMappingRegister.Register<INavigatorDemoView, NavigatorDemoForm>();
-            // viewMappingRegister.Register<ISimpleDialogView, SimpleDialogForm>();
-            // viewMappingRegister.Register<IInputDialogView, InputDialogForm>();
-            // viewMappingRegister.Register<IConfirmDialogView, ConfirmDialogForm>();
-            // viewMappingRegister.Register<INonModalWindowView, NonModalWindowForm>();
-            // viewMappingRegister.Register<ICallbackWindowView, CallbackWindowForm>();
-            // viewMappingRegister.Register<ISingletonWindowView, SingletonWindowForm>();
-
-            // Option 2: Automatic assembly scanning (NEW - recommended!)
+            // Automatic assembly scanning - registers all Views in the assembly
             int registered = viewMappingRegister.RegisterFromAssembly(System.Reflection.Assembly.GetExecutingAssembly());
             System.Diagnostics.Debug.WriteLine($"ViewMappingRegister: Auto-registered {registered} Views from assembly");
 
-            var navigator = new WindowNavigator(viewMappingRegister);
+            // Configure PlatformServices with ViewMappingRegister
+            // This makes Navigator available via the convenience property in presenters
+            PlatformServices.Default = new DefaultPlatformServices(viewMappingRegister);
+
             var view = new NavigatorDemoForm();
-            var presenter = new NavigatorDemoPresenter(navigator);
+            var presenter = new NavigatorDemoPresenter();  // No constructor parameters needed!
 
             presenter.AttachView(view);
             presenter.Initialize();

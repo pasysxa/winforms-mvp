@@ -20,5 +20,10 @@ namespace WinformsMVP.Services
         /// ファイルサービス（ファイル読み書き、ディレクトリ操作など）
         /// </summary>
         IFileService FileService { get; }
+
+        /// <summary>
+        /// ウィンドウナビゲーター（モーダル/非モーダルウィンドウの表示）
+        /// </summary>
+        IWindowNavigator WindowNavigator { get; }
     }
 }

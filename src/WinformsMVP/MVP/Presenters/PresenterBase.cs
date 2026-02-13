@@ -70,6 +70,12 @@ namespace WinformsMVP.Core.Presenters
         protected WinformsMVP.Services.IFileService Files => Platform.FileService;
 
         /// <summary>
+        /// Convenience property for accessing IWindowNavigator.
+        /// Use this instead of Platform.WindowNavigator for cleaner code.
+        /// </summary>
+        protected WinformsMVP.Services.IWindowNavigator Navigator => Platform.WindowNavigator;
+
+        /// <summary>
         /// Sets the view for this presenter. Called by derived classes.
         /// </summary>
         protected void SetView(TView view)
