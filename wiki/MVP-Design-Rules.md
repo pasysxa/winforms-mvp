@@ -839,20 +839,51 @@ public class UserEditorPresenter : WindowPresenterBase<IUserEditorView>
 - **Encapsulation**: Presenter doesn't know about UI implementation details
 - **Flexibility**: View can change internal controls without affecting Presenter
 
-### Acceptable Pattern for Window Operations
+### Correct Pattern for View Operations
 
-For framework operations like `Close()`, use pattern matching:
+**❌ WRONG - Do NOT use pattern matching to access Form:**
 
 ```csharp
-// ✅ Acceptable - only for framework operations
+// ❌ WRONG - Breaks testability and reusability
 protected override void OnCancel()
 {
     if (View is Form form)
     {
-        form.Close();  // No alternative in IViewBase
+        form.Close();  // ❌ Violates Rule 4 - Form is a UI element type
     }
 }
 ```
+
+**✅ CORRECT - Use IRequestClose or View interface method:**
+
+```csharp
+// Option 1: IRequestClose pattern (recommended)
+public class MyPresenter : WindowPresenterBase<IMyView>, IRequestClose
+{
+    public event EventHandler<CloseRequestedEventArgs> CloseRequested;
+
+    protected override void OnCancel()
+    {
+        CloseRequested?.Invoke(this, new CloseRequestedEventArgs());
+    }
+}
+
+// Option 2: View interface method
+public interface IMyView : IWindowView
+{
+    void CloseView();
+}
+
+public class MyPresenter : WindowPresenterBase<IMyView>
+{
+    protected override void OnCancel()
+    {
+        View.CloseView();  // ✅ Works with any View implementation
+    }
+}
+```
+
+See **Rule 4** for complete details on why `Form` must never appear in Presenter code.
 
 ### Analyzer Support
 
