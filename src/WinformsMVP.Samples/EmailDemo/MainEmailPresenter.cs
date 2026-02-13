@@ -75,8 +75,7 @@ namespace WinformsMVP.Samples.EmailDemo
             _dispatcher.Register(EmailActions.OpenEmail, OnOpenEmail,
                 canExecute: () => View.HasSelection);
 
-            // Bind to View - ActionBinder property pattern
-            View.ActionBinder.Bind(_dispatcher);
+            // Note: View.ActionBinder.Bind(_dispatcher) is now called automatically by the base class
         }
 
         protected override void OnInitialize()

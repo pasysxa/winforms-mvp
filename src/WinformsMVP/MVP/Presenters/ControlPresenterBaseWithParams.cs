@@ -53,6 +53,10 @@ namespace WinformsMVP.MVP.Presenters
 
             _initialized = true;
             RegisterViewActions();
+
+            // Automatically bind ViewActionBinder to dispatcher after actions are registered
+            View.ActionBinder?.Bind(_dispatcher);
+
             OnInitialize(Parameters);
         }
 

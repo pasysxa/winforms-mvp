@@ -58,8 +58,7 @@ namespace WinformsMVP.Samples.EmailDemo
             // Discard operation
             _dispatcher.Register(ComposeEmailActions.Discard, OnDiscard);
 
-            // Bind to View - ActionBinder property pattern
-            View.ActionBinder.Bind(_dispatcher);
+            // Note: View.ActionBinder.Bind(_dispatcher) is now called automatically by the base class
         }
 
         protected override void OnInitialize(ComposeEmailParameters parameters)
