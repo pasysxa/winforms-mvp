@@ -384,29 +384,94 @@ Never expose these types in View interfaces or Presenters:
 - `Control`, `UserControl`, `Form`
 - `ToolStrip`, `MenuStrip`, `StatusStrip`
 
-### Exception: Framework Operations Only
+### ❌ CRITICAL: No Exceptions - Not Even for Framework Operations
 
-The only acceptable use of `Form` or `Control` is for framework operations, and only within the Presenter implementation (not in interfaces):
+**There are NO exceptions to Rule 4. Form and Control are UI element types and must NEVER appear in Presenters.**
 
+**❌ WRONG - Do NOT do this:**
 ```csharp
-// ✅ Acceptable pattern for window operations
+// ❌ WRONG - Breaks testability and reusability
 public class MyPresenter : WindowPresenterBase<IMyView>
 {
     private void OnClose()
     {
-        // ✅ Pattern matching for Close operation
+        // ❌ WRONG - Presenter depends on Form type
         if (View is Form form)
         {
-            form.Close();  // Framework operation, no alternative
+            form.Close();  // Breaks mock testing, breaks UserControl migration
         }
     }
 }
 ```
 
-This is acceptable because:
-1. It's not in the View interface (internal implementation)
-2. It's only for framework operations (`Close()`, `Show()`, `Hide()`)
-3. There's no alternative way to close a window through `IViewBase`
+**Why this is wrong:**
+
+1. **Breaks Testability**
+   ```csharp
+   // Unit test fails - mock is not a Form
+   var mockView = new Mock<IMyView>();
+   var presenter = new MyPresenter();
+   presenter.AttachView(mockView.Object);
+   presenter.OnClose();  // ❌ Crashes - mockView is not Form
+   ```
+
+2. **Breaks Reusability**
+   - Want to use UserControl? ❌ Crashes (UserControl ≠ Form)
+   - Want to port to WPF? ❌ Impossible (no Form in WPF)
+   - Want to use in web? ❌ Impossible
+
+3. **Violates MVP Principles**
+   - Presenter knows about UI implementation
+   - Can't swap View implementations
+   - Tightly coupled to WinForms
+
+**✅ CORRECT - Use IRequestClose or View methods:**
+
+**Option 1: IRequestClose Pattern (Recommended)**
+```csharp
+// ✅ Correct - Use framework abstraction
+public class MyPresenter : WindowPresenterBase<IMyView>, IRequestClose
+{
+    public event EventHandler<CloseRequestedEventArgs> CloseRequested;
+
+    private void OnClose()
+    {
+        // ✅ Request close through abstraction
+        CloseRequested?.Invoke(this, new CloseRequestedEventArgs());
+    }
+}
+```
+
+**Option 2: View Interface Method**
+```csharp
+// ✅ Correct - Abstract behavior in interface
+public interface IMyView : IWindowView
+{
+    void CloseWindow();  // ✅ Behavior, not UI type
+}
+
+public class MyForm : Form, IMyView
+{
+    public void CloseWindow() => this.Close();  // Implementation detail
+}
+
+public class MyPresenter : WindowPresenterBase<IMyView>
+{
+    private void OnClose()
+    {
+        View.CloseWindow();  // ✅ Works with any IMyView implementation
+    }
+}
+
+// ✅ Now testable
+public class MockMyView : IMyView
+{
+    public bool WasClosed { get; private set; }
+    public void CloseWindow() => WasClosed = true;
+}
+```
+
+**Key Principle:** Can depend on `System.Windows.Forms` namespace, but **NEVER use UI element types** (`Form`, `Control`, `Button`, etc.) in Presenter code.
 
 ### What About IWin32Window?
 

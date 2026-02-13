@@ -35,7 +35,9 @@
       "Bash(powershell.exe:*)",
       "Bash(git remote add:*)",
       "WebFetch(domain:st-www.cs.illinois.edu)",
-      "Bash(powershell:*)"
+      "Bash(powershell:*)",
+      "Bash(timeout /t 3)",
+      "Bash(git pull:*)"
     ]
   }
 }
