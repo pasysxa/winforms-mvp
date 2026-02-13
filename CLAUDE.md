@@ -295,9 +295,12 @@ public interface IMyView : IWindowView
 }
 
 // Presenter doesn't know about buttons - CORRECT!
-protected override void OnViewAttached()
+protected override void RegisterViewActions()
 {
-    View.ActionBinder.Bind(Dispatcher);  // ✅ Delegates binding to View
+    _dispatcher.Register(CommonActions.Save, OnSave);
+    _dispatcher.Register(CommonActions.Delete, OnDelete);
+
+    // Note: View.ActionBinder.Bind(_dispatcher) is automatically called by the base class
 }
 
 // View implementation handles UI details internally - CORRECT!
@@ -315,7 +318,7 @@ private void InitializeActionBindings()
     _binder = new ViewActionBinder();
     _binder.Add(CommonActions.Save, _saveButton);  // Internal UI detail
     _binder.Add(CommonActions.Delete, _deleteButton);
-    // No Bind() call here - Presenter will call it!
+    // No Bind() call here - base presenter class calls it automatically
 }
 ```
 
@@ -323,11 +326,12 @@ private void InitializeActionBindings()
 
 | Component | Responsibility | Knowledge |
 |-----------|---------------|-----------|
-| **Presenter** | Business logic, when to execute actions, calls `View.ActionBinder.Bind()` | ViewAction keys, execution timing |
-| **ViewActionDispatcher** | Route actions to handlers | Action → Handler mapping |
+| **Presenter** | Business logic, when to execute actions | ViewAction keys, execution timing |
+| **ViewActionDispatcher** | Route actions to handlers, automatically bind to View's ActionBinder | Action → Handler mapping |
 | **IViewBase/View Interface** | Exposes ActionBinder property | Needs to connect UI to actions |
 | **View Implementation** | UI details, configures ActionBinder in constructor | Which buttons map to which actions |
 | **ViewActionBinder** | Technical binding mechanism | Control events → Action dispatching |
+| **Base Presenter Classes** | Automatically call `View.ActionBinder?.Bind(_dispatcher)` after `RegisterViewActions()` | Binding lifecycle |
 
 **4. Testability - Even Better Than Method Approach**
 
@@ -479,10 +483,16 @@ public interface IMyView : IWindowView
 
 **Presenter:**
 ```csharp
-protected override void OnViewAttached()
+protected override void RegisterViewActions()
 {
-    // Presenter accesses property and calls Bind - doesn't know about buttons!
-    View.ActionBinder.Bind(Dispatcher);
+    // Register action handlers with CanExecute predicates
+    _dispatcher.Register(CommonActions.Save, OnSave,
+        canExecute: () => View.HasUnsavedChanges);
+    _dispatcher.Register(CommonActions.Delete, OnDelete,
+        canExecute: () => View.HasSelection);
+
+    // Note: View.ActionBinder.Bind(_dispatcher) is automatically called by the base class
+    // after RegisterViewActions() completes. No manual binding needed!
 }
 ```
 
@@ -512,7 +522,8 @@ public class MyForm : Form, IMyView
         _binder.Add(CommonActions.Save, _saveButton, _saveMenuItem);
         _binder.Add(CommonActions.Delete, _deleteButton);
 
-        // No Bind() call here - Presenter will call it!
+        // No Bind() call here - base presenter class will automatically call it
+        // after RegisterViewActions() completes
     }
 }
 ```
@@ -546,8 +557,8 @@ protected override void RegisterViewActions()
         OnDelete,
         canExecute: () => View.HasSelectedItem);
 
-    // Bind to dispatcher for automatic CanExecute support
-    View.ActionBinder.Bind(_dispatcher);
+    // Note: View.ActionBinder.Bind(_dispatcher) is automatically called by the base class
+    // after RegisterViewActions() completes. No manual binding needed!
 }
 ```
 
