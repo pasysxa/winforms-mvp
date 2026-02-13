@@ -10,7 +10,7 @@ using WinformsMVP.Samples.EmailDemo.Services;
 namespace WinformsMVP.Samples.EmailDemo
 {
     /// <summary>
-    /// ComposeEmailActions定义
+    /// ComposeEmailActions definition
     /// </summary>
     public static class ComposeEmailActions
     {
@@ -22,8 +22,8 @@ namespace WinformsMVP.Samples.EmailDemo
     }
 
     /// <summary>
-    /// 撰写邮件Presenter
-    /// 展示ChangeTracker用法、验证、以及IRequestClose模式
+    /// Compose email Presenter
+    /// Demonstrates ChangeTracker usage, validation, and IRequestClose pattern
     /// </summary>
     public class ComposeEmailPresenter : WindowPresenterBase<IComposeEmailView, ComposeEmailParameters>,
                                           IRequestClose<bool>
@@ -40,26 +40,26 @@ namespace WinformsMVP.Samples.EmailDemo
 
         protected override void OnViewAttached()
         {
-            // 订阅View输入变化事件
+            // Subscribe to View input change events
             View.PropertyChanged += OnViewPropertyChanged;
         }
 
         protected override void RegisterViewActions()
         {
-            // 发送操作
+            // Send operation
             _dispatcher.Register(ComposeEmailActions.Send, OnSend,
                 canExecute: () => !string.IsNullOrWhiteSpace(View.To) &&
                                   !string.IsNullOrWhiteSpace(View.Subject));
 
-            // 保存草稿操作
+            // Save draft operation
             _dispatcher.Register(ComposeEmailActions.SaveDraft, OnSaveDraft,
                 canExecute: () => _changeTracker?.IsChanged == true);
 
-            // 放弃操作
+            // Discard operation
             _dispatcher.Register(ComposeEmailActions.Discard, OnDiscard);
 
-            // 绑定到View
-            View.BindActions(_dispatcher);
+            // Bind to View - ActionBinder property pattern
+            View.ActionBinder.Bind(_dispatcher);
         }
 
         protected override void OnInitialize(ComposeEmailParameters parameters)
@@ -67,19 +67,19 @@ namespace WinformsMVP.Samples.EmailDemo
             _mode = parameters.Mode;
             _originalEmail = parameters.OriginalEmail;
 
-            // 根据模式初始化邮件内容
+            // Initialize email content based on mode
             var email = CreateEmailFromMode();
 
-            // 使用ChangeTracker追踪变化（用于保存草稿）
+            // Use ChangeTracker to track changes (for save draft)
             _changeTracker = new ChangeTracker<EmailMessage>(email);
 
-            // 绑定到View
+            // Bind to View
             View.Mode = _mode;
             View.To = email.To;
             View.Subject = email.Subject;
             View.Body = email.Body;
 
-            // 订阅ChangeTracker变化事件
+            // Subscribe to ChangeTracker change events
             _changeTracker.IsChangedChanged += (s, e) =>
             {
                 View.IsDirty = _changeTracker.IsChanged;
@@ -89,7 +89,7 @@ namespace WinformsMVP.Samples.EmailDemo
 
         public bool CanClose()
         {
-            // 如果有未保存的更改，提示用户
+            // If there are unsaved changes, prompt user
             if (_changeTracker.IsChanged)
             {
                 var result = Messages.ConfirmYesNoCancel(
@@ -98,12 +98,12 @@ namespace WinformsMVP.Samples.EmailDemo
 
                 if (result == System.Windows.Forms.DialogResult.Cancel)
                 {
-                    return false;  // 取消关闭
+                    return false;  // Cancel close
                 }
 
                 if (result == System.Windows.Forms.DialogResult.Yes)
                 {
-                    // 保存草稿
+                    // Save draft
                     OnSaveDraft();
                 }
             }
@@ -115,7 +115,7 @@ namespace WinformsMVP.Samples.EmailDemo
 
         private void OnViewPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            // View输入变化时，更新ChangeTracker
+            // When View input changes, update ChangeTracker
             if (e.PropertyName == nameof(View.To) ||
                 e.PropertyName == nameof(View.Subject) ||
                 e.PropertyName == nameof(View.Body))
@@ -129,7 +129,7 @@ namespace WinformsMVP.Samples.EmailDemo
 
                 _changeTracker.UpdateCurrentValue(currentEmail);
 
-                // 触发CanExecute更新
+                // Trigger CanExecute update
                 _dispatcher.RaiseCanExecuteChanged();
             }
         }
@@ -140,7 +140,7 @@ namespace WinformsMVP.Samples.EmailDemo
 
         private async void OnSend()
         {
-            // 验证输入
+            // Validate input
             if (!ValidateInput(out string errorMessage))
             {
                 Messages.ShowWarning(errorMessage, "Validation Failed");
@@ -157,8 +157,8 @@ namespace WinformsMVP.Samples.EmailDemo
 
                 if (success)
                 {
-                    _changeTracker.AcceptChanges();  // 接受更改，标记为未修改
-                    RequestClose(true);  // 返回true表示已发送
+                    _changeTracker.AcceptChanges();  // Accept changes, mark as unmodified
+                    RequestClose(true);  // Return true indicating sent
                 }
                 else
                 {
@@ -185,7 +185,7 @@ namespace WinformsMVP.Samples.EmailDemo
                 var email = CreateEmailMessage();
                 int draftId = await _repository.SaveDraftAsync(email);
 
-                _changeTracker.AcceptChanges();  // 接受更改
+                _changeTracker.AcceptChanges();  // Accept changes
                 Messages.ShowInfo("Draft saved.", "Success");
             }
             catch (Exception ex)
@@ -208,7 +208,7 @@ namespace WinformsMVP.Samples.EmailDemo
                 }
             }
 
-            RequestClose(false);  // 返回false表示未发送
+            RequestClose(false);  // Return false indicating not sent
         }
 
         #endregion
@@ -256,34 +256,34 @@ namespace WinformsMVP.Samples.EmailDemo
         {
             return new EmailMessage
             {
-                From = "me@mycompany.com",  // 当前用户
+                From = "me@mycompany.com",  // Current user
                 To = View.To,
                 Subject = View.Subject,
                 Body = View.Body,
                 Date = DateTime.Now,
                 IsRead = true,
                 IsStarred = false,
-                Folder = EmailFolder.Sent  // 发送后进入已发送文件夹
+                Folder = EmailFolder.Sent  // Sent emails go to Sent folder
             };
         }
 
         private bool ValidateInput(out string errorMessage)
         {
-            // 验证收件人
+            // Validate recipient
             if (string.IsNullOrWhiteSpace(View.To))
             {
                 errorMessage = "Recipient (To) is required.";
                 return false;
             }
 
-            // 验证邮箱格式
+            // Validate email format
             if (!IsValidEmail(View.To))
             {
                 errorMessage = "Invalid email address format.";
                 return false;
             }
 
-            // 验证主题
+            // Validate subject
             if (string.IsNullOrWhiteSpace(View.Subject))
             {
                 errorMessage = "Subject is required.";
@@ -301,7 +301,7 @@ namespace WinformsMVP.Samples.EmailDemo
 
             try
             {
-                // 简单的邮箱格式验证
+                // Simple email format validation
                 var regex = new Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$");
                 return regex.IsMatch(email);
             }
@@ -325,7 +325,7 @@ namespace WinformsMVP.Samples.EmailDemo
 
         public bool TryGetResult(out bool result)
         {
-            result = false;  // false表示未发送
+            result = false;  // false indicates not sent
             return true;
         }
 

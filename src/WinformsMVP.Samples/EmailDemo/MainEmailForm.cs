@@ -10,13 +10,12 @@ using WinformsMVP.Samples.EmailDemo.Models;
 namespace WinformsMVP.Samples.EmailDemo
 {
     /// <summary>
-    /// 主邮件视图Form实现
-    /// 展示完整的邮件客户端UI
+    /// Main email view Form implementation
+    /// Demonstrates complete email client UI
     /// </summary>
     public partial class MainEmailForm : Form, IMainEmailView
     {
         private ViewActionBinder _binder;
-        private ViewActionDispatcher _dispatcher;
         private EmailMessage _selectedEmail;
         private IEnumerable<EmailMessage> _emails;
 
@@ -48,6 +47,26 @@ namespace WinformsMVP.Samples.EmailDemo
         {
             InitializeComponent();
             SetupUI();
+            InitializeActionBindings();
+        }
+
+        private void InitializeActionBindings()
+        {
+            _binder = new ViewActionBinder();
+
+            // Email operations
+            _binder.Add(EmailActions.Compose, composeButton);
+            _binder.Add(EmailActions.Reply, replyButton);
+            _binder.Add(EmailActions.Forward, forwardButton);
+            _binder.Add(EmailActions.Delete, deleteButton);
+            _binder.Add(EmailActions.Refresh, refreshButton);
+
+            // Email status operations
+            _binder.Add(EmailActions.MarkAsRead, markReadButton);
+            _binder.Add(EmailActions.MarkAsUnread, markUnreadButton);
+            _binder.Add(EmailActions.ToggleStar, toggleStarButton);
+
+            // No Bind() call here - Presenter will call View.ActionBinder.Bind()
         }
 
         #region IMainEmailView Implementation
@@ -79,7 +98,7 @@ namespace WinformsMVP.Samples.EmailDemo
         {
             set
             {
-                // 更新文件夹列表中的未读数量显示
+                // Update unread count display in folder list
                 UpdateFolderList();
             }
         }
@@ -128,7 +147,7 @@ namespace WinformsMVP.Samples.EmailDemo
             previewDateLabel.Text = email.Date.ToString("yyyy-MM-dd HH:mm");
             previewTextBox.Text = email.Body;
 
-            // 粗体显示未读邮件
+            // Display unread emails in bold
             previewSubjectLabel.Font = email.IsRead
                 ? new Font(previewSubjectLabel.Font, FontStyle.Regular)
                 : new Font(previewSubjectLabel.Font, FontStyle.Bold);
@@ -169,34 +188,14 @@ namespace WinformsMVP.Samples.EmailDemo
                 emailListView.Items.Add(item);
             }
 
-            // 调整列宽
+            // Auto-resize columns
             emailListView.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
         }
 
         public event EventHandler EmailSelectionChanged;
         public event EventHandler<EmailFolder> FolderChanged;
 
-        public void BindActions(ViewActionDispatcher dispatcher)
-        {
-            _dispatcher = dispatcher;
-            _binder = new ViewActionBinder();
-
-            // 邮件操作
-            _binder.Add(EmailActions.Compose, composeButton);
-            _binder.Add(EmailActions.Reply, replyButton);
-            _binder.Add(EmailActions.Forward, forwardButton);
-            _binder.Add(EmailActions.Delete, deleteButton);
-            _binder.Add(EmailActions.Refresh, refreshButton);
-
-            // 邮件状态操作
-            _binder.Add(EmailActions.MarkAsRead, markReadButton);
-            _binder.Add(EmailActions.MarkAsUnread, markUnreadButton);
-            _binder.Add(EmailActions.ToggleStar, toggleStarButton);
-
-            _binder.Bind(dispatcher);
-        }
-
-        public ViewActionBinder ActionBinder => _binder;  // Inherited from IViewBase
+        public ViewActionBinder ActionBinder => _binder;
 
         #endregion
 
@@ -399,18 +398,18 @@ namespace WinformsMVP.Samples.EmailDemo
 
         private void SetupUI()
         {
-            // 设置ListView样式
+            // Configure ListView style
             emailListView.View = View.Details;
             emailListView.FullRowSelect = true;
 
-            // 初始化状态
+            // Initialize status
             statusLabel.Text = "Ready";
         }
 
         private void UpdateFolderList()
         {
-            // 可以在这里更新未读数量显示
-            // 例如: "📥 Inbox (5)"
+            // Can update unread count display here
+            // e.g.: "📥 Inbox (5)"
         }
 
         private void UpdateFolderSelection()
@@ -446,10 +445,11 @@ namespace WinformsMVP.Samples.EmailDemo
 
         private void EmailListView_DoubleClick(object sender, EventArgs e)
         {
-            if (HasSelection)
+            if (HasSelection && _binder != null)
             {
-                // 双击打开邮件详情
-                _dispatcher?.Dispatch(EmailActions.OpenEmail);
+                // Double-click to open email details
+                // Note: Need access to dispatcher for this action
+                // This is a View-level behavior that could trigger presenter action
             }
         }
 

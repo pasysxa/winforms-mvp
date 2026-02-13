@@ -5,57 +5,57 @@ using WinformsMVP.Samples.EmailDemo.Models;
 namespace WinformsMVP.Samples.EmailDemo.Services
 {
     /// <summary>
-    /// 邮件存储库接口
+    /// Email repository interface
     /// </summary>
     public interface IEmailRepository
     {
         /// <summary>
-        /// 获取指定文件夹的所有邮件
+        /// Get all emails from specified folder
         /// </summary>
         Task<IEnumerable<EmailMessage>> GetEmailsByFolderAsync(EmailFolder folder);
 
         /// <summary>
-        /// 根据ID获取邮件
+        /// Get email by ID
         /// </summary>
         Task<EmailMessage> GetEmailByIdAsync(int id);
 
         /// <summary>
-        /// 发送邮件（移动到已发送文件夹）
+        /// Send email (move to Sent folder)
         /// </summary>
         Task<bool> SendEmailAsync(EmailMessage email);
 
         /// <summary>
-        /// 保存草稿
+        /// Save draft
         /// </summary>
         Task<int> SaveDraftAsync(EmailMessage email);
 
         /// <summary>
-        /// 删除邮件（移动到垃圾箱）
+        /// Delete email (move to Trash)
         /// </summary>
         Task<bool> DeleteEmailAsync(int id);
 
         /// <summary>
-        /// 永久删除邮件
+        /// Permanently delete email
         /// </summary>
         Task<bool> PermanentlyDeleteEmailAsync(int id);
 
         /// <summary>
-        /// 标记邮件为已读/未读
+        /// Mark email as read/unread
         /// </summary>
         Task<bool> MarkAsReadAsync(int id, bool isRead);
 
         /// <summary>
-        /// 标记邮件加星/取消加星
+        /// Toggle email star
         /// </summary>
         Task<bool> ToggleStarAsync(int id);
 
         /// <summary>
-        /// 搜索邮件
+        /// Search emails
         /// </summary>
         Task<IEnumerable<EmailMessage>> SearchEmailsAsync(string keyword, EmailFolder? folder = null);
 
         /// <summary>
-        /// 获取未读邮件数量
+        /// Get unread email count
         /// </summary>
         Task<int> GetUnreadCountAsync(EmailFolder folder);
     }

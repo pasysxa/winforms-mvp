@@ -7,7 +7,7 @@ using WinformsMVP.Samples.EmailDemo.Models;
 namespace WinformsMVP.Samples.EmailDemo.Services
 {
     /// <summary>
-    /// 邮件存储库的内存实现（用于演示）
+    /// In-memory email repository implementation (for demo)
     /// </summary>
     public class InMemoryEmailRepository : IEmailRepository
     {
@@ -46,7 +46,7 @@ namespace WinformsMVP.Samples.EmailDemo.Services
         {
             return Task.Run(() =>
             {
-                // 模拟网络延迟
+                // Simulate network delay
                 Task.Delay(500).Wait();
 
                 lock (_lock)
@@ -212,13 +212,13 @@ namespace WinformsMVP.Samples.EmailDemo.Services
         }
 
         /// <summary>
-        /// 填充示例数据
+        /// Seed sample data
         /// </summary>
         private void SeedSampleData()
         {
             var now = DateTime.Now;
 
-            // 收件箱邮件
+            // Inbox emails
             _emails.Add(new EmailMessage
             {
                 Id = _nextId++,
@@ -284,7 +284,7 @@ namespace WinformsMVP.Samples.EmailDemo.Services
                 Folder = EmailFolder.Inbox
             });
 
-            // 已发送邮件
+            // Sent emails
             _emails.Add(new EmailMessage
             {
                 Id = _nextId++,
@@ -311,7 +311,7 @@ namespace WinformsMVP.Samples.EmailDemo.Services
                 Folder = EmailFolder.Sent
             });
 
-            // 草稿
+            // Drafts
             _emails.Add(new EmailMessage
             {
                 Id = _nextId++,

@@ -2,18 +2,20 @@ using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
+using WinformsMVP.Common.Extensions;
+using WinformsMVP.Core.Models;
 using WinformsMVP.MVP.ViewActions;
 
 namespace WinformsMVP.Samples.EmailDemo
 {
     /// <summary>
-    /// 撰写邮件Form实现
-    /// 展示ChangeTracker和验证功能
+    /// Compose email Form implementation
+    /// Demonstrates ChangeTracker and validation features using Supervising Controller pattern
     /// </summary>
-    public partial class ComposeEmailForm : Form, IComposeEmailView, INotifyPropertyChanged
+    public partial class ComposeEmailForm : Form, IComposeEmailView
     {
+        private readonly ComposeEmailViewModel _viewModel;
         private ViewActionBinder _binder;
-        private bool _isDirty;
 
         // UI Controls
         private Label toLabel;
@@ -32,53 +34,68 @@ namespace WinformsMVP.Samples.EmailDemo
 
         public ComposeEmailForm()
         {
+            _viewModel = new ComposeEmailViewModel();
+
             InitializeComponent();
             SetupUI();
             AttachEventHandlers();
+            InitializeActionBindings();
+            SetupDataBindings();
+        }
+
+        private void InitializeActionBindings()
+        {
+            _binder = new ViewActionBinder();
+
+            _binder.Add(ComposeEmailActions.Send, sendButton);
+            _binder.Add(ComposeEmailActions.SaveDraft, saveDraftButton);
+            _binder.Add(ComposeEmailActions.Discard, discardButton);
+
+            // No Bind() call here - Presenter will call View.ActionBinder.Bind()
+        }
+
+        private void SetupDataBindings()
+        {
+            // Use framework's extension methods for type-safe binding with lambda expressions
+            toTextBox.Bind(_viewModel, vm => vm.To);
+            subjectTextBox.Bind(_viewModel, vm => vm.Subject);
+            bodyTextBox.Bind(_viewModel, vm => vm.Body);
+
+            // Subscribe to ViewModel property changes
+            _viewModel.PropertyChanged += ViewModel_PropertyChanged;
+        }
+
+        private void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            // Propagate PropertyChanged events from ViewModel to View
+            OnPropertyChanged(e.PropertyName);
         }
 
         #region IComposeEmailView Implementation
 
         public string To
         {
-            get => toTextBox.Text;
-            set
-            {
-                if (toTextBox.Text != value)
-                {
-                    toTextBox.Text = value;
-                    OnPropertyChanged(nameof(To));
-                }
-            }
+            get => _viewModel.To;
+            set => _viewModel.To = value;
         }
 
         public string Subject
         {
-            get => subjectTextBox.Text;
-            set
-            {
-                if (subjectTextBox.Text != value)
-                {
-                    subjectTextBox.Text = value;
-                    OnPropertyChanged(nameof(Subject));
-                }
-            }
+            get => _viewModel.Subject;
+            set => _viewModel.Subject = value;
         }
 
         public string Body
         {
-            get => bodyTextBox.Text;
-            set
-            {
-                if (bodyTextBox.Text != value)
-                {
-                    bodyTextBox.Text = value;
-                    OnPropertyChanged(nameof(Body));
-                }
-            }
+            get => _viewModel.Body;
+            set => _viewModel.Body = value;
         }
 
-        public ComposeMode Mode { get; set; }
+        public ComposeMode Mode
+        {
+            get => _viewModel.Mode;
+            set => _viewModel.Mode = value;
+        }
 
         public bool IsSaving
         {
@@ -102,12 +119,12 @@ namespace WinformsMVP.Samples.EmailDemo
 
         public bool IsDirty
         {
-            get => _isDirty;
+            get => _viewModel.IsDirty;
             set
             {
-                if (_isDirty != value)
+                if (_viewModel.IsDirty != value)
                 {
-                    _isDirty = value;
+                    _viewModel.IsDirty = value;
                     UpdateTitle();
                 }
             }
@@ -126,18 +143,7 @@ namespace WinformsMVP.Samples.EmailDemo
             }
         }
 
-        public void BindActions(ViewActionDispatcher dispatcher)
-        {
-            _binder = new ViewActionBinder();
-
-            _binder.Add(ComposeEmailActions.Send, sendButton);
-            _binder.Add(ComposeEmailActions.SaveDraft, saveDraftButton);
-            _binder.Add(ComposeEmailActions.Discard, discardButton);
-
-            _binder.Bind(dispatcher);
-        }
-
-        public ViewActionBinder ActionBinder => _binder;  // Inherited from IViewBase
+        public ViewActionBinder ActionBinder => _binder;
 
         #endregion
 
@@ -292,24 +298,19 @@ namespace WinformsMVP.Samples.EmailDemo
 
         private void UpdateTitle()
         {
-            var modeText = Mode switch
+            var modeText = _viewModel.Mode switch
             {
                 ComposeMode.Reply => "Reply",
                 ComposeMode.Forward => "Forward",
                 _ => "New Message"
             };
 
-            this.Text = _isDirty ? $"{modeText} *" : modeText;
+            this.Text = _viewModel.IsDirty ? $"{modeText} *" : modeText;
         }
 
         private void AttachEventHandlers()
         {
-            // 监听输入变化以触发PropertyChanged
-            toTextBox.TextChanged += (s, e) => OnPropertyChanged(nameof(To));
-            subjectTextBox.TextChanged += (s, e) => OnPropertyChanged(nameof(Subject));
-            bodyTextBox.TextChanged += (s, e) => OnPropertyChanged(nameof(Body));
-
-            // 回车键焦点切换
+            // Enter key to switch focus
             toTextBox.KeyDown += (s, e) =>
             {
                 if (e.KeyCode == Keys.Enter)
@@ -328,7 +329,7 @@ namespace WinformsMVP.Samples.EmailDemo
                 }
             };
 
-            // Ctrl+Enter 快捷键发送
+            // Ctrl+Enter shortcut to send
             bodyTextBox.KeyDown += (s, e) =>
             {
                 if (e.Control && e.KeyCode == Keys.Enter)

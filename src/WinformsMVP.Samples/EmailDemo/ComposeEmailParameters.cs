@@ -3,30 +3,30 @@ using WinformsMVP.Samples.EmailDemo.Models;
 namespace WinformsMVP.Samples.EmailDemo
 {
     /// <summary>
-    /// 撰写邮件模式
+    /// Compose email mode
     /// </summary>
     public enum ComposeMode
     {
-        /// <summary>新建邮件</summary>
+        /// <summary>New email</summary>
         New,
-        /// <summary>回复邮件</summary>
+        /// <summary>Reply to email</summary>
         Reply,
-        /// <summary>转发邮件</summary>
+        /// <summary>Forward email</summary>
         Forward
     }
 
     /// <summary>
-    /// 撰写邮件窗口的初始化参数
+    /// Initialization parameters for compose email window
     /// </summary>
     public class ComposeEmailParameters
     {
         /// <summary>
-        /// 撰写模式
+        /// Compose mode
         /// </summary>
         public ComposeMode Mode { get; set; }
 
         /// <summary>
-        /// 原始邮件（用于回复或转发）
+        /// Original email (for reply or forward)
         /// </summary>
         public EmailMessage OriginalEmail { get; set; }
     }

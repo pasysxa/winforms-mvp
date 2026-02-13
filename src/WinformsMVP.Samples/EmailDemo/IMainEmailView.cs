@@ -1,79 +1,73 @@
 using System;
 using System.Collections.Generic;
 using WinformsMVP.Core.Views;
-using WinformsMVP.MVP.ViewActions;
 using WinformsMVP.Samples.EmailDemo.Models;
 
 namespace WinformsMVP.Samples.EmailDemo
 {
     /// <summary>
-    /// 主邮件视图接口
+    /// Main email view interface
     /// </summary>
     public interface IMainEmailView : IWindowView
     {
         /// <summary>
-        /// 邮件列表
+        /// Email list
         /// </summary>
         IEnumerable<EmailMessage> Emails { set; }
 
         /// <summary>
-        /// 当前选中的邮件
+        /// Currently selected email
         /// </summary>
         EmailMessage SelectedEmail { get; }
 
         /// <summary>
-        /// 是否有选中的邮件
+        /// Whether an email is selected
         /// </summary>
         bool HasSelection { get; }
 
         /// <summary>
-        /// 当前文件夹
+        /// Current folder
         /// </summary>
         EmailFolder CurrentFolder { get; set; }
 
         /// <summary>
-        /// 未读邮件数量
+        /// Unread email count
         /// </summary>
         int UnreadCount { set; }
 
         /// <summary>
-        /// 状态栏消息
+        /// Status bar message
         /// </summary>
         string StatusMessage { set; }
 
         /// <summary>
-        /// 是否正在加载
+        /// Whether data is loading
         /// </summary>
         bool IsLoading { set; }
 
         /// <summary>
-        /// 显示邮件预览面板
+        /// Show email preview panel
         /// </summary>
         void ShowEmailPreview(EmailMessage email);
 
         /// <summary>
-        /// 清除邮件预览
+        /// Clear email preview
         /// </summary>
         void ClearEmailPreview();
 
         /// <summary>
-        /// 刷新邮件列表显示
+        /// Refresh email list display
         /// </summary>
         void RefreshEmailList();
 
         /// <summary>
-        /// 邮件选择改变事件
+        /// Email selection changed event
         /// </summary>
         event EventHandler EmailSelectionChanged;
 
         /// <summary>
-        /// 文件夹改变事件
+        /// Folder changed event
         /// </summary>
         event EventHandler<EmailFolder> FolderChanged;
-
-        /// <summary>
-        /// 绑定ViewAction
-        /// </summary>
-        void BindActions(ViewActionDispatcher dispatcher);
     }
 }

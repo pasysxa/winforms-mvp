@@ -8,31 +8,31 @@ using WinformsMVP.Samples.EmailDemo.Services;
 namespace WinformsMVP.Samples.EmailDemo
 {
     /// <summary>
-    /// EmailAction定义
+    /// EmailAction definitions
     /// </summary>
     public static class EmailActions
     {
         private static readonly ViewActionFactory Factory = ViewAction.Factory.WithQualifier("Email");
 
-        // 邮件操作
+        // Email operations
         public static readonly ViewAction Compose = Factory.Create("Compose");
         public static readonly ViewAction Reply = Factory.Create("Reply");
         public static readonly ViewAction Forward = Factory.Create("Forward");
         public static readonly ViewAction Delete = Factory.Create("Delete");
         public static readonly ViewAction Refresh = Factory.Create("Refresh");
 
-        // 邮件状态
+        // Email status
         public static readonly ViewAction MarkAsRead = Factory.Create("MarkAsRead");
         public static readonly ViewAction MarkAsUnread = Factory.Create("MarkAsUnread");
         public static readonly ViewAction ToggleStar = Factory.Create("ToggleStar");
 
-        // 查看
+        // View
         public static readonly ViewAction OpenEmail = Factory.Create("OpenEmail");
     }
 
     /// <summary>
-    /// 主邮件视图Presenter
-    /// 展示所有MVP框架特性的完整示例
+    /// Main email view Presenter
+    /// Demonstrates complete usage of all MVP framework features
     /// </summary>
     public class MainEmailPresenter : WindowPresenterBase<IMainEmailView>
     {
@@ -46,14 +46,14 @@ namespace WinformsMVP.Samples.EmailDemo
 
         protected override void OnViewAttached()
         {
-            // 订阅View事件
+            // Subscribe to View events
             View.EmailSelectionChanged += OnEmailSelectionChanged;
             View.FolderChanged += OnFolderChanged;
         }
 
         protected override void RegisterViewActions()
         {
-            // 邮件操作
+            // Email operations
             _dispatcher.Register(EmailActions.Compose, OnCompose);
             _dispatcher.Register(EmailActions.Reply, OnReply,
                 canExecute: () => View.HasSelection);
@@ -63,7 +63,7 @@ namespace WinformsMVP.Samples.EmailDemo
                 canExecute: () => View.HasSelection);
             _dispatcher.Register(EmailActions.Refresh, OnRefresh);
 
-            // 邮件状态操作
+            // Email status operations
             _dispatcher.Register(EmailActions.MarkAsRead, OnMarkAsRead,
                 canExecute: () => View.HasSelection && View.SelectedEmail != null && !View.SelectedEmail.IsRead);
             _dispatcher.Register(EmailActions.MarkAsUnread, OnMarkAsUnread,
@@ -71,17 +71,17 @@ namespace WinformsMVP.Samples.EmailDemo
             _dispatcher.Register(EmailActions.ToggleStar, OnToggleStar,
                 canExecute: () => View.HasSelection);
 
-            // 查看操作
+            // View operations
             _dispatcher.Register(EmailActions.OpenEmail, OnOpenEmail,
                 canExecute: () => View.HasSelection);
 
-            // 绑定到View
-            View.BindActions(_dispatcher);
+            // Bind to View - ActionBinder property pattern
+            View.ActionBinder.Bind(_dispatcher);
         }
 
         protected override void OnInitialize()
         {
-            // 初始加载收件箱
+            // Initial load of inbox
             View.CurrentFolder = EmailFolder.Inbox;
             LoadEmailsAsync(_currentFolder);
         }
@@ -90,15 +90,15 @@ namespace WinformsMVP.Samples.EmailDemo
 
         private void OnEmailSelectionChanged(object sender, EventArgs e)
         {
-            // 更新CanExecute状态
+            // Update CanExecute status
             _dispatcher.RaiseCanExecuteChanged();
 
-            // 显示邮件预览
+            // Show email preview
             if (View.HasSelection && View.SelectedEmail != null)
             {
                 View.ShowEmailPreview(View.SelectedEmail);
 
-                // 自动标记为已读
+                // Automatically mark as read
                 if (!View.SelectedEmail.IsRead)
                 {
                     _ = MarkEmailAsReadAsync(View.SelectedEmail.Id, true);  // Fire-and-forget
@@ -133,7 +133,7 @@ namespace WinformsMVP.Samples.EmailDemo
 
             if (result.IsOk && result.Value)
             {
-                // 邮件已发送，刷新列表
+                // Email sent, refresh list
                 Messages.ShowInfo("Email sent successfully!", "Success");
                 LoadEmailsAsync(_currentFolder);
             }
@@ -277,7 +277,7 @@ namespace WinformsMVP.Samples.EmailDemo
             var email = View.SelectedEmail;
             if (email == null) return;
 
-            // TODO: 打开详情窗口
+            // TODO: Open detail window
             Messages.ShowInfo("Email detail window - Coming soon!", "Info");
         }
 
@@ -298,7 +298,7 @@ namespace WinformsMVP.Samples.EmailDemo
                 View.Emails = emailList;
                 View.RefreshEmailList();
 
-                // 更新未读数量
+                // Update unread count
                 var unreadCount = emailList.Count(e => !e.IsRead);
                 View.UnreadCount = unreadCount;
 

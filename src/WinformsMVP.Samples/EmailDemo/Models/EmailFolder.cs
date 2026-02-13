@@ -1,20 +1,20 @@
 namespace WinformsMVP.Samples.EmailDemo.Models
 {
     /// <summary>
-    /// 邮件文件夹类型
+    /// Email folder types
     /// </summary>
     public enum EmailFolder
     {
-        /// <summary>收件箱</summary>
+        /// <summary>Inbox</summary>
         Inbox,
 
-        /// <summary>已发送</summary>
+        /// <summary>Sent</summary>
         Sent,
 
-        /// <summary>草稿</summary>
+        /// <summary>Drafts</summary>
         Drafts,
 
-        /// <summary>垃圾箱</summary>
+        /// <summary>Trash</summary>
         Trash
     }
 }
