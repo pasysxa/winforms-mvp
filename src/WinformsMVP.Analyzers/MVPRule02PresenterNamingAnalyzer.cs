@@ -1,0 +1,72 @@
+using System.Collections.Immutable;
+using System.Linq;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Diagnostics;
+
+namespace WinformsMVP.Analyzers
+{
+    /// <summary>
+    /// Analyzer for MVP Rule 2: Presenter classes should end with 'Presenter'.
+    /// </summary>
+    [DiagnosticAnalyzer(LanguageNames.CSharp)]
+    public class MVPRule02PresenterNamingAnalyzer : DiagnosticAnalyzer
+    {
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
+            ImmutableArray.Create(DiagnosticDescriptors.MVPRule02PresenterNaming);
+
+        public override void Initialize(AnalysisContext context)
+        {
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.RegisterSyntaxNodeAction(AnalyzeClassDeclaration, SyntaxKind.ClassDeclaration);
+        }
+
+        private void AnalyzeClassDeclaration(SyntaxNodeAnalysisContext context)
+        {
+            var classDeclaration = (ClassDeclarationSyntax)context.Node;
+            var className = classDeclaration.Identifier.Text;
+
+            // Check if this class inherits from PresenterBase
+            if (!InheritsFromPresenterBase(context, classDeclaration))
+                return;
+
+            // Check if class name ends with 'Presenter'
+            if (!className.EndsWith("Presenter"))
+            {
+                var diagnostic = Diagnostic.Create(
+                    DiagnosticDescriptors.MVPRule02PresenterNaming,
+                    classDeclaration.Identifier.GetLocation(),
+                    className);
+
+                context.ReportDiagnostic(diagnostic);
+            }
+        }
+
+        private bool InheritsFromPresenterBase(SyntaxNodeAnalysisContext context, ClassDeclarationSyntax classDeclaration)
+        {
+            if (classDeclaration.BaseList == null)
+                return false;
+
+            var semanticModel = context.SemanticModel;
+            var classSymbol = semanticModel.GetDeclaredSymbol(classDeclaration);
+
+            if (classSymbol == null)
+                return false;
+
+            // Check all base types recursively
+            var currentType = classSymbol.BaseType;
+            while (currentType != null)
+            {
+                var typeName = currentType.Name;
+                if (typeName.Contains("PresenterBase"))
+                    return true;
+
+                currentType = currentType.BaseType;
+            }
+
+            return false;
+        }
+    }
+}

@@ -34,7 +34,8 @@
       "Bash(chmod:*)",
       "Bash(powershell.exe:*)",
       "Bash(git remote add:*)",
-      "WebFetch(domain:st-www.cs.illinois.edu)"
+      "WebFetch(domain:st-www.cs.illinois.edu)",
+      "Bash(powershell:*)"
     ]
   }
 }

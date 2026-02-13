@@ -4,6 +4,14 @@ Welcome to the **WinForms MVP Framework** wiki! This documentation provides comp
 
 ## 📖 Available Pages
 
+### 📋 Design Principles
+
+- **[MVP Design Rules](MVP-Design-Rules)** 📐 - Complete guide to 14 essential MVP design rules
+  - Naming conventions (View, Presenter)
+  - Responsibility separation
+  - Interface design best practices
+  - Automated enforcement with Roslyn analyzers
+
 ### 🎯 Example Applications (Click to view detailed tutorials)
 
 #### Advanced Examples ⭐
