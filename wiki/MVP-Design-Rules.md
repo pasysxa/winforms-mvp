@@ -447,19 +447,19 @@ public class MyPresenter : WindowPresenterBase<IMyView>, IRequestClose
 // ✅ Correct - Abstract behavior in interface
 public interface IMyView : IWindowView
 {
-    void CloseWindow();  // ✅ Behavior, not UI type
+    void CloseView();  // ✅ Behavior, not UI type
 }
 
 public class MyForm : Form, IMyView
 {
-    public void CloseWindow() => this.Close();  // Implementation detail
+    public void CloseView() => this.Close();  // Implementation detail
 }
 
 public class MyPresenter : WindowPresenterBase<IMyView>
 {
     private void OnClose()
     {
-        View.CloseWindow();  // ✅ Works with any IMyView implementation
+        View.CloseView();  // ✅ Works with any IMyView implementation
     }
 }
 
@@ -467,7 +467,7 @@ public class MyPresenter : WindowPresenterBase<IMyView>
 public class MockMyView : IMyView
 {
     public bool WasClosed { get; private set; }
-    public void CloseWindow() => WasClosed = true;
+    public void CloseView() => WasClosed = true;
 }
 ```
 
