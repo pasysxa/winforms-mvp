@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Windows.Forms;
 using WinformsMVP.Common;
 using WinformsMVP.Core.Views;
@@ -14,15 +15,19 @@ namespace WinformsMVP.Samples.Tests.Mocks
     public class MockWindowNavigator : IWindowNavigator
     {
         // 記録用
+        public List<object> ShowModalCalls { get; private set; } = new List<object>();
         public int ShowWindowCalls { get; private set; }
-        public int ShowModalCalls { get; private set; }
         public object LastPresenter { get; private set; }
         public object LastParameters { get; private set; }
+
+        // Configurable return values
+        public bool ShowModalBoolResult { get; set; } = true;
+        public InteractionResult ShowModalInteractionResult { get; set; } = InteractionResult.Ok();
 
         public void Clear()
         {
             ShowWindowCalls = 0;
-            ShowModalCalls = 0;
+            ShowModalCalls.Clear();
             LastPresenter = null;
             LastParameters = null;
         }
@@ -84,9 +89,9 @@ namespace WinformsMVP.Samples.Tests.Mocks
             IWin32Window owner = null)
             where TPresenter : IPresenter
         {
-            ShowModalCalls++;
+            ShowModalCalls.Add(presenter);
             LastPresenter = presenter;
-            return InteractionResult.Cancel();  // テスト用のデフォルト値
+            return ShowModalInteractionResult;
         }
 
         public InteractionResult<TResult> ShowWindowAsModal<TPresenter, TResult>(
@@ -94,9 +99,11 @@ namespace WinformsMVP.Samples.Tests.Mocks
             IWin32Window owner = null)
             where TPresenter : IPresenter
         {
-            ShowModalCalls++;
+            ShowModalCalls.Add(presenter);
             LastPresenter = presenter;
-            return InteractionResult<TResult>.Cancel();
+            return ShowModalBoolResult
+                ? InteractionResult<TResult>.Ok(default(TResult))
+                : InteractionResult<TResult>.Cancel();
         }
 
         public InteractionResult ShowWindowAsModal<TPresenter, TParam>(
@@ -105,10 +112,10 @@ namespace WinformsMVP.Samples.Tests.Mocks
             IWin32Window owner = null)
             where TPresenter : IPresenter, IInitializable<TParam>
         {
-            ShowModalCalls++;
+            ShowModalCalls.Add(presenter);
             LastPresenter = presenter;
             LastParameters = parameters;
-            return InteractionResult.Cancel();
+            return ShowModalInteractionResult;
         }
 
         public InteractionResult<TResult> ShowWindowAsModal<TPresenter, TParam, TResult>(
@@ -117,10 +124,12 @@ namespace WinformsMVP.Samples.Tests.Mocks
             IWin32Window owner = null)
             where TPresenter : IPresenter, IInitializable<TParam>
         {
-            ShowModalCalls++;
+            ShowModalCalls.Add(presenter);
             LastPresenter = presenter;
             LastParameters = parameters;
-            return InteractionResult<TResult>.Cancel();
+            return ShowModalBoolResult
+                ? InteractionResult<TResult>.Ok(default(TResult))
+                : InteractionResult<TResult>.Cancel();
         }
     }
 }
