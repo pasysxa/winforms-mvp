@@ -13,6 +13,7 @@
   <ItemGroup>
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
   </ItemGroup>
 
   <!-- Exclude old-style project folders that are not needed in SDK-style -->

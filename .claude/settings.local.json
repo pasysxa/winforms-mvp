@@ -37,7 +37,11 @@
       "WebFetch(domain:st-www.cs.illinois.edu)",
       "Bash(powershell:*)",
       "Bash(timeout /t 3)",
-      "Bash(git pull:*)"
+      "Bash(git pull:*)",
+      "Bash(dir \"C:\\\\workspace\\\\winforms-mvp\")",
+      "Bash(git rm:*)",
+      "Bash(git ls-files:*)",
+      "Bash(tree:*)"
     ]
   }
 }
