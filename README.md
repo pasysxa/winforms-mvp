@@ -448,6 +448,15 @@ public void OnSave_WithValidData_ShowsSuccessMessage()
 
 ## 📖 Documentation
 
+- **[MVP-DESIGN-RULES.md](MVP-DESIGN-RULES.md)** - 14 essential design rules ⭐
+  - Supervising Controller pattern principles
+  - Naming conventions (XxxView, XxxPresenter)
+  - Responsibility separation (use-case logic vs UI logic)
+  - "Tell, Don't Ask" principle
+  - Interface design best practices
+  - Domain-driven naming
+  - Compliance checklist
+
 - **[CLAUDE.md](CLAUDE.md)** - Comprehensive architecture guide
   - MVP principles and patterns
   - ViewAction system deep dive
