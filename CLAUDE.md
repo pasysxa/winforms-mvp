@@ -46,11 +46,25 @@ dotnet restore src/winforms-mvp.sln
 
 ### Core MVP Pattern
 
-The framework implements a passive MVP pattern with clear separation between Form and UserControl scenarios.
+The framework implements a **Supervising Controller** pattern (a variant of MVP) with clear separation between Form and UserControl scenarios.
+
+**📋 For comprehensive design rules, see [MVP-DESIGN-RULES.md](MVP-DESIGN-RULES.md)**
+
+This document contains 14 detailed rules covering:
+- Naming conventions (XxxView, XxxPresenter)
+- Responsibility separation (Presenter = use-case logic, View = UI logic)
+- Communication patterns (Tell, Don't Ask principle)
+- Interface design (methods vs properties, domain naming)
+- Data management (all data in Model, not just in UI controls)
 
 **CRITICAL MVP Principle**: Presenters must NEVER directly reference UI elements or WinForms APIs (MessageBox, DialogResult, etc.). All UI interactions must go through:
 - **View interfaces** for displaying data and receiving user input
 - **Service interfaces** (IMessageService, IDialogProvider, etc.) for dialogs and notifications
+
+**Key Philosophy**:
+> "**Presenter handles use-case logic only, not view logic.**"
+>
+> Modern WinForms Views are smart enough to handle data-binding and event processing. Presenter focuses on **business workflow** (validate → save → notify), while View handles **UI details** (how to display errors, which controls to use).
 
 This ensures:
 - Presenters remain testable without requiring a UI thread
@@ -2174,6 +2188,8 @@ Console.WriteLine(tracker.CurrentValue.Address.City);  // "Osaka" (期待値: "T
 ## Development Notes
 
 ### MVP Principles - CRITICAL
+
+**📋 See [MVP-DESIGN-RULES.md](MVP-DESIGN-RULES.md) for the complete 14-rule design guide.**
 
 When writing MVP code, you MUST follow these rules:
 
