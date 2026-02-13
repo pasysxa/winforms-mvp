@@ -1097,9 +1097,6 @@ Common application services accessed via `ICommonServices`. These services are e
 - **IFileService**: File I/O operations
   - Abstracts file system access for testability
 
-- **IAppContext**: Application-wide context and settings
-  - Provides access to application configuration
-
 ### Platform Services Access
 
 All presenters have **built-in access** to platform services through convenience properties. No constructor injection needed for basic services!
