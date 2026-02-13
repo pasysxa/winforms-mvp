@@ -8,6 +8,8 @@ using WinformsMVP.Samples.NavigatorDemo;
 using WinformsMVP.Samples.MVPComparisonDemo;
 using WinformsMVP.Samples.ExecutionRequestDemo;
 using WinformsMVP.Samples.MessageBoxDemo;
+using WinformsMVP.Samples.EmailDemo;
+using WinformsMVP.Samples.EmailDemo.Services;
 using WinformsMVP.Services;
 using WinformsMVP.Services.Implementations;
 
@@ -27,7 +29,7 @@ namespace WinformsMVP.Samples
         {
             // Form settings
             this.Text = "WinForms MVP - Sample Launcher";
-            this.Size = new Size(500, 810);
+            this.Size = new Size(500, 900);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.Font = new Font("Segoe UI", 9f);
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -221,6 +223,30 @@ namespace WinformsMVP.Samples
                 TextAlign = ContentAlignment.MiddleCenter
             };
 
+            // Email Demo Button
+            var emailDemoButton = new Button
+            {
+                Text = "Email Demo (Complete App)",
+                Location = new Point(100, 750),
+                Size = new Size(300, 50),
+                Font = new Font("Segoe UI", 11f),
+                BackColor = Color.FromArgb(0, 150, 136),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Cursor = Cursors.Hand
+            };
+            emailDemoButton.FlatAppearance.BorderSize = 0;
+            emailDemoButton.Click += (s, e) => LaunchEmailDemo();
+
+            var emailDemoInfoLabel = new Label
+            {
+                Text = "All Features • ChangeTracker • Navigator • Validation",
+                Location = new Point(100, 805),
+                Size = new Size(300, 20),
+                ForeColor = Color.DarkGray,
+                TextAlign = ContentAlignment.MiddleCenter
+            };
+
             // Add controls
             this.Controls.AddRange(new Control[] {
                 titleLabel, subtitleLabel,
@@ -230,7 +256,8 @@ namespace WinformsMVP.Samples
                 navigatorButton, navigatorInfoLabel,
                 mvpComparisonButton, mvpComparisonInfoLabel,
                 executionRequestButton, executionRequestInfoLabel,
-                messageBoxButton, messageBoxInfoLabel
+                messageBoxButton, messageBoxInfoLabel,
+                emailDemoButton, emailDemoInfoLabel
             });
         }
 
@@ -323,6 +350,31 @@ namespace WinformsMVP.Samples
         {
             var view = new MessageBoxDemoForm();
             var presenter = new MessageBoxDemoPresenter();
+
+            presenter.AttachView(view);
+            presenter.Initialize();
+            view.Show();
+
+            this.Hide();
+            view.FormClosed += (s, e) => this.Show();
+        }
+
+        private void LaunchEmailDemo()
+        {
+            // Create and configure ViewMappingRegister
+            var viewMappingRegister = new ViewMappingRegister();
+
+            // Automatic assembly scanning - registers all Views in the assembly
+            int registered = viewMappingRegister.RegisterFromAssembly(System.Reflection.Assembly.GetExecutingAssembly());
+            System.Diagnostics.Debug.WriteLine($"ViewMappingRegister: Auto-registered {registered} Views from assembly");
+
+            // Configure PlatformServices with ViewMappingRegister
+            PlatformServices.Default = new DefaultPlatformServices(viewMappingRegister);
+
+            // Create repository and main view
+            var repository = new InMemoryEmailRepository();
+            var view = new MainEmailForm();
+            var presenter = new MainEmailPresenter(repository);
 
             presenter.AttachView(view);
             presenter.Initialize();
