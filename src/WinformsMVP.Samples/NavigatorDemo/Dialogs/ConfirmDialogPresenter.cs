@@ -56,7 +56,7 @@ namespace WinformsMVP.Samples.NavigatorDemo
             {
                 View.SetTitle(_parameters.Title);
                 View.SetMessage(_parameters.Message);
-                View.SetDefaultButton(_parameters.DefaultYes);
+                View.SetDefaultChoice(_parameters.DefaultYes);
             }
         }
 

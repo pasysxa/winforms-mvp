@@ -31,7 +31,10 @@
       "Bash(done)",
       "Bash(git push:*)",
       "Bash(ls:*)",
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "Bash(powershell.exe:*)",
+      "Bash(git remote add:*)",
+      "WebFetch(domain:st-www.cs.illinois.edu)"
     ]
   }
 }

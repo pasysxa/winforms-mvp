@@ -77,7 +77,7 @@ namespace WinformsMVP.Samples.NavigatorDemo
             _messageLabel.Text = message;
         }
 
-        public void SetDefaultButton(bool yesIsDefault)
+        public void SetDefaultChoice(bool yesIsDefault)
         {
             this.AcceptButton = yesIsDefault ? _yesButton : _noButton;
         }

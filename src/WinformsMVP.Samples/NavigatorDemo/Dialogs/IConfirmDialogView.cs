@@ -7,6 +7,6 @@ namespace WinformsMVP.Samples.NavigatorDemo
     {
         void SetTitle(string title);
         void SetMessage(string message);
-        void SetDefaultButton(bool yesIsDefault);
+        void SetDefaultChoice(bool yesIsDefault);  // Rule 13: Domain naming, not UI control naming
     }
 }
