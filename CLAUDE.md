@@ -48,7 +48,7 @@ dotnet restore src/winforms-mvp.sln
 
 The framework implements a **Supervising Controller** pattern (a variant of MVP) with clear separation between Form and UserControl scenarios.
 
-**📋 For comprehensive design rules, see [MVP-DESIGN-RULES.md](MVP-DESIGN-RULES.md)**
+**📋 For comprehensive design rules, see the [MVP Design Rules](https://github.com/yourusername/winforms-mvp/wiki/MVP-Design-Rules) in the wiki**
 
 This document contains 14 detailed rules covering:
 - Naming conventions (XxxView, XxxPresenter)
@@ -2197,7 +2197,7 @@ Console.WriteLine(tracker.CurrentValue.Address.City);  // "Osaka" (期待値: "T
 
 ### MVP Principles - CRITICAL
 
-**📋 See [MVP-DESIGN-RULES.md](MVP-DESIGN-RULES.md) for the complete 14-rule design guide.**
+**📋 See the [MVP Design Rules](https://github.com/yourusername/winforms-mvp/wiki/MVP-Design-Rules) in the wiki for the complete 14-rule design guide.**
 
 When writing MVP code, you MUST follow these rules:
 

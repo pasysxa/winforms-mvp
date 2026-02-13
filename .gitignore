@@ -369,3 +369,8 @@ nul
 
 # Temporary files
 temp_*.txt
+
+# Temporary documentation and generated reports
+MVP-COMPLIANCE-REPORT.md
+WIKI-SETUP-INSTRUCTIONS.md
+MVP-DESIGN-RULES.md
