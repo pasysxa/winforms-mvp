@@ -50,7 +50,7 @@ namespace WinformsMVP.Samples.ExecutionRequestDemo
                 OnSaveDataAction,
                 canExecute: () => _currentCustomer != null);
 
-            View.ActionBinder.Bind(_dispatcher);
+            // Note: View.ActionBinder.Bind(_dispatcher) is now called automatically by the base class
         }
 
         protected override void OnInitialize()

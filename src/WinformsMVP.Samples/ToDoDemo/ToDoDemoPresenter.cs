@@ -75,9 +75,7 @@ namespace WinformsMVP.Samples.ToDoDemo
                 OnSaveAll,
                 canExecute: () => View.HasPendingChanges);
 
-            // Ask the view to bind its UI controls to the dispatcher
-            // We don't know (or care) what controls the view uses
-            View.ActionBinder.Bind(_dispatcher);
+            // Note: View.ActionBinder.Bind(_dispatcher) is now called automatically by the base class
         }
 
         protected override void OnInitialize()

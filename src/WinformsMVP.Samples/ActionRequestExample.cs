@@ -97,7 +97,7 @@ namespace WinformsMVP.Samples
             _dispatcher.Register(ComplexDataGridActions.Sort, OnSort);
             _dispatcher.Register(ComplexDataGridActions.Search, OnSearch);
 
-            View.ActionBinder.Bind(_dispatcher);
+            // Note: View.ActionBinder.Bind(_dispatcher) is now called automatically by the base class
         }
 
         protected override void OnInitialize()
@@ -237,7 +237,7 @@ namespace WinformsMVP.Samples
                 SearchActions.FilterByCategory,
                 OnFilterByCategory);
 
-            View.ActionBinder.Bind(_dispatcher);
+            // Note: View.ActionBinder.Bind(_dispatcher) is now called automatically by the base class
         }
 
         protected override void OnInitialize()

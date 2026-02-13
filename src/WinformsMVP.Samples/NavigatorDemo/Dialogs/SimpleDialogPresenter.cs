@@ -24,7 +24,7 @@ namespace WinformsMVP.Samples.NavigatorDemo
             _dispatcher.Register(SimpleDialogActions.Ok, OnOk);
             _dispatcher.Register(SimpleDialogActions.Cancel, OnCancel);
 
-            View.ActionBinder.Bind(_dispatcher);
+            // Note: View.ActionBinder.Bind(_dispatcher) is now called automatically by the base class
         }
 
         protected override void OnInitialize()

@@ -101,8 +101,7 @@ namespace WinformsMVP.Samples
                 OnExportData,
                 canExecute: () => View.HasData);
 
-            // Let the View bind its UI controls to the dispatcher
-            View.ActionBinder.Bind(_dispatcher);
+            // Note: View.ActionBinder.Bind(_dispatcher) is now called automatically by the base class
         }
 
         protected override void OnInitialize()
@@ -240,8 +239,7 @@ namespace WinformsMVP.Samples
                 OnCancelOperation,
                 canExecute: () => _isRunning);
 
-            // Let the View bind its UI controls to the dispatcher
-            View.ActionBinder.Bind(_dispatcher);
+            // Note: View.ActionBinder.Bind(_dispatcher) is now called automatically by the base class
         }
 
         protected override void OnInitialize()

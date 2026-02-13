@@ -47,7 +47,7 @@ namespace WinformsMVP.Samples.NavigatorDemo
             _dispatcher.Register(NavigatorDemoActions.ShowSingletonWindow, OnShowSingletonWindow);
             _dispatcher.Register(NavigatorDemoActions.ClearLog, OnClearLog);
 
-            View.ActionBinder.Bind(_dispatcher);
+            // Note: View.ActionBinder.Bind(_dispatcher) is now called automatically by the base class
         }
 
         protected override void OnInitialize()

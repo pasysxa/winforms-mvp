@@ -147,9 +147,7 @@ namespace WinformsMVP.Samples
                 OnChangePassword,
                 canExecute: () => View.HasSelectedUser);
 
-            // Let the View bind its UI controls to the dispatcher
-            // View implementation will map buttons/menu items internally
-            View.ActionBinder.Bind(_dispatcher);
+            // Note: View.ActionBinder.Bind(_dispatcher) is now called automatically by the base class
         }
 
         protected override void OnInitialize()

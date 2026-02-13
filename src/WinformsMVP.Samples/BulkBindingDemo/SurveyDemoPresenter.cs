@@ -66,8 +66,7 @@ namespace WinformsMVP.Samples.BulkBindingDemo
             // Submit action
             _dispatcher.Register(SurveyActions.Submit, OnSubmit);
 
-            // Bind UI controls
-            View.ActionBinder.Bind(_dispatcher);
+            // Note: View.ActionBinder.Bind(_dispatcher) is now called automatically by the base class
         }
 
         protected override void OnInitialize()

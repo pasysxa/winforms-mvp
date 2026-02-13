@@ -26,7 +26,7 @@ namespace WinformsMVP.Samples.NavigatorDemo
             _dispatcher.Register(CallbackWindowActions.SaveAndClose, OnSaveAndClose);
             _dispatcher.Register(CallbackWindowActions.Cancel, OnCancel);
 
-            View.ActionBinder.Bind(_dispatcher);
+            // Note: View.ActionBinder.Bind(_dispatcher) is now called automatically by the base class
         }
 
         protected override void OnInitialize()
