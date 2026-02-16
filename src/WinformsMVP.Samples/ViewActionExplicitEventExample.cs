@@ -45,7 +45,8 @@ namespace WinformsMVP.Samples
 
     /// <summary>
     /// View interface using explicit event-based pattern.
-    /// Exposes ActionRequest event instead of relying on ActionBinder.Bind(Dispatcher).
+    /// Exposes ActionRequest event for explicit ViewAction routing to Presenter.
+    /// Automatic CanExecute UI updates work without manual state change events!
     /// </summary>
     public interface IExplicitEventDemoView : IWindowView
     {
@@ -61,9 +62,7 @@ namespace WinformsMVP.Samples
         // ✅ Explicit event for ViewAction handling
         event EventHandler<ActionRequestEventArgs> ActionRequest;
 
-        // ✅ State change events for manual CanExecute updates
-        event EventHandler SelectionChanged;
-        event EventHandler DataChanged;
+        // ✅ No state change events needed! Automatic CanExecute updates now work in explicit pattern
 
         // Methods
         void ShowItems(string[] items);
@@ -78,17 +77,15 @@ namespace WinformsMVP.Samples
     {
         private ViewActionBinder _binder;
 
-        // ✅ Return null to prevent framework auto-binding (explicit pattern uses events only)
-        // This ensures the framework doesn't call Bind(_dispatcher) after RegisterViewActions(),
-        // which would cause double-dispatch (both event and callback paths active)
-        public ViewActionBinder ActionBinder => null;
+        // ✅ Return binder to enable framework auto-binding and automatic CanExecute UI updates
+        // The framework will call Bind(_dispatcher) after RegisterViewActions()
+        // Mode detection prevents double-dispatch (skips callback when ActionTriggered has subscribers)
+        public ViewActionBinder ActionBinder => _binder;
 
         // ✅ Expose ActionRequest event (explicit pattern)
         public event EventHandler<ActionRequestEventArgs> ActionRequest;
 
-        // ✅ State change events (for manual CanExecute updates)
-        public event EventHandler SelectionChanged;
-        public event EventHandler DataChanged;
+        // ✅ No state change events needed - automatic CanExecute updates work!
 
         // Form controls (designer-initialized)
         private TextBox _txtItemName;
@@ -157,9 +154,8 @@ namespace WinformsMVP.Samples
                 ActionRequest?.Invoke(this, e);
             };
 
-            // Call Bind() to set up control event subscriptions (event-only mode)
-            // Framework's auto-binding won't happen because ActionBinder property returns null
-            _binder.Bind();
+            // No need to call Bind() here - Framework will call View.ActionBinder.Bind(_dispatcher)
+            // automatically in RegisterViewActions(), which enables automatic CanExecute UI updates
         }
 
         // IExplicitEventDemoView implementation
@@ -205,13 +201,12 @@ namespace WinformsMVP.Samples
         private void OnDataChanged()
         {
             HasUnsavedChanges = true;
-            DataChanged?.Invoke(this, EventArgs.Empty);
+            // ✅ No need to trigger event - automatic CanExecute updates work!
         }
 
         private void OnSelectionChanged()
         {
-            // Notify presenter that selection changed (affects CanExecute)
-            SelectionChanged?.Invoke(this, EventArgs.Empty);
+            // ✅ No need to notify presenter - automatic CanExecute updates work!
         }
     }
 
@@ -255,20 +250,16 @@ namespace WinformsMVP.Samples
 
             Dispatcher.Register(ExplicitDemoActions.Refresh, OnRefresh);
 
-            // Note: Framework tries to call View.ActionBinder?.Bind(_dispatcher) here,
-            // but ActionBinder returns null in explicit mode to prevent auto-binding.
+            // ✅ Framework automatically calls View.ActionBinder.Bind(_dispatcher) here!
+            // Mode detection recognizes explicit pattern (ActionTriggered has subscribers)
+            // and prevents double-dispatch while enabling automatic CanExecute UI updates.
             //
-            // Trade-off: Explicit pattern loses automatic CanExecute UI updates.
-            // You must manually call Dispatcher.RaiseCanExecuteChanged() when state changes
-            // that affect CanExecute predicates (e.g., when View.HasSelection changes).
+            // Benefits: Automatic UI state updates without manual RaiseCanExecuteChanged() calls!
         }
 
-        protected override void OnInitialize()
-        {
-            // Subscribe to view state change events to manually trigger CanExecute updates
-            View.SelectionChanged += (s, e) => Dispatcher.RaiseCanExecuteChanged();
-            View.DataChanged += (s, e) => Dispatcher.RaiseCanExecuteChanged();
-        }
+        // ✅ No OnInitialize() needed - automatic CanExecute updates work out of the box!
+        // Previously required manual subscriptions: View.SelectionChanged, View.DataChanged
+        // Now those are unnecessary - framework handles it automatically
 
         // ✅ Note: No need for manual OnActionRequest handler!
         // OnViewActionTriggered (base class method) handles routing to Dispatcher
@@ -341,54 +332,55 @@ namespace WinformsMVP.Samples
      * ❌ Cons: Implicit connection (framework magic), harder to debug event flow
      *
      *
-     * EXPLICIT PATTERN (ActionRequest Event + Helper Method):
-     * --------------------------------------------------------
+     * EXPLICIT PATTERN (ActionRequest Event + Automatic CanExecute):
+     * ---------------------------------------------------------------
      * // View Interface
      * public interface IMyView : IWindowView
      * {
-     *     ViewActionBinder ActionBinder { get; }  // Returns null to prevent auto-binding!
+     *     ViewActionBinder ActionBinder { get; }  // Returns _binder (enables auto CanExecute updates!)
      *     event EventHandler<ActionRequestEventArgs> ActionRequest;
-     *     event EventHandler SelectionChanged;  // For manual CanExecute updates
+     *     // ✅ No state change events needed!
      * }
      *
      * // View Implementation
-     * public ViewActionBinder ActionBinder => null;  // Prevent framework auto-binding
+     * public ViewActionBinder ActionBinder => _binder;  // Return binder for framework integration
      * _binder.ActionTriggered += (s, e) => ActionRequest?.Invoke(this, e);
-     * _binder.Bind();  // Manual event-only binding
+     * // No manual Bind() call - framework handles it automatically!
      *
-     * // Presenter - Simple with helper method!
+     * // Presenter - Simple and clean!
      * protected override void OnViewAttached()
      * {
-     *     View.ActionRequest += OnViewActionTriggered;  // ✅ One line using base helper!
+     *     View.ActionRequest += OnViewActionTriggered;  // ✅ Explicit event subscription
      * }
      *
-     * protected override void OnInitialize()
-     * {
-     *     // Manual CanExecute updates when state changes
-     *     View.SelectionChanged += (s, e) => Dispatcher.RaiseCanExecuteChanged();
-     * }
+     * // ✅ No OnInitialize() needed - automatic CanExecute updates work!
      *
      * protected override void RegisterViewActions()
      * {
      *     Dispatcher.Register(CommonActions.Save, OnSave,
      *         canExecute: () => View.HasUnsavedChanges);
+     *
+     *     // Framework calls View.ActionBinder.Bind(_dispatcher) automatically
+     *     // Mode detection prevents double-dispatch while enabling automatic UI updates
      * }
      *
-     * ✅ Pros: Explicit, debuggable, familiar .NET event pattern, F12 navigation works
-     * ❌ Cons: Manual CanExecute updates needed, more View events to expose
+     * ✅ Pros: Explicit, debuggable, F12 navigation works, automatic CanExecute updates!
+     * ✅ Best of both worlds: Explicit event flow + Automatic UI updates
      *
      *
      * WHEN TO USE EACH:
      * -----------------
-     * Implicit: Simple CRUD, standard workflows, automatic CanExecute updates desired
-     * Explicit: Complex logic, debugging needs, team prefers explicit code, learning scenarios
+     * Implicit: Simple CRUD, standard workflows, less code (no ActionRequest event)
+     * Explicit: Complex logic, debugging needs, team prefers explicit event subscriptions, learning
      *
-     * TRADE-OFFS:
-     * -----------
-     * - Implicit pattern gives automatic CanExecute UI updates (buttons auto enable/disable)
-     * - Explicit pattern requires manual Dispatcher.RaiseCanExecuteChanged() calls
-     * - Explicit pattern prevents double-dispatch by returning null from ActionBinder property
-     * - Both patterns can use Dispatcher.Register() with CanExecute predicates
+     * KEY IMPROVEMENTS:
+     * -----------------
+     * ✅ Both patterns now get automatic CanExecute UI updates (buttons auto enable/disable)
+     * ✅ Explicit pattern no longer requires manual state change events
+     * ✅ Explicit pattern no longer requires manual RaiseCanExecuteChanged() calls
+     * ✅ Mode detection prevents double-dispatch automatically
+     * ✅ Simpler View interfaces (fewer events to define)
+     * ✅ Less boilerplate code in Presenter
      */
 
     #endregion

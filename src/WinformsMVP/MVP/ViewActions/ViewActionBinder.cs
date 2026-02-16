@@ -119,8 +119,18 @@ namespace WinformsMVP.MVP.ViewActions
 
         /// <summary>
         /// Binds all registered controls to their actions.
+        /// Automatically detects whether to use implicit or explicit pattern based on ActionTriggered event subscribers.
         /// </summary>
-        /// <param name="onActionTriggered">Callback when an action is triggered</param>
+        /// <param name="onActionTriggered">Callback when an action is triggered (used in implicit pattern)</param>
+        /// <remarks>
+        /// <para>
+        /// <b>Automatic Mode Detection:</b>
+        /// </para>
+        /// <list type="bullet">
+        /// <item><b>Explicit Pattern:</b> If ActionTriggered event has subscribers, only the event fires (callback skipped to prevent double-dispatch)</item>
+        /// <item><b>Implicit Pattern:</b> If ActionTriggered event has no subscribers, only the callback fires</item>
+        /// </list>
+        /// </remarks>
         public void Bind(Action<ViewAction> onActionTriggered)
         {
             Unbind();
@@ -146,11 +156,19 @@ namespace WinformsMVP.MVP.ViewActions
             {
                 if (actionMap.TryGetValue(sender, out var key))
                 {
-                    // Raise ActionTriggered event (for explicit event-based pattern)
+                    // Always raise ActionTriggered event (for explicit event-based pattern)
                     ActionTriggered?.Invoke(this, new ActionRequestEventArgs(key));
 
-                    // Invoke callback (for implicit dispatcher pattern)
-                    onActionTriggered?.Invoke(key);
+                    // Auto-detect mode: Check if explicit event handlers are registered
+                    bool hasExplicitHandlers = ActionTriggered != null &&
+                                              ActionTriggered.GetInvocationList().Length > 0;
+
+                    if (!hasExplicitHandlers)
+                    {
+                        // Implicit pattern: No explicit handlers, use callback
+                        onActionTriggered?.Invoke(key);
+                    }
+                    // Explicit pattern: Has explicit handlers, skip callback to prevent double-dispatch
                 }
             });
 
@@ -162,7 +180,7 @@ namespace WinformsMVP.MVP.ViewActions
 
         /// <summary>
         /// Binds all registered controls to trigger ActionTriggered event only.
-        /// Use this overload when using explicit event-based pattern without a dispatcher.
+        /// Typically used for explicit event-based pattern, but can also work with implicit pattern if Bind(dispatcher) is called later.
         /// </summary>
         /// <remarks>
         /// <para>
@@ -171,11 +189,15 @@ namespace WinformsMVP.MVP.ViewActions
         /// <code>
         /// // View
         /// _binder.ActionTriggered += (s, e) => ActionRequest?.Invoke(this, e);
-        /// _binder.Bind();  // ✅ Event-only binding
+        /// _binder.Bind();  // ✅ Event-only binding (no callback)
         ///
         /// // Presenter
         /// View.ActionRequest += OnActionRequest;
         /// </code>
+        /// <para>
+        /// Note: The automatic mode detection still applies. If ActionTriggered has subscribers,
+        /// explicit pattern is used. Otherwise, actions won't dispatch anywhere (unless Bind(dispatcher) is called later).
+        /// </para>
         /// </remarks>
         public void Bind()
         {
