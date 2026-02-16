@@ -15,8 +15,8 @@ namespace WinformsMVP.Samples
     // This example demonstrates the EXPLICIT event-based pattern for ViewActions.
     //
     // Key difference from implicit pattern:
-    // - IMPLICIT: View.ActionBinder.Bind(Dispatcher) - "magic" connection
-    // - EXPLICIT: View.ActionRequest += OnActionRequest - clear subscription
+    // - IMPLICIT: Framework auto-calls View.ActionBinder.Bind(_dispatcher) after RegisterViewActions()
+    // - EXPLICIT: View.ActionRequest += OnActionRequest - clear subscription you write yourself
     //
     // Benefits of explicit pattern:
     // ✅ Clear, visible event subscription code
@@ -314,11 +314,11 @@ namespace WinformsMVP.Samples
      *     Dispatcher.Register(ExplicitDemoActions.Save, OnSave,
      *         canExecute: () => View.HasUnsavedChanges);
      *
-     *     View.ActionBinder.Bind(Dispatcher);  // 🔗 Magic connection
+     *     // No need to call View.ActionBinder.Bind() - framework does it automatically!
      * }
      *
-     * ✅ Pros: Less code, automatic CanExecute
-     * ❌ Cons: Implicit connection, harder to debug
+     * ✅ Pros: Less code, automatic CanExecute, auto-binding by framework
+     * ❌ Cons: Implicit connection (framework magic), harder to debug
      *
      *
      * EXPLICIT PATTERN (ActionRequest Event):
