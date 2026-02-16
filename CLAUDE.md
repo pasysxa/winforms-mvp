@@ -721,11 +721,462 @@ _binder.AddRange(mapping);
 - Type-safe and explicit (no magic conventions)
 - Clear at a glance which action binds to which control
 
+#### ViewAction Handling Patterns: Implicit vs Explicit
+
+The framework supports **two patterns** for handling ViewActions, each with distinct trade-offs. Choose based on your team's preferences and project requirements.
+
+##### Pattern 1: Implicit Pattern (Recommended for Most Cases)
+
+**Overview:** The framework automatically binds the View's `ActionBinder` to the `Dispatcher` after `RegisterViewActions()` completes. This provides automatic CanExecute UI updates with minimal code.
+
+**Key Characteristics:**
+- ✅ **Automatic binding** - Framework calls `View.ActionBinder.Bind(_dispatcher)` for you
+- ✅ **Automatic CanExecute updates** - Buttons automatically enable/disable when state changes
+- ✅ **Less code** - No event subscriptions needed
+- ❌ **Implicit connection** - Event flow happens "behind the scenes" (framework magic)
+- ❌ **Harder to debug** - Cannot set breakpoint on automatic binding code
+
+**Implementation:**
+
+```csharp
+// 1. Define ViewActions
+public static class UserEditorActions
+{
+    public static readonly ViewAction Save = ViewAction.Create("UserEditor.Save");
+    public static readonly ViewAction Delete = ViewAction.Create("UserEditor.Delete");
+    public static readonly ViewAction Cancel = ViewAction.Create("UserEditor.Cancel");
+}
+
+// 2. View Interface - Exposes ActionBinder property
+public interface IUserEditorView : IWindowView
+{
+    string UserName { get; set; }
+    string Email { get; set; }
+    bool HasUnsavedChanges { get; }
+    bool HasSelection { get; }
+
+    // Framework-level abstraction
+    ViewActionBinder ActionBinder { get; }
+}
+
+// 3. View Implementation (Form)
+public class UserEditorForm : Form, IUserEditorView
+{
+    private ViewActionBinder _binder;
+    private Button _btnSave;
+    private Button _btnDelete;
+    private Button _btnCancel;
+
+    // Return the configured binder instance
+    public ViewActionBinder ActionBinder => _binder;
+
+    public UserEditorForm()
+    {
+        InitializeComponent();
+        InitializeActionBindings();
+    }
+
+    private void InitializeActionBindings()
+    {
+        _binder = new ViewActionBinder();
+
+        // Map UI controls to ViewActions
+        _binder.Add(UserEditorActions.Save, _btnSave);
+        _binder.Add(UserEditorActions.Delete, _btnDelete);
+        _binder.Add(UserEditorActions.Cancel, _btnCancel);
+
+        // DO NOT call Bind() here - framework does it automatically
+    }
+
+    // ... other View implementation
+}
+
+// 4. Presenter
+public class UserEditorPresenter : WindowPresenterBase<IUserEditorView>
+{
+    private readonly IMessageService _messageService;
+
+    public UserEditorPresenter(IMessageService messageService)
+    {
+        _messageService = messageService;
+    }
+
+    protected override void RegisterViewActions()
+    {
+        // Register action handlers with CanExecute predicates
+        Dispatcher.Register(
+            UserEditorActions.Save,
+            OnSave,
+            canExecute: () => View.HasUnsavedChanges);
+
+        Dispatcher.Register(
+            UserEditorActions.Delete,
+            OnDelete,
+            canExecute: () => View.HasSelection);
+
+        Dispatcher.Register(UserEditorActions.Cancel, OnCancel);
+
+        // NOTE: Framework automatically calls View.ActionBinder.Bind(_dispatcher)
+        // after this method completes. No manual binding needed!
+        //
+        // This automatic binding provides:
+        // - Control event subscriptions (button clicks → action dispatch)
+        // - Automatic CanExecute UI updates (buttons auto enable/disable)
+    }
+
+    private void OnSave()
+    {
+        SaveUser();
+        _messageService.ShowInfo("User saved successfully!", "Success");
+
+        // UI automatically updates after action completes
+        // (framework triggers CanExecute refresh)
+    }
+
+    private void OnDelete()
+    {
+        if (_messageService.ConfirmYesNo("Delete this user?", "Confirm"))
+        {
+            DeleteUser();
+            _messageService.ShowInfo("User deleted", "Success");
+        }
+    }
+
+    private void OnCancel()
+    {
+        RequestClose();
+    }
+}
+```
+
+**Event Flow (Implicit Pattern):**
+```
+User clicks button
+    ↓
+ViewActionBinder captures Click event (auto-subscribed by framework)
+    ↓
+ViewActionBinder invokes callback: action => dispatcher.Dispatch(action)
+    ↓
+Dispatcher checks CanExecute predicate
+    ↓
+If true, execute registered handler (OnSave/OnDelete)
+    ↓
+Dispatcher raises ActionExecuted event
+    ↓
+ViewActionBinder receives ActionExecuted
+    ↓
+ViewActionBinder automatically updates all control states (Enabled property)
+```
+
+**When to use Implicit Pattern:**
+- ✅ Standard CRUD operations
+- ✅ Team comfortable with framework conventions
+- ✅ Automatic UI updates desired (less manual code)
+- ✅ Production applications (battle-tested, reliable)
+
+---
+
+##### Pattern 2: Explicit Event Pattern (For Maximum Control)
+
+**Overview:** The View explicitly raises `ActionRequest` events, and the Presenter explicitly subscribes to them. This provides complete visibility into the event flow at the cost of more code and manual CanExecute management.
+
+**Key Characteristics:**
+- ✅ **Explicit subscription** - Clear, visible event subscription code
+- ✅ **F12 navigation** - Jump to handler with IDE navigation
+- ✅ **Easy debugging** - Set breakpoints on event handlers
+- ✅ **Familiar pattern** - Standard .NET event model
+- ❌ **Manual CanExecute updates** - Must call `Dispatcher.RaiseCanExecuteChanged()` manually
+- ❌ **More code** - Additional events to define and subscribe to
+- ❌ **ActionBinder returns null** - Prevents framework auto-binding (avoids double-dispatch)
+
+**Implementation:**
+
+```csharp
+// 1. Define ViewActions (same as implicit)
+public static class UserEditorActions
+{
+    public static readonly ViewAction Save = ViewAction.Create("UserEditor.Save");
+    public static readonly ViewAction Delete = ViewAction.Create("UserEditor.Delete");
+    public static readonly ViewAction Cancel = ViewAction.Create("UserEditor.Cancel");
+}
+
+// 2. View Interface - Exposes ActionRequest event
+public interface IUserEditorView : IWindowView
+{
+    string UserName { get; set; }
+    string Email { get; set; }
+    bool HasUnsavedChanges { get; }
+    bool HasSelection { get; }
+
+    // Explicit event for ViewAction handling
+    event EventHandler<ActionRequestEventArgs> ActionRequest;
+
+    // State change events for manual CanExecute updates
+    event EventHandler SelectionChanged;
+    event EventHandler DataChanged;
+}
+
+// 3. View Implementation (Form)
+public class UserEditorForm : Form, IUserEditorView
+{
+    private ViewActionBinder _binder;
+    private Button _btnSave;
+    private Button _btnDelete;
+    private Button _btnCancel;
+
+    // Return null to prevent framework auto-binding
+    // (prevents double-dispatch: both event and callback paths active)
+    public ViewActionBinder ActionBinder => null;
+
+    // Explicit events
+    public event EventHandler<ActionRequestEventArgs> ActionRequest;
+    public event EventHandler SelectionChanged;
+    public event EventHandler DataChanged;
+
+    public UserEditorForm()
+    {
+        InitializeComponent();
+        InitializeActionBindings();
+    }
+
+    private void InitializeActionBindings()
+    {
+        _binder = new ViewActionBinder();
+
+        // Map UI controls to ViewActions
+        _binder.Add(UserEditorActions.Save, _btnSave);
+        _binder.Add(UserEditorActions.Delete, _btnDelete);
+        _binder.Add(UserEditorActions.Cancel, _btnCancel);
+
+        // Subscribe to ActionTriggered and forward to public ActionRequest event
+        _binder.ActionTriggered += (sender, e) =>
+        {
+            ActionRequest?.Invoke(this, e);
+        };
+
+        // Manually bind controls (event-only mode)
+        // Framework won't auto-bind because ActionBinder returns null
+        _binder.Bind();
+    }
+
+    // Raise state change events
+    private void OnDataChanged()
+    {
+        DataChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void OnSelectionChanged()
+    {
+        SelectionChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    // ... other View implementation
+}
+
+// 4. Presenter
+public class UserEditorPresenter : WindowPresenterBase<IUserEditorView>
+{
+    private readonly IMessageService _messageService;
+
+    public UserEditorPresenter(IMessageService messageService)
+    {
+        _messageService = messageService;
+    }
+
+    protected override void OnViewAttached()
+    {
+        // Explicit subscription using base class helper method
+        // OnViewActionTriggered automatically forwards to Dispatcher
+        View.ActionRequest += OnViewActionTriggered;
+    }
+
+    protected override void OnInitialize()
+    {
+        // Subscribe to state change events for manual CanExecute updates
+        View.SelectionChanged += (s, e) => Dispatcher.RaiseCanExecuteChanged();
+        View.DataChanged += (s, e) => Dispatcher.RaiseCanExecuteChanged();
+    }
+
+    protected override void RegisterViewActions()
+    {
+        // Register handlers with CanExecute predicates (same as implicit pattern)
+        Dispatcher.Register(
+            UserEditorActions.Save,
+            OnSave,
+            canExecute: () => View.HasUnsavedChanges);
+
+        Dispatcher.Register(
+            UserEditorActions.Delete,
+            OnDelete,
+            canExecute: () => View.HasSelection);
+
+        Dispatcher.Register(UserEditorActions.Cancel, OnCancel);
+
+        // NOTE: Framework tries to call View.ActionBinder?.Bind(_dispatcher),
+        // but ActionBinder returns null, so auto-binding doesn't happen.
+        // This prevents double-dispatch (event + callback paths).
+    }
+
+    // No need to write manual OnActionRequest handler!
+    // OnViewActionTriggered (base class helper) handles routing:
+    //   1. Extracts ActionKey from event args
+    //   2. Extracts payload if present (for parameterized actions)
+    //   3. Calls Dispatcher.Dispatch(key, payload)
+
+    private void OnSave()
+    {
+        SaveUser();
+        _messageService.ShowInfo("User saved successfully!", "Success");
+
+        // Manual CanExecute update happens via View.DataChanged event
+    }
+
+    private void OnDelete()
+    {
+        if (_messageService.ConfirmYesNo("Delete this user?", "Confirm"))
+        {
+            DeleteUser();
+            _messageService.ShowInfo("User deleted", "Success");
+        }
+    }
+
+    private void OnCancel()
+    {
+        RequestClose();
+    }
+}
+```
+
+**Event Flow (Explicit Pattern):**
+```
+User clicks button
+    ↓
+ViewActionBinder captures Click event (manually bound by View)
+    ↓
+ViewActionBinder raises ActionTriggered event
+    ↓
+View forwards to ActionRequest event
+    ↓
+Presenter's OnViewActionTriggered receives event
+    ↓
+OnViewActionTriggered extracts ActionKey and payload
+    ↓
+Calls Dispatcher.Dispatch(actionKey, payload)
+    ↓
+Dispatcher checks CanExecute predicate
+    ↓
+If true, execute registered handler (OnSave/OnDelete)
+    ↓
+User code manually triggers Dispatcher.RaiseCanExecuteChanged()
+    ↓
+(No automatic UI updates - must subscribe to state events)
+```
+
+**When to use Explicit Pattern:**
+- ✅ Learning scenarios (understand event flow)
+- ✅ Debugging complex action routing issues
+- ✅ Team strongly prefers explicit over implicit
+- ✅ Need custom routing logic (conditional dispatch)
+
+---
+
+##### Pattern Comparison Table
+
+| Feature | Implicit Pattern | Explicit Pattern |
+|---------|------------------|------------------|
+| **Code Verbosity** | Minimal | More verbose |
+| **ActionBinder Property** | Returns `_binder` instance | Returns `null` (prevents auto-binding) |
+| **Binding Setup** | Automatic (framework) | Manual (`_binder.Bind()`) |
+| **CanExecute UI Updates** | Automatic | Manual (`RaiseCanExecuteChanged`) |
+| **Event Subscription** | None (framework handles it) | `View.ActionRequest += OnViewActionTriggered` |
+| **State Events Needed** | No | Yes (SelectionChanged, DataChanged, etc.) |
+| **Debugging** | Harder (implicit flow) | Easier (explicit subscriptions) |
+| **F12 Navigation** | Limited | Full support |
+| **Double-Dispatch Risk** | None | Prevented by returning null |
+| **Production Use** | ✅ Recommended | ⚠️ Use when needed |
+| **Testability** | Good | Good |
+
+##### OnViewActionTriggered Helper Method
+
+The base class provides `OnViewActionTriggered` helper method that simplifies explicit pattern usage:
+
+**What it does:**
+```csharp
+protected void OnViewActionTriggered(object sender, ActionRequestEventArgs e)
+{
+    DispatchAction(e);
+}
+
+protected void DispatchAction(ActionRequestEventArgs e)
+{
+    if (e == null) return;
+
+    var key = e.ActionKey;
+    object payload = null;
+
+    // Check if event has payload (parameterized action)
+    if (e is IActionRequestEventArgsWithValue valueProvider)
+    {
+        payload = valueProvider.GetValue();
+    }
+
+    // Dispatch to registered handler
+    Dispatcher.Dispatch(key, payload);
+}
+```
+
+**Benefits:**
+- ✅ Converts event subscription to one line: `View.ActionRequest += OnViewActionTriggered;`
+- ✅ Automatically handles parameterized actions (extracts payload)
+- ✅ No manual if-else chains needed
+- ✅ Maintains CanExecute predicate support
+
+**Without helper (verbose):**
+```csharp
+View.ActionRequest += OnActionRequest;
+
+private void OnActionRequest(object sender, ActionRequestEventArgs e)
+{
+    // Manual routing with if-else chains
+    if (e.ActionKey == UserEditorActions.Save && View.HasUnsavedChanges)
+        OnSave();
+    else if (e.ActionKey == UserEditorActions.Delete && View.HasSelection)
+        OnDelete();
+    else if (e.ActionKey == UserEditorActions.Cancel)
+        OnCancel();
+}
+```
+
+**With helper (concise):**
+```csharp
+View.ActionRequest += OnViewActionTriggered;
+
+// That's it! Helper forwards to Dispatcher, which checks CanExecute
+```
+
+---
+
+##### Which Pattern Should You Use?
+
+**Use Implicit Pattern (Recommended) when:**
+- Building standard CRUD applications
+- Team is comfortable with framework conventions
+- Automatic UI updates are desired
+- Productivity is a priority
+
+**Use Explicit Pattern when:**
+- Debugging complex action routing
+- Team strongly prefers explicit code
+- Learning how the framework works
+- Need to understand event flow completely
+
+**Most applications should use the Implicit Pattern.** It's battle-tested, requires less code, and provides automatic CanExecute UI updates. The Explicit Pattern exists for teams that prefer maximum visibility and control.
+
 #### Complete Example
 
 **Complete Examples:**
 
-See `src/WinformsMVP.Samples/ViewActionExample.cs` for a comprehensive example demonstrating:
+See `src/WinformsMVP.Samples/ViewActionExample.cs` for **Implicit Pattern** example demonstrating:
 - Global and module-specific static ActionKey classes
 - **ActionBinder property pattern for proper MVP separation** (recommended)
 - CanExecute predicates for dynamic enable/disable
@@ -733,6 +1184,14 @@ See `src/WinformsMVP.Samples/ViewActionExample.cs` for a comprehensive example d
 - Multiple controls bound to the same action
 - Proper dependency injection with IMessageService
 - View Interface with ActionBinder property (no UI types exposed)
+
+See `src/WinformsMVP.Samples/ViewActionExplicitEventExample.cs` for **Explicit Event Pattern** example demonstrating:
+- ActionRequest event-based ViewAction handling
+- OnViewActionTriggered helper method usage (one-line subscription)
+- ActionBinder returns null to prevent framework auto-binding
+- Manual CanExecute updates with state change events
+- Complete event flow from button click to handler execution
+- When and why to use explicit pattern over implicit
 
 See `src/WinformsMVP.Samples/ViewActionWithParametersExample.cs` for parameterized action examples.
 

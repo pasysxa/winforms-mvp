@@ -108,7 +108,7 @@ namespace WinformsMVP.Samples
         private void InitializeComponent()
         {
             // Form setup
-            this.Text = "Explicit Event-Based ViewAction Demo";
+            this.Text = "Explicit Event Pattern Demo";
             this.Size = new System.Drawing.Size(500, 400);
             this.StartPosition = FormStartPosition.CenterScreen;
 
