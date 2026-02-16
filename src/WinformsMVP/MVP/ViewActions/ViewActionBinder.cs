@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows.Forms;
+using WinformsMVP.Common.Events;
 
 namespace WinformsMVP.MVP.ViewActions
 {
@@ -10,6 +11,32 @@ namespace WinformsMVP.MVP.ViewActions
     /// Binds UI controls to view actions with support for dynamic enable/disable based on CanExecute.
     /// When bound to a ViewActionDispatcher, automatically updates control states after each action execution.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// ViewActionBinder supports two usage patterns:
+    /// </para>
+    ///
+    /// <para>
+    /// <b>Pattern 1: Implicit Binding (via Dispatcher)</b>
+    /// <code>
+    /// // Presenter
+    /// Dispatcher.Register(CommonActions.Save, OnSave);
+    /// View.ActionBinder.Bind(Dispatcher);  // Implicit connection
+    /// </code>
+    /// </para>
+    ///
+    /// <para>
+    /// <b>Pattern 2: Explicit Event-Based (via ActionTriggered)</b>
+    /// <code>
+    /// // View
+    /// public event EventHandler&lt;ActionRequestEventArgs&gt; ActionRequest;
+    /// _binder.ActionTriggered += (s, e) => ActionRequest?.Invoke(this, e);
+    ///
+    /// // Presenter
+    /// View.ActionRequest += OnActionRequest;  // Explicit subscription
+    /// </code>
+    /// </para>
+    /// </remarks>
     public class ViewActionBinder : IEnumerable<ActionBinding>
     {
         private readonly List<ActionBinding> _bindings = new List<ActionBinding>();
@@ -19,6 +46,33 @@ namespace WinformsMVP.MVP.ViewActions
             = new List<(Component, Delegate, Action<Component, Delegate>)>();
         private readonly Dictionary<ViewAction, List<Component>> _actionToControls = new Dictionary<ViewAction, List<Component>>();
         private ViewActionDispatcher _dispatcher;
+
+        /// <summary>
+        /// Raised when an action is triggered from a bound control.
+        /// This event enables explicit event-based handling as an alternative to Bind(dispatcher).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Use this event when you prefer explicit event subscriptions over implicit dispatcher binding:
+        /// </para>
+        /// <code>
+        /// // View interface
+        /// public interface IMyView : IWindowView
+        /// {
+        ///     event EventHandler&lt;ActionRequestEventArgs&gt; ActionRequest;
+        /// }
+        ///
+        /// // View implementation
+        /// _binder.ActionTriggered += (s, e) => ActionRequest?.Invoke(this, e);
+        ///
+        /// // Presenter
+        /// View.ActionRequest += (s, e) =>
+        /// {
+        ///     if (e.ActionKey == CommonActions.Save) OnSave();
+        /// };
+        /// </code>
+        /// </remarks>
+        public event EventHandler<ActionRequestEventArgs> ActionTriggered;
 
         public ViewActionBinder()
         {
@@ -92,6 +146,10 @@ namespace WinformsMVP.MVP.ViewActions
             {
                 if (actionMap.TryGetValue(sender, out var key))
                 {
+                    // Raise ActionTriggered event (for explicit event-based pattern)
+                    ActionTriggered?.Invoke(this, new ActionRequestEventArgs(key));
+
+                    // Invoke callback (for implicit dispatcher pattern)
                     onActionTriggered?.Invoke(key);
                 }
             });
@@ -100,6 +158,28 @@ namespace WinformsMVP.MVP.ViewActions
             {
                 ApplyBindingStrategy((Component)control, handler);
             }
+        }
+
+        /// <summary>
+        /// Binds all registered controls to trigger ActionTriggered event only.
+        /// Use this overload when using explicit event-based pattern without a dispatcher.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This enables the explicit event-based pattern:
+        /// </para>
+        /// <code>
+        /// // View
+        /// _binder.ActionTriggered += (s, e) => ActionRequest?.Invoke(this, e);
+        /// _binder.Bind();  // ✅ Event-only binding
+        ///
+        /// // Presenter
+        /// View.ActionRequest += OnActionRequest;
+        /// </code>
+        /// </remarks>
+        public void Bind()
+        {
+            Bind(onActionTriggered: null);
         }
 
         /// <summary>
