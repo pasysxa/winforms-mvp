@@ -6,31 +6,33 @@ namespace WinformsMVP.Common.Validation.Helpers
 {
     /// <summary>
     /// Provides helper methods for common validation scenarios.
-    /// Simplifies integration between ModelValidator and IMessageService.
+    /// Simplifies validation with optional error display via IMessageService.
     /// </summary>
     /// <remarks>
     /// <para>
-    /// ValidationHelper eliminates boilerplate code by combining validation and error display:
+    /// ValidationHelper provides flexible validation with optional UI feedback:
     /// </para>
     ///
     /// <para>
-    /// <b>Without Helper:</b>
+    /// <b>Validation only (no UI):</b>
     /// <code>
-    /// var errors = validator.ValidateAll(model);
-    /// if (errors.Any())
-    /// {
-    ///     var errorMessage = string.Join("\n", errors.Select(e => e.GetFormattedMessage()));
-    ///     messageService.ShowWarning(errorMessage, "Validation Failed");
-    ///     return false;
-    /// }
-    /// return true;
+    /// if (!ValidationHelper.ValidateSequential(model, validator))
+    ///     return;  // Validation failed, but no message shown
     /// </code>
     /// </para>
     ///
     /// <para>
-    /// <b>With Helper:</b>
+    /// <b>Validation with error display:</b>
     /// <code>
-    /// if (!ValidationHelper.ValidateAndShow(model, validator, messageService))
+    /// if (!ValidationHelper.ValidateSequential(model, validator, Messages))
+    ///     return;  // Validation failed, error shown to user
+    /// </code>
+    /// </para>
+    ///
+    /// <para>
+    /// <b>Validation with custom title:</b>
+    /// <code>
+    /// if (!ValidationHelper.ValidateSequential(model, validator, Messages, "自定义标题"))
     ///     return;
     /// </code>
     /// </para>
@@ -38,65 +40,77 @@ namespace WinformsMVP.Common.Validation.Helpers
     public static class ValidationHelper
     {
         /// <summary>
-        /// Validates the model and displays all errors via IMessageService.
+        /// Validates all properties on the model and optionally displays errors.
         /// </summary>
         /// <typeparam name="T">The type of model to validate.</typeparam>
         /// <param name="model">The model instance to validate.</param>
         /// <param name="validator">The validator to use for validation.</param>
-        /// <param name="messageService">The message service to display errors.</param>
+        /// <param name="messageService">
+        /// Optional. If provided, displays all validation errors to the user.
+        /// If null, validation occurs silently.
+        /// </param>
         /// <param name="errorTitle">
         /// The title for the error message dialog. Default is "Validation Failed".
+        /// Only used if messageService is provided.
         /// </param>
         /// <returns>
         /// true if the model is valid (no errors); otherwise, false.
         /// </returns>
         /// <remarks>
         /// <para>
-        /// This method performs ValidateAll() to collect all validation errors,
-        /// then displays them in a single message dialog. This provides better
-        /// user experience by showing all issues at once.
+        /// This method performs ValidateAll() to collect all validation errors.
+        /// If messageService is provided, displays them in a single message dialog.
         /// </para>
         ///
         /// <para>
-        /// <b>Example Usage in Presenter:</b>
+        /// <b>Example 1 - Validation only (no UI):</b>
         /// <code>
-        /// private void OnSave()
-        /// {
-        ///     var currentEmail = CreateEmailMessage();
+        /// if (!ValidationHelper.ValidateAll(model, validator))
+        ///     return;  // Invalid, but user not notified
+        /// </code>
+        /// </para>
         ///
-        ///     if (!ValidationHelper.ValidateAndShow(currentEmail, _validator, Messages))
-        ///         return;  // Validation failed, user was notified
-        ///
-        ///     // Proceed with save...
-        ///     SaveEmail(currentEmail);
-        /// }
+        /// <para>
+        /// <b>Example 2 - Validation with error display:</b>
+        /// <code>
+        /// if (!ValidationHelper.ValidateAll(model, validator, Messages))
+        ///     return;  // Invalid, user was notified
         /// </code>
         /// </para>
         /// </remarks>
-        public static bool ValidateAndShow<T>(
+        public static bool ValidateAll<T>(
             T model,
-            ModelValidator<T> validator,
-            IMessageService messageService,
+            IModelValidator validator,
+            IMessageService messageService = null,
             string errorTitle = "Validation Failed") where T : class
         {
             var errors = validator.ValidateAll(model);
             if (!errors.Any())
                 return true;
 
-            var errorMessage = string.Join("\n", errors.Select(e => e.GetFormattedMessage()));
-            messageService.ShowWarning(errorMessage, errorTitle);
+            // Only show message if messageService was provided
+            if (messageService != null)
+            {
+                var errorMessage = string.Join("\n", errors.Select(e => e.GetFormattedMessage()));
+                messageService.ShowWarning(errorMessage, errorTitle);
+            }
+
             return false;
         }
 
         /// <summary>
-        /// Validates the model sequentially and displays the first error via IMessageService.
+        /// Validates the model sequentially and optionally displays the first error.
         /// </summary>
         /// <typeparam name="T">The type of model to validate.</typeparam>
         /// <param name="model">The model instance to validate.</param>
         /// <param name="validator">The validator to use for validation.</param>
-        /// <param name="messageService">The message service to display errors.</param>
+        /// <param name="messageService">
+        /// Optional. If provided, displays the first validation error to the user.
+        /// If null, validation occurs silently.
+        /// </param>
         /// <param name="errorTitle">
         /// The title for the error message dialog. Default is "Validation Failed".
+        /// Only used if messageService is provided.
         /// </param>
         /// <returns>
         /// true if the model is valid (no errors); otherwise, false.
@@ -104,39 +118,52 @@ namespace WinformsMVP.Common.Validation.Helpers
         /// <remarks>
         /// <para>
         /// This method performs ValidateSequential() to find the first validation error
-        /// (by Order), then displays it. This is useful for:
+        /// (by Order), then optionally displays it. This is useful for:
         /// - Guiding users through fixing errors one at a time
         /// - Performance (stops at first error)
         /// - Preventing cascading errors
         /// </para>
         ///
         /// <para>
-        /// <b>Example Usage in Presenter:</b>
+        /// <b>Example 1 - Validation only (no UI):</b>
         /// <code>
-        /// private void OnSend()
-        /// {
-        ///     var currentEmail = CreateEmailMessage();
+        /// if (!ValidationHelper.ValidateSequential(model, validator))
+        ///     return;  // Invalid, but user not notified
+        /// </code>
+        /// </para>
         ///
-        ///     if (!ValidationHelper.ValidateSequentialAndShow(currentEmail, _validator, Messages))
-        ///         return;  // First validation error was shown, user was notified
+        /// <para>
+        /// <b>Example 2 - Validation with error display:</b>
+        /// <code>
+        /// if (!ValidationHelper.ValidateSequential(model, validator, Messages))
+        ///     return;  // Invalid, first error shown to user
+        /// </code>
+        /// </para>
         ///
-        ///     // Proceed with send...
-        ///     SendEmail(currentEmail);
-        /// }
+        /// <para>
+        /// <b>Example 3 - Custom error title:</b>
+        /// <code>
+        /// if (!ValidationHelper.ValidateSequential(model, validator, Messages, "输入错误"))
+        ///     return;
         /// </code>
         /// </para>
         /// </remarks>
-        public static bool ValidateSequentialAndShow<T>(
+        public static bool ValidateSequential<T>(
             T model,
-            ModelValidator<T> validator,
-            IMessageService messageService,
+            IModelValidator validator,
+            IMessageService messageService = null,
             string errorTitle = "Validation Failed") where T : class
         {
             var error = validator.ValidateSequential(model);
             if (error.IsValid)
                 return true;
 
-            messageService.ShowWarning(error.GetFormattedMessage(), errorTitle);
+            // Only show message if messageService was provided
+            if (messageService != null)
+            {
+                messageService.ShowWarning(error.GetFormattedMessage(), errorTitle);
+            }
+
             return false;
         }
 
@@ -178,20 +205,7 @@ namespace WinformsMVP.Common.Validation.Helpers
         /// </code>
         /// </para>
         /// </remarks>
-        public static bool ValidatePropertyAndShow<T>(
-            T model,
-            string propertyName,
-            ModelValidator<T> validator,
-            IMessageService messageService,
-            string errorTitle = "Validation Error") where T : class
-        {
-            var errors = validator.ValidateProperty(model, propertyName);
-            if (!errors.Any())
-                return true;
-
-            var errorMessage = string.Join("\n", errors.Select(e => e.GetFormattedMessage()));
-            messageService.ShowWarning(errorMessage, errorTitle);
-            return false;
-        }
+        // NOTE: ValidateProperty is not part of IModelValidator interface
+        // If needed, use validator.ValidateAll() and filter by property name manually
     }
 }

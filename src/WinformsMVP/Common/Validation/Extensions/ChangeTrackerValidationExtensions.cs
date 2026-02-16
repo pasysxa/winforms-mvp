@@ -21,7 +21,7 @@ namespace WinformsMVP.Common.Validation.Extensions
     /// public class EditUserPresenter : WindowPresenterBase&lt;IEditUserView&gt;
     /// {
     ///     private readonly ChangeTracker&lt;UserModel&gt; _changeTracker;
-    ///     private readonly ModelValidator&lt;UserModel&gt; _validator;
+    ///     private readonly IModelValidator _validator = ModelValidator.For&lt;UserModel&gt;();
     ///
     ///     protected override void OnInitialize()
     ///     {
@@ -93,7 +93,7 @@ namespace WinformsMVP.Common.Validation.Extensions
         /// </remarks>
         public static bool AcceptChangesIfValid<T>(
             this ChangeTracker<T> tracker,
-            ModelValidator<T> validator,
+            IModelValidator validator,
             out IReadOnlyList<ValidationResult> errors) where T : class, ICloneable
         {
             if (tracker == null)
@@ -155,7 +155,7 @@ namespace WinformsMVP.Common.Validation.Extensions
         /// </remarks>
         public static bool IsCurrentValueValid<T>(
             this ChangeTracker<T> tracker,
-            ModelValidator<T> validator,
+            IModelValidator validator,
             out ValidationResult error) where T : class, ICloneable
         {
             if (tracker == null)
@@ -199,7 +199,7 @@ namespace WinformsMVP.Common.Validation.Extensions
         /// </remarks>
         public static bool IsCurrentValueValid<T>(
             this ChangeTracker<T> tracker,
-            ModelValidator<T> validator) where T : class, ICloneable
+            IModelValidator validator) where T : class, ICloneable
         {
             return IsCurrentValueValid(tracker, validator, out _);
         }
@@ -240,7 +240,7 @@ namespace WinformsMVP.Common.Validation.Extensions
         /// </remarks>
         public static bool RejectChangesIfInvalid<T>(
             this ChangeTracker<T> tracker,
-            ModelValidator<T> validator) where T : class, ICloneable
+            IModelValidator validator) where T : class, ICloneable
         {
             if (tracker == null)
                 throw new ArgumentNullException(nameof(tracker));
