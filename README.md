@@ -7,7 +7,7 @@
 
 A modern, enterprise-grade **Model-View-Presenter (MVP)** framework for WinForms applications, bringing WPF-style command binding and clean architecture to .NET Framework 4.8.
 
-[What is MVP?](#-what-is-mvp) • [Features](#-core-features) • [Quick Start](#-quick-start) • [Documentation](CLAUDE.md) • [Examples](#-examples)
+[What is MVP?](#-what-is-mvp) • [Features](#-core-features) • [Quick Start](QUICKSTART.md) 🚀 • [Documentation](CLAUDE.md) • [Examples](#-examples)
 
 ---
 
@@ -488,6 +488,8 @@ sequenceDiagram
 
 ## 🚀 Quick Start
 
+> **📖 New to the framework? Check out our [5-Minute Quick Start Guide](QUICKSTART.md)** for a step-by-step tutorial!
+
 ### 1. Install
 
 ```bash
@@ -673,6 +675,13 @@ public void OnSave_WithValidData_ShowsSuccessMessage()
 ---
 
 ## 📖 Documentation
+
+- **[QUICKSTART.md](QUICKSTART.md)** - 5-minute beginner tutorial 🚀
+  - Hello World example
+  - User interaction basics
+  - ViewAction system introduction
+  - Service layer usage
+  - Complete runnable code
 
 - **[MVP-DESIGN-RULES.md](MVP-DESIGN-RULES.md)** - 14 essential design rules ⭐
   - Supervising Controller pattern principles
