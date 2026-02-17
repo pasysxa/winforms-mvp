@@ -5,92 +5,23 @@ This document compares different approaches for inter-presenter communication in
 ## Table of Contents
 
 - [Overview](#overview)
-- [Pattern 1: Direct Method Calls (Original)](#pattern-1-direct-method-calls-original)
-- [Pattern 2: Shared Service Layer](#pattern-2-shared-service-layer)
-- [Pattern 3: Event Aggregator (Pub-Sub)](#pattern-3-event-aggregator-pub-sub)
+- [Pattern 1: Shared Service Layer](#pattern-1-shared-service-layer)
+- [Pattern 2: Event Aggregator (Pub-Sub)](#pattern-2-event-aggregator-pub-sub)
 - [Decision Matrix](#decision-matrix)
 - [Performance Comparison](#performance-comparison)
 - [Testing Comparison](#testing-comparison)
 - [When to Use Which Pattern](#when-to-use-which-pattern)
+- [Anti-Patterns to Avoid](#anti-patterns-to-avoid)
 
 ## Overview
 
-In complex WinForms MVP applications, presenters often need to communicate with each other. This document demonstrates three architectural patterns using the **Order Management** scenario:
+In complex WinForms MVP applications, presenters often need to communicate with each other. This document demonstrates **two recommended architectural patterns** using the **Order Management** scenario:
 
 - **ProductSelector** - Allows adding products to an order
 - **OrderSummary** - Displays current order items and total
 - **OrderManagement** - Coordinates the overall workflow
 
-## Pattern 1: Direct Method Calls (Original)
-
-**Location**: `src/WinformsMVP.Samples/ComplexInteractionDemo/`
-
-### Architecture
-
-```
-OrderManagementPresenter (Parent)
-    ├─ Holds reference to ProductSelectorPresenter
-    ├─ Holds reference to OrderSummaryPresenter
-    └─ Calls public methods directly
-```
-
-### Implementation
-
-```csharp
-public class OrderManagementPresenter : WindowPresenterBase<IOrderManagementView>
-{
-    private readonly ProductSelectorPresenter _productSelectorPresenter;
-    private readonly OrderSummaryPresenter _orderSummaryPresenter;
-
-    public OrderManagementPresenter(ProductSelectorPresenter productSelector,
-                                    OrderSummaryPresenter orderSummary)
-    {
-        _productSelectorPresenter = productSelector;
-        _orderSummaryPresenter = orderSummary;
-    }
-
-    private void OnClearOrder()
-    {
-        // Direct method call
-        _orderSummaryPresenter.ClearAll();
-        View.StatusMessage = "Order cleared";
-    }
-}
-
-public class ProductSelectorPresenter : ControlPresenterBase<IProductSelectorView>
-{
-    // Exposed public method for parent to call
-    public void AddToOrder()
-    {
-        OnAddToOrder();
-    }
-}
-```
-
-### Pros
-
-- ✅ **Simple and explicit** - Easy to understand control flow
-- ✅ **Type-safe** - Compile-time checked method calls
-- ✅ **Easy debugging** - F12 navigation works perfectly
-- ✅ **No infrastructure needed** - No additional services or event systems
-- ✅ **Best for parent-child** - Natural for hierarchical relationships
-
-### Cons
-
-- ❌ **Tight coupling** - Parent knows about child implementation
-- ❌ **Hard to test in isolation** - Must create all child presenters
-- ❌ **Limited reusability** - Hard to reuse child presenters elsewhere
-- ❌ **Scalability issues** - Becomes unwieldy with many children
-- ❌ **Parent responsibility** - Parent manages coordination logic
-
-### Use Cases
-
-- Simple parent-child presenter relationships
-- Forms with 2-3 embedded UserControls
-- Coordination logic is straightforward
-- Children don't need to communicate with each other
-
-## Pattern 2: Shared Service Layer
+## Pattern 1: Shared Service Layer
 
 **Location**: `src/WinformsMVP.Samples/ComplexInteractionDemo_ServiceBased/`
 
@@ -186,7 +117,7 @@ public class OrderManagementPresenter : WindowPresenterBase<IOrderManagementView
 - Transactional operations (e.g., validate before save)
 - Need to enforce business rules centrally
 
-## Pattern 3: Event Aggregator (Pub-Sub)
+## Pattern 2: Event Aggregator (Pub-Sub)
 
 **Location**: `src/WinformsMVP.Samples/ComplexInteractionDemo_EventBased/`
 
@@ -306,14 +237,14 @@ public class OrderManagementPresenter : WindowPresenterBase<IOrderManagementView
 
 | Scenario | Recommended Pattern | Reason |
 |----------|---------------------|--------|
-| Parent Form with 2-3 UserControls | **Direct Method Calls** | Simple, explicit, easy to maintain |
 | Shopping Cart / Order Management | **Shared Service** | Centralized state, business rules, queries |
 | Status Bar Updates from Any Presenter | **Event Aggregator** | Cross-cutting concern, no coupling |
 | User Login/Logout Notifications | **Event Aggregator** | Application-wide event |
-| Parent coordinating child workflow | **Direct Method Calls** | Natural parent-child relationship |
 | Multiple presenters editing same data | **Shared Service** | Single source of truth needed |
 | Plugin system / Extensibility | **Event Aggregator** | Maximum decoupling |
 | Background task notifications | **Event Aggregator** | UI thread marshaling |
+| Transactional operations | **Shared Service** | Service can enforce business rules |
+| Cross-cutting notifications | **Event Aggregator** | Loosely coupled modules |
 
 ## Performance Comparison
 
@@ -321,7 +252,6 @@ Based on stress tests (`EventAggregatorTests.cs`):
 
 | Pattern | Overhead | Scalability | Memory |
 |---------|----------|-------------|--------|
-| **Direct Method Calls** | None (direct call) | Poor (tight coupling) | Low |
 | **Shared Service** | Low (event subscription) | Good (centralized) | Low |
 | **Event Aggregator** | Moderate (message routing) | Excellent (decoupled) | Low (weak refs) |
 
@@ -332,30 +262,6 @@ Based on stress tests (`EventAggregatorTests.cs`):
 - Thread-safe concurrent operations
 
 ## Testing Comparison
-
-### Direct Method Calls
-
-```csharp
-[Fact]
-public void Test_OrderManagement_ClearsOrder()
-{
-    // Must create all child presenters
-    var productSelectorView = new MockProductSelectorView();
-    var orderSummaryView = new MockOrderSummaryView();
-    var mainView = new MockOrderManagementView();
-
-    var productSelector = new ProductSelectorPresenter(productSelectorView);
-    var orderSummary = new OrderSummaryPresenter(orderSummaryView);
-
-    var presenter = new OrderManagementPresenter(productSelector, orderSummary);
-    presenter.AttachView(mainView);
-
-    // Test requires all dependencies
-    presenter.ClearOrder();
-
-    Assert.Empty(orderSummary.GetOrderItems());
-}
-```
 
 ### Shared Service
 
@@ -400,14 +306,6 @@ public void Test_ProductAddedMessage_ReceivedByOrderSummary()
 
 ## When to Use Which Pattern
 
-### Use Direct Method Calls When
-
-- ✅ Parent-child presenter relationship (Form → UserControl)
-- ✅ Simple coordination (2-3 child presenters)
-- ✅ One-way command flow (parent tells child what to do)
-- ✅ Immediate feedback needed
-- ✅ Team prefers explicit over implicit
-
 ### Use Shared Service When
 
 - ✅ Multiple presenters share state (shopping cart, user session)
@@ -427,6 +325,63 @@ public void Test_ProductAddedMessage_ReceivedByOrderSummary()
 - ✅ Maximum decoupling required
 
 ### Anti-Patterns to Avoid
+
+❌ **Parent Presenter Holding Child Presenter References (Direct Method Calls)**
+```csharp
+// Bad: Parent holds child presenter references and calls methods directly
+public class OrderManagementPresenter : WindowPresenterBase<IOrderManagementView>
+{
+    private readonly ProductSelectorPresenter _productSelectorPresenter;
+    private readonly OrderSummaryPresenter _orderSummaryPresenter;
+
+    public OrderManagementPresenter(
+        ProductSelectorPresenter productSelector,
+        OrderSummaryPresenter orderSummary)
+    {
+        _productSelectorPresenter = productSelector;
+        _orderSummaryPresenter = orderSummary;
+    }
+
+    private void OnClearOrder()
+    {
+        _orderSummaryPresenter.ClearAll();  // Tight coupling!
+    }
+}
+```
+
+**Why this is bad:**
+- ❌ Tight coupling between presenters
+- ❌ Hard to test in isolation (must create all child presenters)
+- ❌ Limited reusability
+- ❌ Scalability issues with many children
+- ❌ Parent takes on too much responsibility
+
+✅ **Use Shared Service or Event Aggregator instead**
+```csharp
+// Good: Use Shared Service pattern
+public class OrderManagementPresenter : WindowPresenterBase<IOrderManagementView>
+{
+    private readonly IOrderManagementService _orderService;
+
+    private void OnClearOrder()
+    {
+        _orderService.ClearOrder();  // Service handles coordination
+    }
+}
+
+// Or: Use Event Aggregator pattern
+public class OrderManagementPresenter : WindowPresenterBase<IOrderManagementView>
+{
+    private readonly IEventAggregator _eventAggregator;
+
+    private void OnClearOrder()
+    {
+        _eventAggregator.Publish(new ClearOrderMessage());  // Decoupled messaging
+    }
+}
+```
+
+---
 
 ❌ **Using Event Aggregator for State Management**
 ```csharp
@@ -504,9 +459,6 @@ public class OrderManagementPresenter
     // Event Aggregator for cross-cutting notifications
     private readonly IEventAggregator _eventAggregator;
 
-    // Direct reference for simple coordination
-    private readonly InvoicePresenter _invoicePresenter;
-
     protected override void OnViewAttached()
     {
         // Service event for data changes
@@ -516,10 +468,16 @@ public class OrderManagementPresenter
         _eventAggregator.Subscribe<UserLoggedOutMessage>(OnUserLoggedOut);
     }
 
-    private void OnPrintInvoice()
+    private void OnSaveOrder()
     {
-        // Direct method call for simple command
-        _invoicePresenter.Print(_orderService.CurrentOrder);
+        // Use service for state management
+        _orderService.SaveOrder();
+    }
+
+    private void OnNotifyUser()
+    {
+        // Use Event Aggregator for notifications
+        _eventAggregator.Publish(new OrderSavedMessage());
     }
 }
 ```
@@ -528,17 +486,16 @@ public class OrderManagementPresenter
 
 | Pattern | Coupling | State Ownership | Queries | Best For |
 |---------|----------|-----------------|---------|----------|
-| **Direct Method Calls** | High | Each presenter | Via public methods | Parent-child coordination |
 | **Shared Service** | Low | Service | Direct (`service.Data`) | Shared state management |
 | **Event Aggregator** | None | Each presenter | Awkward (request-response) | Cross-cutting notifications |
 
-**Golden Rule**: Choose the simplest pattern that meets your needs. Start with Direct Method Calls for parent-child relationships, use Shared Service when multiple presenters need shared state, and reserve Event Aggregator for cross-cutting concerns and maximum decoupling.
+**Golden Rule**: Choose the right pattern for your needs. Use **Shared Service** when multiple presenters need shared state and business logic centralization. Use **Event Aggregator** for cross-cutting concerns, application-wide events, and maximum decoupling. Avoid tight presenter-to-presenter coupling through direct references.
 
 ## Examples in Codebase
 
-- **Direct Method Calls**: `src/WinformsMVP.Samples/ComplexInteractionDemo/`
 - **Shared Service**: `src/WinformsMVP.Samples/ComplexInteractionDemo_ServiceBased/`
 - **Event Aggregator**: `src/WinformsMVP.Samples/ComplexInteractionDemo_EventBased/`
+- **Shared Models and Views**: `src/WinformsMVP.Samples/ComplexInteractionDemo/` (Models, Views, and Services used by both patterns)
 - **Tests**: `src/WinformsMVP.Samples.Tests/Common/EventAggregatorTests.cs`
 
-All three implementations use the **same Views and Models**, demonstrating that architectural patterns are presenter concerns.
+Both implementations use the **same Views and Models**, demonstrating that architectural patterns are presenter concerns. The original `ComplexInteractionDemo` directory now only contains shared resources (Models, Views, Services) to avoid duplication.

@@ -10,7 +10,6 @@ using WinformsMVP.Samples.ExecutionRequestDemo;
 using WinformsMVP.Samples.MessageBoxDemo;
 using WinformsMVP.Samples.EmailDemo;
 using WinformsMVP.Samples.EmailDemo.Services;
-using WinformsMVP.Samples.ComplexInteractionDemo;
 using WinformsMVP.Samples.ComplexInteractionDemo_ServiceBased;
 using WinformsMVP.Samples.ComplexInteractionDemo_EventBased;
 using WinformsMVP.Services;
@@ -32,7 +31,7 @@ namespace WinformsMVP.Samples
         {
             // Form settings
             this.Text = "WinForms MVP - Sample Launcher";
-            this.Size = new Size(500, 1170);
+            this.Size = new Size(500, 1080);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.Font = new Font("Segoe UI", 9f);
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -250,35 +249,11 @@ namespace WinformsMVP.Samples
                 TextAlign = ContentAlignment.MiddleCenter
             };
 
-            // Complex Interaction Demo Button
-            var complexInteractionButton = new Button
-            {
-                Text = "Complex Interaction Demo",
-                Location = new Point(100, 840),
-                Size = new Size(300, 50),
-                Font = new Font("Segoe UI", 11f),
-                BackColor = Color.FromArgb(50, 50, 150),
-                ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat,
-                Cursor = Cursors.Hand
-            };
-            complexInteractionButton.FlatAppearance.BorderSize = 0;
-            complexInteractionButton.Click += (s, e) => LaunchComplexInteractionDemo();
-
-            var complexInteractionInfoLabel = new Label
-            {
-                Text = "Order Management • Parent-Child MVP • UserControls",
-                Location = new Point(100, 895),
-                Size = new Size(300, 20),
-                ForeColor = Color.DarkGray,
-                TextAlign = ContentAlignment.MiddleCenter
-            };
-
             // Service-Based Order Management Demo Button
             var serviceBasedButton = new Button
             {
                 Text = "Order Management (Service-Based)",
-                Location = new Point(100, 930),
+                Location = new Point(100, 840),
                 Size = new Size(300, 50),
                 Font = new Font("Segoe UI", 11f),
                 BackColor = Color.FromArgb(34, 139, 34),
@@ -292,7 +267,7 @@ namespace WinformsMVP.Samples
             var serviceBasedInfoLabel = new Label
             {
                 Text = "Shared Service Layer • Zero Presenter Coupling",
-                Location = new Point(100, 985),
+                Location = new Point(100, 895),
                 Size = new Size(300, 20),
                 ForeColor = Color.DarkGray,
                 TextAlign = ContentAlignment.MiddleCenter
@@ -302,7 +277,7 @@ namespace WinformsMVP.Samples
             var eventBasedButton = new Button
             {
                 Text = "Order Management (EventAggregator)",
-                Location = new Point(100, 1020),
+                Location = new Point(100, 930),
                 Size = new Size(300, 50),
                 Font = new Font("Segoe UI", 11f),
                 BackColor = Color.FromArgb(184, 134, 11),
@@ -316,7 +291,7 @@ namespace WinformsMVP.Samples
             var eventBasedInfoLabel = new Label
             {
                 Text = "Event Aggregator Pub-Sub • Decoupled Messaging",
-                Location = new Point(100, 1075),
+                Location = new Point(100, 985),
                 Size = new Size(300, 20),
                 ForeColor = Color.DarkGray,
                 TextAlign = ContentAlignment.MiddleCenter
@@ -333,7 +308,6 @@ namespace WinformsMVP.Samples
                 executionRequestButton, executionRequestInfoLabel,
                 messageBoxButton, messageBoxInfoLabel,
                 emailDemoButton, emailDemoInfoLabel,
-                complexInteractionButton, complexInteractionInfoLabel,
                 serviceBasedButton, serviceBasedInfoLabel,
                 eventBasedButton, eventBasedInfoLabel
             });
@@ -460,13 +434,6 @@ namespace WinformsMVP.Samples
 
             this.Hide();
             view.FormClosed += (s, e) => this.Show();
-        }
-
-        private void LaunchComplexInteractionDemo()
-        {
-            this.Hide();
-            ComplexInteractionDemoProgram.Run();
-            this.Show();
         }
 
         private void LaunchServiceBasedDemo()
