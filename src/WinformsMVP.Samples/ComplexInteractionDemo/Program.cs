@@ -16,8 +16,8 @@ namespace WinformsMVP.Samples.ComplexInteractionDemo
     {
         public static void Run()
         {
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
+            // Note: Application.EnableVisualStyles() and SetCompatibleTextRenderingDefault()
+            // are already called in the main Program.Main(), so we don't call them here
 
             // Create sample product data
             var products = CreateSampleProducts();
@@ -39,8 +39,8 @@ namespace WinformsMVP.Samples.ComplexInteractionDemo
             mainPresenter.AttachView(form);
             mainPresenter.Initialize();
 
-            // Run the application
-            Application.Run(form);
+            // Show the form
+            form.ShowDialog();
         }
 
         private static IList<Product> CreateSampleProducts()

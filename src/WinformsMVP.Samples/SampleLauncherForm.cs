@@ -412,9 +412,8 @@ namespace WinformsMVP.Samples
 
         private void LaunchComplexInteractionDemo()
         {
+            this.Hide();
             ComplexInteractionDemoProgram.Run();
-
-            // After the demo closes, show the launcher again
             this.Show();
         }
     }
