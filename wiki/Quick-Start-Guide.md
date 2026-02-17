@@ -1,32 +1,32 @@
-# WinForms MVP Framework - 快速入门
+# WinForms MVP Framework - Quick Start Guide
 
-> 5分钟学会使用WinForms MVP框架构建干净、可测试的桌面应用
+> Learn to build clean, testable desktop applications with WinForms MVP Framework in 5 minutes
 
-## 📋 目录
+## 📋 Table of Contents
 
-- [环境要求](#环境要求)
-- [第一步：Hello World](#第一步hello-world)
-- [第二步：添加用户交互](#第二步添加用户交互)
-- [第三步：使用ViewAction系统](#第三步使用viewaction系统)
-- [第四步：添加服务依赖](#第四步添加服务依赖)
-- [完整示例代码](#完整示例代码)
-- [下一步学习](#下一步学习)
-
----
-
-## 环境要求
-
-- .NET Framework 4.8 或更高版本
-- Visual Studio 2019+ 或 VS Code
-- 基础的C#和WinForms知识
+- [Prerequisites](#prerequisites)
+- [Step 1: Hello World](#step-1-hello-world)
+- [Step 2: Add User Interaction](#step-2-add-user-interaction)
+- [Step 3: Use ViewAction System](#step-3-use-viewaction-system)
+- [Step 4: Add Service Dependencies](#step-4-add-service-dependencies)
+- [Complete Example Code](#complete-example-code)
+- [Next Steps](#next-steps)
 
 ---
 
-## 第一步：Hello World
+## Prerequisites
 
-让我们创建一个最简单的MVP应用，显示"Hello MVP!"。
+- .NET Framework 4.8 or higher
+- Visual Studio 2019+ or VS Code
+- Basic knowledge of C# and WinForms
 
-### 1.1 创建View接口
+---
+
+## Step 1: Hello World
+
+Let's create the simplest MVP application to display "Hello MVP!".
+
+### 1.1 Create View Interface
 
 ```csharp
 using WinformsMVP.MVP.Views;
@@ -34,21 +34,21 @@ using WinformsMVP.MVP.Views;
 namespace MyFirstMVP
 {
     /// <summary>
-    /// 主窗口的View接口
+    /// View interface for the main window
     /// </summary>
     public interface IMainView : IWindowView
     {
-        // 定义View需要显示的数据
+        // Define data the View needs to display
         string WelcomeMessage { get; set; }
     }
 }
 ```
 
-**关键点**：
-- ✅ View接口继承自`IWindowView`（窗体）或`IViewBase`（UserControl）
-- ✅ 只暴露**数据和行为**，不暴露UI控件（如Button、TextBox）
+**Key Points**:
+- ✅ View interface inherits from `IWindowView` (for Forms) or `IViewBase` (for UserControls)
+- ✅ Only expose **data and behavior**, not UI controls (like Button, TextBox)
 
-### 1.2 创建Presenter
+### 1.2 Create Presenter
 
 ```csharp
 using WinformsMVP.MVP.Presenters;
@@ -56,25 +56,25 @@ using WinformsMVP.MVP.Presenters;
 namespace MyFirstMVP
 {
     /// <summary>
-    /// 主窗口的Presenter（业务逻辑）
+    /// Presenter for the main window (business logic)
     /// </summary>
     public class MainPresenter : WindowPresenterBase<IMainView>
     {
         protected override void OnInitialize()
         {
-            // 初始化时设置欢迎消息
-            View.WelcomeMessage = "Hello MVP! 欢迎使用WinForms MVP框架";
+            // Set welcome message on initialization
+            View.WelcomeMessage = "Hello MVP! Welcome to WinForms MVP Framework";
         }
     }
 }
 ```
 
-**关键点**：
-- ✅ Presenter继承自`WindowPresenterBase<TView>`
-- ✅ 在`OnInitialize()`中初始化数据
-- ✅ 通过`View`属性访问界面
+**Key Points**:
+- ✅ Presenter inherits from `WindowPresenterBase<TView>`
+- ✅ Initialize data in `OnInitialize()`
+- ✅ Access UI through the `View` property
 
-### 1.3 创建Form（View实现）
+### 1.3 Create Form (View Implementation)
 
 ```csharp
 using System;
@@ -94,24 +94,24 @@ namespace MyFirstMVP
 
         private void InitializeComponent()
         {
-            // 设置窗体
-            this.Text = "我的第一个MVP应用";
+            // Setup form
+            this.Text = "My First MVP Application";
             this.Size = new Size(500, 300);
             this.StartPosition = FormStartPosition.CenterScreen;
 
-            // 创建标签
+            // Create label
             _welcomeLabel = new Label
             {
                 Location = new Point(50, 100),
                 Size = new Size(400, 50),
-                Font = new Font("微软雅黑", 16f, FontStyle.Bold),
+                Font = new Font("Segoe UI", 16f, FontStyle.Bold),
                 TextAlign = ContentAlignment.MiddleCenter
             };
 
             this.Controls.Add(_welcomeLabel);
         }
 
-        // 实现IMainView接口
+        // Implement IMainView interface
         public string WelcomeMessage
         {
             get => _welcomeLabel.Text;
@@ -121,12 +121,12 @@ namespace MyFirstMVP
 }
 ```
 
-**关键点**：
-- ✅ Form实现了`IMainView`接口
-- ✅ 属性通过内部控件实现（`_welcomeLabel`）
-- ✅ Presenter不知道Label的存在，只知道`WelcomeMessage`属性
+**Key Points**:
+- ✅ Form implements `IMainView` interface
+- ✅ Properties are backed by internal controls (`_welcomeLabel`)
+- ✅ Presenter doesn't know about Label, only knows about `WelcomeMessage` property
 
-### 1.4 启动应用
+### 1.4 Launch the Application
 
 ```csharp
 using System;
@@ -142,86 +142,86 @@ namespace MyFirstMVP
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            // 创建View和Presenter
+            // Create View and Presenter
             var view = new MainForm();
             var presenter = new MainPresenter();
 
-            // 关键步骤：附加View并初始化
+            // Critical steps: Attach View and Initialize
             presenter.AttachView(view);
             presenter.Initialize();
 
-            // 显示窗体
+            // Show form
             Application.Run(view);
         }
     }
 }
 ```
 
-**运行结果**：
+**Running Result**:
 ```
 ┌─────────────────────────────────────┐
-│ 我的第一个MVP应用              [_][□][×]│
+│ My First MVP Application       [_][□][×]│
 ├─────────────────────────────────────┤
 │                                     │
 │                                     │
-│   Hello MVP! 欢迎使用WinForms MVP框架  │
-│                                     │
+│   Hello MVP! Welcome to WinForms    │
+│         MVP Framework               │
 │                                     │
 └─────────────────────────────────────┘
 ```
 
-🎉 **恭喜！你已经创建了第一个MVP应用！**
+🎉 **Congratulations! You've created your first MVP application!**
 
 ---
 
-## 第二步：添加用户交互
+## Step 2: Add User Interaction
 
-现在让我们添加一个按钮，点击后更新消息。
+Now let's add a button that updates the message when clicked.
 
-### 2.1 更新View接口
+### 2.1 Update View Interface
 
 ```csharp
 public interface IMainView : IWindowView
 {
     string WelcomeMessage { get; set; }
-    string UserName { get; set; }  // 新增：用户输入
+    string UserName { get; set; }  // New: User input
 
-    // 新增：按钮点击事件
+    // New: Button click event
     event EventHandler GreetButtonClicked;
 }
 ```
 
-### 2.2 更新Presenter
+### 2.2 Update Presenter
 
 ```csharp
 public class MainPresenter : WindowPresenterBase<IMainView>
 {
     protected override void OnViewAttached()
     {
-        // 订阅View事件
+        // Subscribe to View events
         View.GreetButtonClicked += OnGreetButtonClicked;
     }
 
     protected override void OnInitialize()
     {
-        View.WelcomeMessage = "请输入你的名字，然后点击按钮";
+        View.WelcomeMessage = "Please enter your name and click the button";
     }
 
     private void OnGreetButtonClicked(object sender, EventArgs e)
     {
-        // 业务逻辑：验证并生成问候语
+        // Business logic: validate and generate greeting
         if (string.IsNullOrWhiteSpace(View.UserName))
         {
-            View.WelcomeMessage = "请输入你的名字！";
+            View.WelcomeMessage = "Please enter your name!";
             return;
         }
 
-        View.WelcomeMessage = $"你好，{View.UserName}！欢迎使用MVP框架！";
+        View.WelcomeMessage = $"Hello, {View.UserName}! Welcome to MVP Framework!";
     }
 
     protected override void Cleanup()
     {
-        // 取消订阅
+        // Unsubscribe
         if (View != null)
         {
             View.GreetButtonClicked -= OnGreetButtonClicked;
@@ -231,47 +231,47 @@ public class MainPresenter : WindowPresenterBase<IMainView>
 }
 ```
 
-### 2.3 更新Form
+### 2.3 Update Form
 
 ```csharp
 public partial class MainForm : Form, IMainView
 {
     private Label _welcomeLabel;
-    private TextBox _nameTextBox;  // 新增
-    private Button _greetButton;   // 新增
+    private TextBox _nameTextBox;  // New
+    private Button _greetButton;   // New
 
     public event EventHandler GreetButtonClicked;
 
     private void InitializeComponent()
     {
-        this.Text = "我的第一个MVP应用";
+        this.Text = "My First MVP Application";
         this.Size = new Size(500, 300);
         this.StartPosition = FormStartPosition.CenterScreen;
 
-        // 欢迎标签
+        // Welcome label
         _welcomeLabel = new Label
         {
             Location = new Point(50, 50),
             Size = new Size(400, 30),
-            Font = new Font("微软雅黑", 12f),
+            Font = new Font("Segoe UI", 12f),
             TextAlign = ContentAlignment.MiddleCenter
         };
 
-        // 名字输入框
+        // Name input
         _nameTextBox = new TextBox
         {
             Location = new Point(150, 120),
             Size = new Size(200, 25),
-            Font = new Font("微软雅黑", 10f)
+            Font = new Font("Segoe UI", 10f)
         };
 
-        // 问候按钮
+        // Greet button
         _greetButton = new Button
         {
-            Text = "问候我！",
+            Text = "Greet Me!",
             Location = new Point(175, 160),
             Size = new Size(150, 40),
-            Font = new Font("微软雅黑", 10f)
+            Font = new Font("Segoe UI", 10f)
         };
         _greetButton.Click += (s, e) => GreetButtonClicked?.Invoke(s, e);
 
@@ -294,34 +294,34 @@ public partial class MainForm : Form, IMainView
 }
 ```
 
-**运行效果**：
+**Running Result**:
 ```
 ┌─────────────────────────────────────┐
-│ 我的第一个MVP应用              [_][□][×]│
+│ My First MVP Application       [_][□][×]│
 ├─────────────────────────────────────┤
-│ 请输入你的名字，然后点击按钮          │
-│                                     │
+│ Please enter your name and click    │
+│ the button                          │
 │         ┌─────────────┐             │
-│  名字： │  张三        │             │
+│  Name:  │  John       │             │
 │         └─────────────┘             │
 │                                     │
 │         ┌───────────┐               │
-│         │ 问候我！  │               │
+│         │ Greet Me! │               │
 │         └───────────┘               │
 │                                     │
 └─────────────────────────────────────┘
 
-点击按钮后：
-"你好，张三！欢迎使用MVP框架！"
+After clicking:
+"Hello, John! Welcome to MVP Framework!"
 ```
 
 ---
 
-## 第三步：使用ViewAction系统
+## Step 3: Use ViewAction System
 
-ViewAction系统让你摆脱事件订阅，实现类似WPF ICommand的声明式绑定。
+The ViewAction system eliminates event subscriptions and provides WPF ICommand-like declarative binding.
 
-### 3.1 定义Actions
+### 3.1 Define Actions
 
 ```csharp
 using WinformsMVP.MVP.ViewActions;
@@ -339,7 +339,7 @@ namespace MyFirstMVP
 }
 ```
 
-### 3.2 更新View接口
+### 3.2 Update View Interface
 
 ```csharp
 using WinformsMVP.MVP.ViewActions;
@@ -348,50 +348,50 @@ public interface IMainView : IWindowView
 {
     string WelcomeMessage { get; set; }
     string UserName { get; set; }
-    bool HasUserName { get; }  // 新增：用于CanExecute
+    bool HasUserName { get; }  // New: For CanExecute
 
-    // 新增：暴露ActionBinder
+    // New: Expose ActionBinder
     ViewActionBinder ActionBinder { get; }
 }
 ```
 
-### 3.3 更新Presenter
+### 3.3 Update Presenter
 
 ```csharp
 public class MainPresenter : WindowPresenterBase<IMainView>
 {
     protected override void OnInitialize()
     {
-        View.WelcomeMessage = "请输入你的名字，然后点击按钮";
+        View.WelcomeMessage = "Please enter your name and click the button";
     }
 
     protected override void RegisterViewActions()
     {
-        // 注册Action处理器（带CanExecute）
+        // Register action handlers (with CanExecute)
         Dispatcher.Register(
             MainViewActions.Greet,
             OnGreet,
-            canExecute: () => View.HasUserName);  // 自动enable/disable
+            canExecute: () => View.HasUserName);  // Auto enable/disable
 
         Dispatcher.Register(MainViewActions.Clear, OnClear);
 
-        // 框架会自动调用 View.ActionBinder.Bind(Dispatcher)
+        // Framework automatically calls View.ActionBinder.Bind(Dispatcher)
     }
 
     private void OnGreet()
     {
-        View.WelcomeMessage = $"你好，{View.UserName}！欢迎使用MVP框架！";
+        View.WelcomeMessage = $"Hello, {View.UserName}! Welcome to MVP Framework!";
     }
 
     private void OnClear()
     {
         View.UserName = string.Empty;
-        View.WelcomeMessage = "请输入你的名字，然后点击按钮";
+        View.WelcomeMessage = "Please enter your name and click the button";
     }
 }
 ```
 
-### 3.4 更新Form（使用ActionBinder）
+### 3.4 Update Form (Using ActionBinder)
 
 ```csharp
 public partial class MainForm : Form, IMainView
@@ -400,7 +400,7 @@ public partial class MainForm : Form, IMainView
     private Label _welcomeLabel;
     private TextBox _nameTextBox;
     private Button _greetButton;
-    private Button _clearButton;  // 新增
+    private Button _clearButton;  // New
 
     public MainForm()
     {
@@ -412,17 +412,17 @@ public partial class MainForm : Form, IMainView
     {
         _binder = new ViewActionBinder();
 
-        // 声明式绑定：按钮 → Action
+        // Declarative binding: Button → Action
         _binder.Add(MainViewActions.Greet, _greetButton);
         _binder.Add(MainViewActions.Clear, _clearButton);
 
-        // ✅ 不需要手动订阅Click事件
-        // ✅ 框架会自动根据CanExecute启用/禁用按钮
+        // ✅ No need to manually subscribe to Click events
+        // ✅ Framework auto enables/disables buttons based on CanExecute
     }
 
     private void InitializeComponent()
     {
-        this.Text = "我的第一个MVP应用";
+        this.Text = "My First MVP Application";
         this.Size = new Size(500, 300);
         this.StartPosition = FormStartPosition.CenterScreen;
 
@@ -430,7 +430,7 @@ public partial class MainForm : Form, IMainView
         {
             Location = new Point(50, 50),
             Size = new Size(400, 30),
-            Font = new Font("微软雅黑", 12f),
+            Font = new Font("Segoe UI", 12f),
             TextAlign = ContentAlignment.MiddleCenter
         };
 
@@ -438,24 +438,24 @@ public partial class MainForm : Form, IMainView
         {
             Location = new Point(150, 120),
             Size = new Size(200, 25),
-            Font = new Font("微软雅黑", 10f)
+            Font = new Font("Segoe UI", 10f)
         };
         _nameTextBox.TextChanged += (s, e) => Dispatcher?.RaiseCanExecuteChanged();
 
         _greetButton = new Button
         {
-            Text = "问候我！",
+            Text = "Greet Me!",
             Location = new Point(125, 160),
             Size = new Size(100, 40),
-            Font = new Font("微软雅黑", 10f)
+            Font = new Font("Segoe UI", 10f)
         };
 
         _clearButton = new Button
         {
-            Text = "清空",
+            Text = "Clear",
             Location = new Point(275, 160),
             Size = new Size(100, 40),
-            Font = new Font("微软雅黑", 10f)
+            Font = new Font("Segoe UI", 10f)
         };
 
         this.Controls.Add(_welcomeLabel);
@@ -464,7 +464,7 @@ public partial class MainForm : Form, IMainView
         this.Controls.Add(_clearButton);
     }
 
-    // 属性实现
+    // Property implementations
     public string WelcomeMessage
     {
         get => _welcomeLabel.Text;
@@ -481,35 +481,35 @@ public partial class MainForm : Form, IMainView
 
     public ViewActionBinder ActionBinder => _binder;
 
-    // ✅ 不需要实现ViewActionDispatcher属性
-    // ✅ 基类会自动提供Dispatcher
+    // ✅ No need to implement ViewActionDispatcher property
+    // ✅ Base class automatically provides Dispatcher
     private ViewActionDispatcher Dispatcher =>
-        (this as dynamic).Dispatcher ?? null;  // 通过基类获取
+        (this as dynamic).Dispatcher ?? null;  // Obtained from base class
 }
 ```
 
-**ViewAction的优势**：
+**ViewAction Benefits**:
 ```
-✅ 声明式绑定（_binder.Add）
-✅ 自动启用/禁用（基于CanExecute）
-✅ 减少事件订阅代码
-✅ 类似WPF ICommand
+✅ Declarative binding (_binder.Add)
+✅ Auto enable/disable (based on CanExecute)
+✅ Less event subscription code
+✅ Similar to WPF ICommand
 ```
 
 ---
 
-## 第四步：添加服务依赖
+## Step 4: Add Service Dependencies
 
-现在让我们使用框架提供的服务（MessageBox、对话框等）。
+Now let's use framework-provided services (MessageBox, dialogs, etc.).
 
-### 4.1 使用IMessageService
+### 4.1 Use IMessageService
 
 ```csharp
 public class MainPresenter : WindowPresenterBase<IMainView>
 {
     protected override void OnInitialize()
     {
-        View.WelcomeMessage = "请输入你的名字，然后点击按钮";
+        View.WelcomeMessage = "Please enter your name and click the button";
     }
 
     protected override void RegisterViewActions()
@@ -524,46 +524,46 @@ public class MainPresenter : WindowPresenterBase<IMainView>
 
     private void OnGreet()
     {
-        // ✅ 使用Messages服务（不直接调用MessageBox.Show）
+        // ✅ Use Messages service (not MessageBox.Show directly)
         Messages.ShowInfo(
-            $"你好，{View.UserName}！欢迎使用MVP框架！",
-            "欢迎");
+            $"Hello, {View.UserName}! Welcome to MVP Framework!",
+            "Welcome");
 
-        View.WelcomeMessage = $"已向 {View.UserName} 问好！";
+        View.WelcomeMessage = $"Greeted {View.UserName}!";
     }
 
     private void OnClear()
     {
-        // ✅ 使用确认对话框
-        if (!Messages.ConfirmYesNo("确定要清空输入吗？", "确认"))
+        // ✅ Use confirmation dialog
+        if (!Messages.ConfirmYesNo("Are you sure you want to clear the input?", "Confirm"))
         {
-            return;  // 用户点击了"否"
+            return;  // User clicked "No"
         }
 
         View.UserName = string.Empty;
-        View.WelcomeMessage = "已清空，请重新输入";
+        View.WelcomeMessage = "Cleared, please enter again";
     }
 }
 ```
 
-**为什么使用服务而不是直接调用MessageBox.Show？**
+**Why use services instead of calling MessageBox.Show directly?**
 
 ```csharp
-// ❌ 错误：Presenter直接调用WinForms API
+// ❌ Wrong: Presenter directly calls WinForms API
 private void OnSave()
 {
     SaveData();
-    MessageBox.Show("保存成功！");  // 不可测试！
+    MessageBox.Show("Saved successfully!");  // Not testable!
 }
 
-// ✅ 正确：通过服务抽象
+// ✅ Correct: Use service abstraction
 private void OnSave()
 {
     SaveData();
-    Messages.ShowInfo("保存成功！");  // 可测试！
+    Messages.ShowInfo("Saved successfully!");  // Testable!
 }
 
-// 单元测试中
+// In unit tests
 [Fact]
 public void OnSave_ShowsSuccessMessage()
 {
@@ -577,45 +577,45 @@ public void OnSave_ShowsSuccessMessage()
 }
 ```
 
-### 4.2 可用的内置服务
+### 4.2 Available Built-in Services
 
 ```csharp
-// 1. 消息服务
-Messages.ShowInfo("信息", "标题");
-Messages.ShowWarning("警告", "标题");
-Messages.ShowError("错误", "标题");
-bool confirmed = Messages.ConfirmYesNo("确认吗？", "标题");
+// 1. Message service
+Messages.ShowInfo("Information", "Title");
+Messages.ShowWarning("Warning", "Title");
+Messages.ShowError("Error", "Title");
+bool confirmed = Messages.ConfirmYesNo("Are you sure?", "Title");
 
-// 2. 对话框服务
+// 2. Dialog service
 var result = Dialogs.ShowOpenFileDialog(new OpenFileDialogOptions
 {
-    Filter = "文本文件 (*.txt)|*.txt|所有文件 (*.*)|*.*",
-    Title = "选择文件"
+    Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*",
+    Title = "Select a file"
 });
 
 if (result.IsSuccess)
 {
     string filePath = result.Value;
-    // 处理文件
+    // Process file
 }
 
-// 3. 文件服务
+// 3. File service
 string content = Files.ReadAllText("path.txt");
 Files.WriteAllText("path.txt", content);
 
-// 4. 窗口导航服务（需要配置）
+// 4. Window navigation service (requires configuration)
 var presenter = new UserEditorPresenter();
 var result = Navigator.ShowWindowAsModal<UserEditorPresenter, UserResult>(presenter);
 ```
 
 ---
 
-## 完整示例代码
+## Complete Example Code
 
-以下是第四步的完整代码（可直接复制运行）：
+Below is the complete code for Step 4 (ready to copy and run):
 
 <details>
-<summary>点击展开完整代码</summary>
+<summary>Click to expand complete code</summary>
 
 ```csharp
 // ============= MainViewActions.cs =============
@@ -657,7 +657,7 @@ namespace MyFirstMVP
     {
         protected override void OnInitialize()
         {
-            View.WelcomeMessage = "请输入你的名字，然后点击按钮";
+            View.WelcomeMessage = "Please enter your name and click the button";
         }
 
         protected override void RegisterViewActions()
@@ -673,21 +673,21 @@ namespace MyFirstMVP
         private void OnGreet()
         {
             Messages.ShowInfo(
-                $"你好，{View.UserName}！欢迎使用MVP框架！",
-                "欢迎");
+                $"Hello, {View.UserName}! Welcome to MVP Framework!",
+                "Welcome");
 
-            View.WelcomeMessage = $"已向 {View.UserName} 问好！";
+            View.WelcomeMessage = $"Greeted {View.UserName}!";
         }
 
         private void OnClear()
         {
-            if (!Messages.ConfirmYesNo("确定要清空输入吗？", "确认"))
+            if (!Messages.ConfirmYesNo("Are you sure you want to clear the input?", "Confirm"))
             {
                 return;
             }
 
             View.UserName = string.Empty;
-            View.WelcomeMessage = "已清空，请重新输入";
+            View.WelcomeMessage = "Cleared, please enter again";
         }
     }
 }
@@ -723,7 +723,7 @@ namespace MyFirstMVP
 
         private void InitializeComponent()
         {
-            this.Text = "我的第一个MVP应用";
+            this.Text = "My First MVP Application";
             this.Size = new Size(500, 300);
             this.StartPosition = FormStartPosition.CenterScreen;
 
@@ -731,7 +731,7 @@ namespace MyFirstMVP
             {
                 Location = new Point(50, 50),
                 Size = new Size(400, 30),
-                Font = new Font("微软雅黑", 12f),
+                Font = new Font("Segoe UI", 12f),
                 TextAlign = ContentAlignment.MiddleCenter
             };
 
@@ -739,29 +739,29 @@ namespace MyFirstMVP
             {
                 Location = new Point(150, 120),
                 Size = new Size(200, 25),
-                Font = new Font("微软雅黑", 10f)
+                Font = new Font("Segoe UI", 10f)
             };
             _nameTextBox.TextChanged += (s, e) =>
             {
-                // 通知Dispatcher状态改变
+                // Notify Dispatcher of state change
                 var dispatcher = GetDispatcher();
                 dispatcher?.RaiseCanExecuteChanged();
             };
 
             _greetButton = new Button
             {
-                Text = "问候我！",
+                Text = "Greet Me!",
                 Location = new Point(125, 160),
                 Size = new Size(100, 40),
-                Font = new Font("微软雅黑", 10f)
+                Font = new Font("Segoe UI", 10f)
             };
 
             _clearButton = new Button
             {
-                Text = "清空",
+                Text = "Clear",
                 Location = new Point(275, 160),
                 Size = new Size(100, 40),
-                Font = new Font("微软雅黑", 10f)
+                Font = new Font("Segoe UI", 10f)
             };
 
             this.Controls.Add(_welcomeLabel);
@@ -770,7 +770,7 @@ namespace MyFirstMVP
             this.Controls.Add(_clearButton);
         }
 
-        // 辅助方法：获取Dispatcher（通过反射）
+        // Helper method: Get Dispatcher (via reflection)
         private ViewActionDispatcher GetDispatcher()
         {
             var prop = this.GetType().GetProperty("Dispatcher",
@@ -827,75 +827,75 @@ namespace MyFirstMVP
 
 ---
 
-## 下一步学习
+## Next Steps
 
-恭喜！🎉 你已经掌握了WinForms MVP框架的基础。
+Congratulations! 🎉 You've mastered the basics of WinForms MVP Framework.
 
-### 📚 推荐学习路径
+### 📚 Recommended Learning Path
 
-1. **深入MVP模式**
-   - 阅读：`CLAUDE.md` - MVP设计规则
-   - 理解：Tell, Don't Ask原则
-   - 实践：ToDoDemo示例
+1. **Deep Dive into MVP Pattern**
+   - Read: `CLAUDE.md` - MVP Design Rules
+   - Understand: Tell, Don't Ask Principle
+   - Practice: ToDoDemo example
 
-2. **掌握ViewAction系统**
-   - 阅读：`CLAUDE.md` - ViewAction章节
-   - 学习：CanExecute动态控制
-   - 实践：CheckBoxDemo、BulkBindingDemo
+2. **Master ViewAction System**
+   - Read: `CLAUDE.md` - ViewAction section
+   - Learn: Dynamic CanExecute control
+   - Practice: CheckBoxDemo, BulkBindingDemo
 
-3. **学习Presenter通信**
-   - 阅读：`docs/PRESENTER_COMMUNICATION_PATTERNS.md`
-   - 对比：Service-Based vs EventAggregator
-   - 实践：ComplexInteractionDemo示例
+3. **Learn Presenter Communication**
+   - Read: `docs/PRESENTER_COMMUNICATION_PATTERNS.md`
+   - Compare: Service-Based vs EventAggregator
+   - Practice: ComplexInteractionDemo example
 
-4. **探索高级功能**
-   - WindowNavigator（窗口导航）
-   - ChangeTracker（变更跟踪）
-   - EventAggregator（事件聚合器）
+4. **Explore Advanced Features**
+   - WindowNavigator (Window navigation)
+   - ChangeTracker (Change tracking)
+   - EventAggregator (Event aggregator)
 
-5. **查看完整示例**
-   - `src/WinformsMVP.Samples/` - 10个完整示例
-   - EmailDemo - 综合性示例
+5. **Review Complete Examples**
+   - `src/WinformsMVP.Samples/` - 10 complete examples
+   - EmailDemo - Comprehensive example
 
-### 🔗 相关链接
+### 🔗 Related Links
 
-- [完整文档](CLAUDE.md)
-- [Presenter通信模式](docs/PRESENTER_COMMUNICATION_PATTERNS.md)
-- [示例代码](src/WinformsMVP.Samples/)
-- [单元测试示例](src/WinformsMVP.Samples.Tests/)
+- [Complete Documentation](CLAUDE.md)
+- [Presenter Communication Patterns](docs/PRESENTER_COMMUNICATION_PATTERNS.md)
+- [Sample Code](src/WinformsMVP.Samples/)
+- [Unit Test Examples](src/WinformsMVP.Samples.Tests/)
 
-### ❓ 常见问题
+### ❓ FAQ
 
-**Q: Presenter可以直接调用MessageBox.Show()吗？**
+**Q: Can Presenter directly call MessageBox.Show()?**
 
-A: ❌ 不可以！必须使用`Messages.ShowInfo()`等服务方法。这样Presenter才能被单元测试。
+A: ❌ No! You must use `Messages.ShowInfo()` and other service methods. This makes Presenter unit testable.
 
-**Q: View接口可以暴露Button等控件吗？**
+**Q: Can View interface expose Button controls?**
 
-A: ❌ 不可以！View接口只能暴露数据属性（如`string UserName`）和行为方法（如`void ShowError()`），不能暴露UI控件类型。
+A: ❌ No! View interface should only expose data properties (like `string UserName`) and behavior methods (like `void ShowError()`), not UI control types.
 
-**Q: 什么时候用WindowPresenterBase，什么时候用ControlPresenterBase？**
+**Q: When to use WindowPresenterBase vs ControlPresenterBase?**
 
 A:
-- `WindowPresenterBase` - 用于**Form（窗体）**
-- `ControlPresenterBase` - 用于**UserControl（用户控件）**
+- `WindowPresenterBase` - For **Forms (Windows)**
+- `ControlPresenterBase` - For **UserControls**
 
-**Q: ViewAction和传统事件订阅哪个更好？**
+**Q: ViewAction vs traditional event subscription - which is better?**
 
-A: ViewAction更现代化，推荐使用。优势：
-- ✅ 声明式绑定
-- ✅ 自动CanExecute控制
-- ✅ 减少代码量
-- ✅ 类似WPF ICommand
+A: ViewAction is more modern, recommended. Benefits:
+- ✅ Declarative binding
+- ✅ Automatic CanExecute control
+- ✅ Less code
+- ✅ Similar to WPF ICommand
 
-**Q: 如何测试Presenter？**
+**Q: How to test Presenter?**
 
-A: 创建Mock View，注入依赖：
+A: Create Mock View, inject dependencies:
 ```csharp
 [Fact]
 public void OnGreet_ShowsMessage()
 {
-    var mockView = new MockMainView { UserName = "张三" };
+    var mockView = new MockMainView { UserName = "John" };
     var mockServices = new MockPlatformServices();
 
     var presenter = new MainPresenter()
@@ -911,28 +911,28 @@ public void OnGreet_ShowsMessage()
 
 ---
 
-## 💡 最佳实践提醒
+## 💡 Best Practices Reminder
 
-1. ✅ **始终通过View接口访问UI** - 不要在Presenter中使用具体Form类
-2. ✅ **使用服务抽象** - Messages、Dialogs、Files而不是直接WinForms API
-3. ✅ **优先使用ViewAction** - 而不是手动订阅事件
-4. ✅ **记得Cleanup** - 在Presenter中取消事件订阅
-5. ✅ **编写单元测试** - Presenter应该100%可测试
-
----
-
-## 🚀 开始你的MVP之旅！
-
-现在你已经掌握了基础，可以开始构建自己的应用了。记住MVP的核心原则：
-
-> **Presenter = 业务逻辑（What to do）**
-> **View = UI逻辑（How to display）**
-
-祝编码愉快！🎉
+1. ✅ **Always access UI through View interface** - Don't use concrete Form class in Presenter
+2. ✅ **Use service abstractions** - Messages, Dialogs, Files instead of direct WinForms API
+3. ✅ **Prefer ViewAction** - Over manual event subscription
+4. ✅ **Remember Cleanup** - Unsubscribe events in Presenter
+5. ✅ **Write unit tests** - Presenter should be 100% testable
 
 ---
 
-**需要帮助？**
-- 查看示例代码：`src/WinformsMVP.Samples/`
-- 阅读完整文档：`CLAUDE.md`
-- 提交Issue：[GitHub Issues](https://github.com/yourusername/winforms-mvp/issues)
+## 🚀 Start Your MVP Journey!
+
+Now that you've mastered the basics, you can start building your own applications. Remember the core MVP principle:
+
+> **Presenter = Business Logic (What to do)**
+> **View = UI Logic (How to display)**
+
+Happy coding! 🎉
+
+---
+
+**Need Help?**
+- Check sample code: `src/WinformsMVP.Samples/`
+- Read complete docs: `CLAUDE.md`
+- Submit Issues: [GitHub Issues](https://github.com/yourusername/winforms-mvp/issues)
