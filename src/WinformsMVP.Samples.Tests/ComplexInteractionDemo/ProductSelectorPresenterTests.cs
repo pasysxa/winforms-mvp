@@ -83,7 +83,7 @@ namespace WindowsMVP.Samples.Tests.ComplexInteractionDemo
             view.ProductAdded += (s, e) => eventArgs = e;
 
             // Act
-            presenter.Dispatcher.Dispatch(ProductSelectorActions.AddToOrder);
+            presenter.AddToOrder();
 
             // Assert
             Assert.NotNull(eventArgs);
@@ -102,7 +102,7 @@ namespace WindowsMVP.Samples.Tests.ComplexInteractionDemo
             view.Quantity = 1;
 
             // Act
-            presenter.Dispatcher.Dispatch(ProductSelectorActions.AddToOrder);
+            presenter.AddToOrder();
 
             // Assert
             Assert.Contains("select a product", view.LastErrorMessage, StringComparison.OrdinalIgnoreCase);
@@ -120,7 +120,7 @@ namespace WindowsMVP.Samples.Tests.ComplexInteractionDemo
             view.Quantity = 0;
 
             // Act
-            presenter.Dispatcher.Dispatch(ProductSelectorActions.AddToOrder);
+            presenter.AddToOrder();
 
             // Assert
             Assert.Contains("greater than 0", view.LastErrorMessage, StringComparison.OrdinalIgnoreCase);
@@ -138,7 +138,7 @@ namespace WindowsMVP.Samples.Tests.ComplexInteractionDemo
             view.Quantity = 10;
 
             // Act
-            presenter.Dispatcher.Dispatch(ProductSelectorActions.AddToOrder);
+            presenter.AddToOrder();
 
             // Assert
             Assert.Contains("available in stock", view.LastErrorMessage, StringComparison.OrdinalIgnoreCase);
@@ -156,7 +156,7 @@ namespace WindowsMVP.Samples.Tests.ComplexInteractionDemo
             view.Quantity = 5;
 
             // Act
-            presenter.Dispatcher.Dispatch(ProductSelectorActions.AddToOrder);
+            presenter.AddToOrder();
 
             // Assert
             Assert.Equal(1, view.Quantity);

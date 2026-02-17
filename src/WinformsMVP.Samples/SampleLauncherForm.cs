@@ -11,6 +11,8 @@ using WinformsMVP.Samples.MessageBoxDemo;
 using WinformsMVP.Samples.EmailDemo;
 using WinformsMVP.Samples.EmailDemo.Services;
 using WinformsMVP.Samples.ComplexInteractionDemo;
+using WinformsMVP.Samples.ComplexInteractionDemo_ServiceBased;
+using WinformsMVP.Samples.ComplexInteractionDemo_EventBased;
 using WinformsMVP.Services;
 using WinformsMVP.Services.Implementations;
 
@@ -30,7 +32,7 @@ namespace WinformsMVP.Samples
         {
             // Form settings
             this.Text = "WinForms MVP - Sample Launcher";
-            this.Size = new Size(500, 990);
+            this.Size = new Size(500, 1170);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.Font = new Font("Segoe UI", 9f);
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -272,6 +274,54 @@ namespace WinformsMVP.Samples
                 TextAlign = ContentAlignment.MiddleCenter
             };
 
+            // Service-Based Order Management Demo Button
+            var serviceBasedButton = new Button
+            {
+                Text = "Order Management (Service-Based)",
+                Location = new Point(100, 930),
+                Size = new Size(300, 50),
+                Font = new Font("Segoe UI", 11f),
+                BackColor = Color.FromArgb(34, 139, 34),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Cursor = Cursors.Hand
+            };
+            serviceBasedButton.FlatAppearance.BorderSize = 0;
+            serviceBasedButton.Click += (s, e) => LaunchServiceBasedDemo();
+
+            var serviceBasedInfoLabel = new Label
+            {
+                Text = "Shared Service Layer • Zero Presenter Coupling",
+                Location = new Point(100, 985),
+                Size = new Size(300, 20),
+                ForeColor = Color.DarkGray,
+                TextAlign = ContentAlignment.MiddleCenter
+            };
+
+            // EventAggregator-Based Order Management Demo Button
+            var eventBasedButton = new Button
+            {
+                Text = "Order Management (EventAggregator)",
+                Location = new Point(100, 1020),
+                Size = new Size(300, 50),
+                Font = new Font("Segoe UI", 11f),
+                BackColor = Color.FromArgb(184, 134, 11),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Cursor = Cursors.Hand
+            };
+            eventBasedButton.FlatAppearance.BorderSize = 0;
+            eventBasedButton.Click += (s, e) => LaunchEventBasedDemo();
+
+            var eventBasedInfoLabel = new Label
+            {
+                Text = "Event Aggregator Pub-Sub • Decoupled Messaging",
+                Location = new Point(100, 1075),
+                Size = new Size(300, 20),
+                ForeColor = Color.DarkGray,
+                TextAlign = ContentAlignment.MiddleCenter
+            };
+
             // Add controls
             this.Controls.AddRange(new Control[] {
                 titleLabel, subtitleLabel,
@@ -283,7 +333,9 @@ namespace WinformsMVP.Samples
                 executionRequestButton, executionRequestInfoLabel,
                 messageBoxButton, messageBoxInfoLabel,
                 emailDemoButton, emailDemoInfoLabel,
-                complexInteractionButton, complexInteractionInfoLabel
+                complexInteractionButton, complexInteractionInfoLabel,
+                serviceBasedButton, serviceBasedInfoLabel,
+                eventBasedButton, eventBasedInfoLabel
             });
         }
 
@@ -414,6 +466,20 @@ namespace WinformsMVP.Samples
         {
             this.Hide();
             ComplexInteractionDemoProgram.Run();
+            this.Show();
+        }
+
+        private void LaunchServiceBasedDemo()
+        {
+            this.Hide();
+            ComplexInteractionDemoServiceBasedProgram.Run();
+            this.Show();
+        }
+
+        private void LaunchEventBasedDemo()
+        {
+            this.Hide();
+            ComplexInteractionDemoEventBasedProgram.Run();
             this.Show();
         }
     }

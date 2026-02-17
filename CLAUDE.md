@@ -2634,6 +2634,293 @@ Console.WriteLine(tracker.CurrentValue.Address.City);  // "Osaka" (期待値: "T
    }
    ```
 
+### Event Aggregator
+
+**EventAggregator** (`WinformsMVP.Common.EventAggregator.EventAggregator`) provides high-performance, thread-safe pub-sub messaging for decoupled component communication. It's an essential pattern for complex MVP applications where presenters need to communicate without direct references.
+
+**Core Features:**
+
+- ✅ **Weak Reference Subscriptions** - Automatically cleans up when subscribers are GC'd, preventing memory leaks
+- ✅ **UI Thread Marshaling** - Background thread messages automatically marshaled to UI thread (critical for WinForms)
+- ✅ **High Performance** - Uses expression tree compiled delegates (10-100x faster than reflection)
+- ✅ **Exception Isolation** - One subscriber's exception doesn't affect others
+- ✅ **Thread Safety** - Supports concurrent publishing and subscribing
+- ✅ **Filtered Subscriptions** - Subscribe only to messages matching specific criteria
+
+**When to Use Event Aggregator:**
+
+Use Event Aggregator for **cross-presenter communication** when presenters need to collaborate but should remain decoupled:
+
+```
+✅ Use Event Aggregator when:
+- Multiple presenters need to react to the same event
+- Presenters are in different parts of the UI hierarchy
+- You want to avoid parent-presenter managing child-presenter references
+- Components need to communicate across modules
+
+❌ Don't use Event Aggregator when:
+- Simple parent-child presenter communication (use public methods instead)
+- View-to-Presenter communication (use View events or ViewActions)
+- Within a single presenter (use private methods)
+```
+
+**Basic Usage:**
+
+```csharp
+// 1. Define message types
+public class ProductAddedMessage
+{
+    public Product Product { get; set; }
+    public int Quantity { get; set; }
+}
+
+public class OrderClearedMessage { }
+
+// 2. Create shared EventAggregator instance (in Program.Main or composition root)
+var eventAggregator = new EventAggregator();  // Must create on UI thread!
+
+// 3. Presenter A: Subscribe to messages
+public class OrderSummaryPresenter : ControlPresenterBase<IOrderSummaryView>
+{
+    private readonly IEventAggregator _eventAggregator;
+    private IDisposable _productAddedSubscription;
+
+    public OrderSummaryPresenter(IOrderSummaryView view, IEventAggregator eventAggregator)
+        : base(view)
+    {
+        _eventAggregator = eventAggregator;
+    }
+
+    protected override void OnViewAttached()
+    {
+        // Subscribe to messages
+        _productAddedSubscription = _eventAggregator.Subscribe<ProductAddedMessage>(OnProductAdded);
+    }
+
+    private void OnProductAdded(ProductAddedMessage msg)
+    {
+        // This runs on UI thread automatically!
+        View.AddItem(msg.Product, msg.Quantity);
+    }
+
+    protected override void Cleanup()
+    {
+        // Clean up subscriptions
+        _productAddedSubscription?.Dispose();
+    }
+}
+
+// 4. Presenter B: Publish messages
+public class ProductSelectorPresenter : ControlPresenterBase<IProductSelectorView>
+{
+    private readonly IEventAggregator _eventAggregator;
+
+    public ProductSelectorPresenter(IOrderSummaryView view, IEventAggregator eventAggregator)
+        : base(view)
+    {
+        _eventAggregator = eventAggregator;
+    }
+
+    private void OnAddToOrder()
+    {
+        var product = View.SelectedProduct;
+        var quantity = View.Quantity;
+
+        // Publish message - all subscribers will be notified
+        _eventAggregator.Publish(new ProductAddedMessage
+        {
+            Product = product,
+            Quantity = quantity
+        });
+    }
+}
+```
+
+**Filtered Subscriptions:**
+
+Subscribe only to messages matching specific criteria:
+
+```csharp
+// Only receive messages for high-priority products
+_eventAggregator.Subscribe<ProductAddedMessage>(
+    msg => View.HighlightProduct(msg.Product),
+    filter: msg => msg.Product.Priority > 5
+);
+
+// Only receive messages for specific customer
+_eventAggregator.Subscribe<OrderPlacedMessage>(
+    msg => UpdateCustomerOrders(msg.OrderId),
+    filter: msg => msg.CustomerId == _currentCustomerId
+);
+```
+
+**Background Thread Publishing (Automatic UI Marshaling):**
+
+Messages published from background threads are automatically marshaled to the UI thread:
+
+```csharp
+// Background thread
+Task.Run(() =>
+{
+    var data = LoadDataFromDatabase();
+
+    // Publish from background thread
+    _eventAggregator.Publish(new DataLoadedMessage { Data = data });
+    // Subscribers' handlers will execute on UI thread automatically!
+});
+
+// Subscriber (runs on UI thread)
+_eventAggregator.Subscribe<DataLoadedMessage>(msg =>
+{
+    View.Data = msg.Data;  // Safe! Automatically on UI thread
+});
+```
+
+**Request-Response Pattern:**
+
+Use messages for queries:
+
+```csharp
+// Request message with response property
+public class GetOrderSnapshotRequest
+{
+    public IList<OrderItem> Snapshot { get; set; }  // Response goes here
+}
+
+// Publisher (requestor)
+private List<OrderItem> GetCurrentOrderSnapshot()
+{
+    var request = new GetOrderSnapshotRequest();
+    _eventAggregator.Publish(request);
+    return request.Snapshot?.ToList() ?? new List<OrderItem>();
+}
+
+// Subscriber (responder)
+_eventAggregator.Subscribe<GetOrderSnapshotRequest>(request =>
+{
+    request.Snapshot = _orderItems.ToList();  // Fill response
+});
+```
+
+**Architecture Comparison:**
+
+| Pattern | Coupling | Use Case | Example |
+|---------|----------|----------|---------|
+| **Public Methods** | Direct reference | Parent-child coordination | `childPresenter.AddProduct()` |
+| **Shared Service** | Service reference | Shared state | `orderService.AddProduct()` |
+| **Event Aggregator** | No coupling | Cross-presenter events | `eventAggregator.Publish(...)` |
+
+**Event Aggregator vs Shared Service:**
+
+```csharp
+// ❌ Event Aggregator for State Management (Wrong!)
+_eventAggregator.Publish(new AddProductMessage(product));  // Who owns the state?
+var snapshot = GetOrderSnapshot();  // Request-response - awkward!
+
+// ✅ Shared Service for State Management (Correct!)
+_orderService.AddProduct(product);  // Service owns state
+var items = _orderService.OrderItems;  // Direct query
+
+// ✅ Event Aggregator for Notifications (Correct!)
+_orderService.ProductAdded += (s, e) => { };  // Direct event subscription, OR
+_eventAggregator.Publish(new ProductAddedNotification(...));  // Decoupled notification
+```
+
+**Best Practices:**
+
+1. **Create EventAggregator on UI thread** - Must capture SynchronizationContext
+   ```csharp
+   // In Program.Main() or main form constructor
+   var eventAggregator = new EventAggregator();  // ✅ On UI thread
+   ```
+
+2. **Always dispose subscriptions** - Use `IDisposable` pattern
+   ```csharp
+   protected override void Cleanup()
+   {
+       _subscription?.Dispose();  // ✅ Explicit cleanup
+   }
+   ```
+
+3. **Use strongly-typed messages** - Create specific message classes
+   ```csharp
+   // ✅ Good - Specific message type
+   public class ProductAddedMessage { ... }
+
+   // ❌ Bad - Generic dictionary
+   _eventAggregator.Publish(new Dictionary<string, object> { ... });
+   ```
+
+4. **Message naming convention** - Use `XxxMessage` or `XxxNotification`
+   ```csharp
+   ProductAddedMessage      // ✅ Action notification
+   OrderClearedMessage      // ✅ Event notification
+   DataLoadedMessage        // ✅ Data notification
+   GetOrderSnapshotRequest  // ✅ Request/query
+   ```
+
+5. **Keep messages immutable** - Use read-only or init properties
+   ```csharp
+   public class ProductAddedMessage
+   {
+       public Product Product { get; init; }  // ✅ Immutable
+       public int Quantity { get; init; }
+   }
+   ```
+
+6. **Don't overuse** - Event Aggregator adds indirection; use sparingly
+   - For parent-child: Call public methods directly
+   - For shared state: Use shared service with events
+   - For cross-cutting concerns: Use Event Aggregator
+
+**Performance Characteristics:**
+
+Based on comprehensive stress tests (`EventAggregatorTests.cs`):
+
+- **10,000 subscribers**: ~1 second to publish one message
+- **100,000 messages**: ~16ms with 1 subscriber
+- **Throughput**: > 50,000 messages/second
+- **Thread-safe**: Concurrent subscribe/publish operations supported
+- **Memory**: Weak references prevent leaks, automatic cleanup on GC
+
+**Testing:**
+
+```csharp
+[Fact]
+public void ProductSelector_PublishesMessage_OrderSummaryReceives()
+{
+    // Arrange
+    var eventAggregator = new EventAggregator();
+    var productSelectorView = new MockProductSelectorView();
+    var orderSummaryView = new MockOrderSummaryView();
+
+    var productSelectorPresenter = new ProductSelectorPresenter(
+        productSelectorView, eventAggregator);
+
+    var orderSummaryPresenter = new OrderSummaryPresenter(
+        orderSummaryView, eventAggregator);
+
+    productSelectorPresenter.AttachView(productSelectorView);
+    productSelectorPresenter.Initialize();
+
+    orderSummaryPresenter.AttachView(orderSummaryView);
+    orderSummaryPresenter.Initialize();
+
+    // Act
+    productSelectorPresenter.AddToOrder();  // Publishes ProductAddedMessage
+
+    // Assert
+    Assert.Equal(1, orderSummaryView.Items.Count);
+    Assert.Equal("Laptop", orderSummaryView.Items[0].Product.Name);
+}
+```
+
+**See Also:**
+
+- `src/WinformsMVP.Samples/ComplexInteractionDemo_EventBased/` - Full Event Aggregator example
+- `src/WinformsMVP.Samples/ComplexInteractionDemo_ServiceBased/` - Service-based comparison
+- `src/WinformsMVP.Samples.Tests/Common/EventAggregatorTests.cs` - Comprehensive tests including stress tests
+
 ## Project Structure
 
 - `src/WinformsMVP/`: Core framework library (SDK-style project)

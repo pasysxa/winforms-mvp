@@ -134,7 +134,7 @@ namespace WindowsMVP.Samples.Tests.ComplexInteractionDemo
             view.SelectedItem = view.OrderItems[0];
 
             // Act
-            presenter.Dispatcher.Dispatch(OrderSummaryActions.RemoveItem);
+            presenter.RemoveItem();
 
             // Assert
             Assert.Single(view.OrderItems);
@@ -158,7 +158,7 @@ namespace WindowsMVP.Samples.Tests.ComplexInteractionDemo
             view.ItemRemoved += (s, e) => eventArgs = e;
 
             // Act
-            presenter.Dispatcher.Dispatch(OrderSummaryActions.RemoveItem);
+            presenter.RemoveItem();
 
             // Assert
             Assert.NotNull(eventArgs);
@@ -177,7 +177,7 @@ namespace WindowsMVP.Samples.Tests.ComplexInteractionDemo
             presenter.AddProduct(new Product { Id = 3, Name = "P3", Price = 30m, StockQuantity = 10 }, 1);
 
             // Act
-            presenter.Dispatcher.Dispatch(OrderSummaryActions.ClearAll);
+            presenter.ClearAll();
 
             // Assert
             Assert.Empty(view.OrderItems);

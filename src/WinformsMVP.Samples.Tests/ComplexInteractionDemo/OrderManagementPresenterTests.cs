@@ -214,7 +214,7 @@ namespace WindowsMVP.Samples.Tests.ComplexInteractionDemo
             productSelectorView.RaiseProductAdded(products[0], 2);
 
             // Act
-            mainPresenter.Dispatcher.Dispatch(OrderManagementActions.SaveOrder);
+            mainPresenter.SaveOrder();
 
             // Assert
             Assert.NotNull(mainView.LastSuccessMessage);
@@ -245,7 +245,7 @@ namespace WindowsMVP.Samples.Tests.ComplexInteractionDemo
             mainPresenter.Initialize();
 
             // Act
-            mainPresenter.Dispatcher.Dispatch(OrderManagementActions.SaveOrder);
+            mainPresenter.SaveOrder();
 
             // Assert
             Assert.NotNull(mainView.LastErrorMessage);
@@ -282,7 +282,7 @@ namespace WindowsMVP.Samples.Tests.ComplexInteractionDemo
             productSelectorView.RaiseProductAdded(products[1], 1);
 
             // Act
-            mainPresenter.Dispatcher.Dispatch(OrderManagementActions.ClearOrder);
+            mainPresenter.ClearOrder();
 
             // Assert
             Assert.Empty(orderSummaryView.OrderItems);
@@ -328,7 +328,7 @@ namespace WindowsMVP.Samples.Tests.ComplexInteractionDemo
             Assert.Equal(2, orderSummaryView.OrderItems.Count);
 
             // 4. Save order
-            mainPresenter.Dispatcher.Dispatch(OrderManagementActions.SaveOrder);
+            mainPresenter.SaveOrder();
             Assert.NotNull(mainView.LastSuccessMessage);
 
             // Assert final state

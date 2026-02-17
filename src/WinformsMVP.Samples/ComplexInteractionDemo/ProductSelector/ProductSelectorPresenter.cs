@@ -27,11 +27,6 @@ namespace WinformsMVP.Samples.ComplexInteractionDemo.ProductSelector
         /// </summary>
         public new IProductSelectorView View => base.View;
 
-        /// <summary>
-        /// Exposes the Dispatcher publicly for parent presenter coordination
-        /// </summary>
-        public new ViewActionDispatcher Dispatcher => base.Dispatcher;
-
         public ProductSelectorPresenter(IProductSelectorView view) : base(view)
         {
         }
@@ -65,6 +60,14 @@ namespace WinformsMVP.Samples.ComplexInteractionDemo.ProductSelector
         public void LoadProducts(IList<Product> products)
         {
             View.Products = products;
+        }
+
+        /// <summary>
+        /// Public method for triggering AddToOrder action (for testing and parent presenter calls)
+        /// </summary>
+        public void AddToOrder()
+        {
+            OnAddToOrder();
         }
 
         /// <summary>

@@ -31,11 +31,6 @@ namespace WinformsMVP.Samples.ComplexInteractionDemo.OrderSummary
         /// </summary>
         public new IOrderSummaryView View => base.View;
 
-        /// <summary>
-        /// Exposes the Dispatcher publicly for parent presenter coordination
-        /// </summary>
-        public new ViewActionDispatcher Dispatcher => base.Dispatcher;
-
         public OrderSummaryPresenter(IOrderSummaryView view) : base(view)
         {
         }
@@ -99,6 +94,14 @@ namespace WinformsMVP.Samples.ComplexInteractionDemo.OrderSummary
         }
 
         /// <summary>
+        /// Public method for removing selected item (for testing and parent presenter calls)
+        /// </summary>
+        public void RemoveItem()
+        {
+            OnRemoveItem();
+        }
+
+        /// <summary>
         /// Removes an item from the order
         /// </summary>
         private void OnRemoveItem()
@@ -117,6 +120,14 @@ namespace WinformsMVP.Samples.ComplexInteractionDemo.OrderSummary
 
             // Raise event for parent
             View.RaiseItemRemoved(item);
+        }
+
+        /// <summary>
+        /// Public method for clearing all items (for testing and parent presenter calls)
+        /// </summary>
+        public void ClearAll()
+        {
+            OnClearAll();
         }
 
         /// <summary>

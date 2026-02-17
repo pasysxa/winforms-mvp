@@ -31,11 +31,6 @@ namespace WinformsMVP.Samples.ComplexInteractionDemo.OrderManagement
         private readonly IList<Product> _availableProducts;
 
         /// <summary>
-        /// Exposes the Dispatcher publicly for testing
-        /// </summary>
-        public new ViewActionDispatcher Dispatcher => base.Dispatcher;
-
-        /// <summary>
         /// Constructor with child presenters and product data
         /// </summary>
         public OrderManagementPresenter(
@@ -136,6 +131,14 @@ namespace WinformsMVP.Samples.ComplexInteractionDemo.OrderManagement
         }
 
         /// <summary>
+        /// Public method for saving order (for testing)
+        /// </summary>
+        public void SaveOrder()
+        {
+            OnSaveOrder();
+        }
+
+        /// <summary>
         /// Save the current order
         /// </summary>
         private void OnSaveOrder()
@@ -163,12 +166,20 @@ namespace WinformsMVP.Samples.ComplexInteractionDemo.OrderManagement
         }
 
         /// <summary>
+        /// Public method for clearing order (for testing)
+        /// </summary>
+        public void ClearOrder()
+        {
+            OnClearOrder();
+        }
+
+        /// <summary>
         /// Clear the current order
         /// </summary>
         private void OnClearOrder()
         {
-            // This will trigger OrderSummary.ClearAll
-            _orderSummaryPresenter.Dispatcher.Dispatch(OrderSummaryActions.ClearAll);
+            // Call child presenter's public method - better encapsulation
+            _orderSummaryPresenter.ClearAll();
 
             View.StatusMessage = "Order cleared";
             Dispatcher.RaiseCanExecuteChanged();
