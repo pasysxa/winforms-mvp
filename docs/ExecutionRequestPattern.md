@@ -470,7 +470,7 @@ public interface ICustomerManagementView : IWindowView
         EditLegacyCustomerRequested;
 
     void ShowCustomerInfo(CustomerData data);
-    void BindActions(ViewActionDispatcher dispatcher);
+    ViewActionBinder ActionBinder { get; }
 }
 ```
 

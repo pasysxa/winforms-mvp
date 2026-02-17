@@ -320,7 +320,7 @@ public interface IUserEditorView : IWindowView
     event EventHandler SaveRequested;   // ✅ Events for user actions
     event EventHandler NameChanged;
 
-    void BindActions(ViewActionDispatcher dispatcher);  // ✅ Framework abstraction
+    ViewActionBinder ActionBinder { get; }  // ✅ Framework abstraction (property)
 }
 
 public class UserEditorPresenter : WindowPresenterBase<IUserEditorView>
@@ -330,7 +330,7 @@ public class UserEditorPresenter : WindowPresenterBase<IUserEditorView>
         // ✅ Presenter works through interface
         View.SaveRequested += (s, e) => OnSave();
         View.NameChanged += (s, e) => ValidateName();
-        View.BindActions(Dispatcher);
+        // Note: Framework automatically binds View.ActionBinder after RegisterViewActions()
     }
 
     private void ValidateName()
@@ -349,6 +349,22 @@ public class UserEditorForm : Form, IUserEditorView
     // ✅ Private UI controls - not exposed through interface
     private TextBox _nameTextBox;
     private Button _saveButton;
+    private ViewActionBinder _binder;
+
+    public ViewActionBinder ActionBinder => _binder;
+
+    public UserEditorForm()
+    {
+        InitializeComponent();
+        InitializeActionBindings();
+    }
+
+    private void InitializeActionBindings()
+    {
+        _binder = new ViewActionBinder();
+        _binder.Add(CommonActions.Save, _saveButton);
+        // Framework will bind automatically
+    }
 
     public string UserName
     {
@@ -656,12 +672,25 @@ public class TaskForm : Form, ITaskView
 ### The Solution: ViewAction System
 
 ```csharp
-// ✅ Correct - View uses action binding
+// ✅ Correct - View uses ActionBinder property pattern
+public interface ITaskView : IWindowView
+{
+    ViewActionBinder ActionBinder { get; }
+}
+
 public class TaskForm : Form, ITaskView
 {
     private ViewActionBinder _binder;
 
-    public void BindActions(ViewActionDispatcher dispatcher)
+    public ViewActionBinder ActionBinder => _binder;
+
+    public TaskForm()
+    {
+        InitializeComponent();
+        InitializeActionBindings();
+    }
+
+    private void InitializeActionBindings()
     {
         _binder = new ViewActionBinder();
 
@@ -670,7 +699,7 @@ public class TaskForm : Form, ITaskView
         _binder.Add(CommonActions.Delete, _deleteButton);
         _binder.Add(CommonActions.Refresh, _refreshButton);
 
-        _binder.Bind(dispatcher);
+        // Framework will call Bind() automatically
     }
 }
 
@@ -682,6 +711,7 @@ public class TaskPresenter : WindowPresenterBase<ITaskView>
         Dispatcher.Register(CommonActions.Save, OnSave);
         Dispatcher.Register(CommonActions.Delete, OnDelete);
         Dispatcher.Register(CommonActions.Refresh, OnRefresh);
+        // Framework automatically calls View.ActionBinder?.Bind(_dispatcher)
     }
 }
 ```

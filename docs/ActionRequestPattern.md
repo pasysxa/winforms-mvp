@@ -30,7 +30,7 @@ public interface IComplexDataGridView : IWindowView
     event EventHandler HelpRequested;
     // ... 可能还有 20+ 个事件
 
-    void BindActions(ViewActionDispatcher dispatcher);
+    ViewActionBinder ActionBinder { get; }
 }
 ```
 
@@ -80,7 +80,7 @@ public interface IComplexDataGridView : IWindowView
     // ✅ 只需要一个事件！
     event EventHandler<ActionRequestEventArgs> ActionRequested;
 
-    void BindActions(ViewActionDispatcher dispatcher);
+    ViewActionBinder ActionBinder { get; }
     void UpdateStatus(string message);
 }
 ```
@@ -125,7 +125,7 @@ public interface IComplexDataGridView : IWindowView
     // ✅ 只需要一个统一的事件
     event EventHandler<ActionRequestEventArgs> ActionRequested;
 
-    void BindActions(ViewActionDispatcher dispatcher);
+    ViewActionBinder ActionBinder { get; }
     void UpdateStatus(string message);
 }
 ```
@@ -139,7 +139,15 @@ public class ComplexDataGridForm : Form, IComplexDataGridView
 
     private ViewActionBinder _binder;
 
-    public void BindActions(ViewActionDispatcher dispatcher)
+    public ViewActionBinder ActionBinder => _binder;
+
+    public ComplexDataGridForm()
+    {
+        InitializeComponent();
+        InitializeActionBindings();
+    }
+
+    private void InitializeActionBindings()
     {
         _binder = new ViewActionBinder();
 
@@ -155,14 +163,15 @@ public class ComplexDataGridForm : Form, IComplexDataGridView
         _binder.Add(ComplexDataGridActions.Sort, btnSort);
         _binder.Add(ComplexDataGridActions.Search, btnSearch);
 
-        // 绑定到 dispatcher（支持 CanExecute）
-        _binder.Bind(dispatcher);
-
-        // 订阅按钮点击事件，触发 ActionRequested
-        _binder.ActionTriggered += (sender, actionKey) =>
+        // 订阅按钮点击事件，触发 ActionRequested（显式事件模式）
+        _binder.ActionTriggered += (sender, e) =>
         {
-            ActionRequested?.Invoke(this, new ActionRequestEventArgs(actionKey));
+            ActionRequested?.Invoke(this, e);
         };
+
+        // 手动绑定（显式事件模式需要）
+        // 注意：如果返回 null，框架不会自动绑定
+        _binder.Bind();
     }
 
     public void UpdateStatus(string message)
@@ -179,26 +188,27 @@ public class ComplexDataGridPresenter : WindowPresenterBase<IComplexDataGridView
 {
     protected override void OnViewAttached()
     {
-        // ✅ 只需要订阅一个事件
+        // ✅ 只需要订阅一个事件（显式事件模式）
         View.ActionRequested += OnViewActionTriggered;  // 使用基类提供的辅助方法
     }
 
     protected override void RegisterViewActions()
     {
         // 注册所有操作的处理器
-        _dispatcher.Register(ComplexDataGridActions.Add, OnAdd);
-        _dispatcher.Register(ComplexDataGridActions.Edit, OnEdit);
-        _dispatcher.Register(ComplexDataGridActions.Delete, OnDelete,
+        Dispatcher.Register(ComplexDataGridActions.Add, OnAdd);
+        Dispatcher.Register(ComplexDataGridActions.Edit, OnEdit);
+        Dispatcher.Register(ComplexDataGridActions.Delete, OnDelete,
             canExecute: () => HasSelection());
-        _dispatcher.Register(ComplexDataGridActions.Refresh, OnRefresh);
-        _dispatcher.Register(ComplexDataGridActions.Export, OnExport);
-        _dispatcher.Register(ComplexDataGridActions.Import, OnImport);
-        _dispatcher.Register(ComplexDataGridActions.Print, OnPrint);
-        _dispatcher.Register(ComplexDataGridActions.Filter, OnFilter);
-        _dispatcher.Register(ComplexDataGridActions.Sort, OnSort);
-        _dispatcher.Register(ComplexDataGridActions.Search, OnSearch);
+        Dispatcher.Register(ComplexDataGridActions.Refresh, OnRefresh);
+        Dispatcher.Register(ComplexDataGridActions.Export, OnExport);
+        Dispatcher.Register(ComplexDataGridActions.Import, OnImport);
+        Dispatcher.Register(ComplexDataGridActions.Print, OnPrint);
+        Dispatcher.Register(ComplexDataGridActions.Filter, OnFilter);
+        Dispatcher.Register(ComplexDataGridActions.Sort, OnSort);
+        Dispatcher.Register(ComplexDataGridActions.Search, OnSearch);
 
-        View.BindActions(_dispatcher);
+        // 注意：此示例使用显式事件模式，View 自己调用 Bind()
+        // 如果 View.ActionBinder 返回有效实例，框架会自动绑定
     }
 
     protected override void OnInitialize()
@@ -274,7 +284,7 @@ public interface ISearchableDataGridView : IWindowView
     // 带参数的操作（如搜索关键字）
     event EventHandler<ActionRequestEventArgs<string>> SearchActionRequested;
 
-    void BindActions(ViewActionDispatcher dispatcher);
+    ViewActionBinder ActionBinder { get; }
     void UpdateStatus(string message);
 }
 ```
@@ -326,15 +336,15 @@ public class SearchableDataGridPresenter : WindowPresenterBase<ISearchableDataGr
     protected override void RegisterViewActions()
     {
         // 注册带参数的操作
-        _dispatcher.Register<string>(
+        Dispatcher.Register<string>(
             SearchActions.SearchByKeyword,
             OnSearchByKeyword);
 
-        _dispatcher.Register<string>(
+        Dispatcher.Register<string>(
             SearchActions.FilterByCategory,
             OnFilterByCategory);
 
-        View.BindActions(_dispatcher);
+        // 注意：框架会自动绑定 View.ActionBinder（如果不为 null）
     }
 
     // 处理带参数的 SearchAction 事件
@@ -411,7 +421,7 @@ public interface IMyView : IWindowView
     event EventHandler<ExecutionRequestEventArgs<CustomerData, CustomerData>>
         EditLegacyCustomerRequested;
 
-    void BindActions(ViewActionDispatcher dispatcher);
+    ViewActionBinder ActionBinder { get; }
 }
 ```
 

@@ -26,8 +26,8 @@ public interface IMyView : IWindowView
     void ShowCustomerInfo(CustomerData data);
     void ShowValidationErrors(string[] errors);
 
-    // ViewAction 绑定
-    void BindActions(ViewActionDispatcher dispatcher);
+    // ViewAction 绑定（属性模式）
+    ViewActionBinder ActionBinder { get; }
 }
 ```
 
@@ -124,8 +124,8 @@ public class MyPresenter : WindowPresenterBase<IMyView>
 
     protected override void RegisterViewActions()
     {
-        _dispatcher.Register(MyActions.DoSomething, OnDoSomethingAction);
-        View.BindActions(_dispatcher);  // ✅ 通过 ViewAction 通信
+        Dispatcher.Register(MyActions.DoSomething, OnDoSomethingAction);
+        // ✅ 框架自动绑定 View.ActionBinder（如果不为 null）
     }
 
     private void OnDoSomethingAction()
@@ -140,11 +140,19 @@ public class MyForm : Form, IMyView
 {
     private ViewActionBinder _binder;
 
-    public void BindActions(ViewActionDispatcher dispatcher)
+    public ViewActionBinder ActionBinder => _binder;
+
+    public MyForm()
+    {
+        InitializeComponent();
+        InitializeActionBindings();
+    }
+
+    private void InitializeActionBindings()
     {
         _binder = new ViewActionBinder();
         _binder.Add(MyActions.DoSomething, _myButton);
-        _binder.Bind(dispatcher);  // ✅ 绑定后，按钮点击触发 ViewAction
+        // ✅ 框架会自动绑定（通过 ActionBinder 属性）
     }
 
     // ✅ 视图不知道 Presenter 的存在

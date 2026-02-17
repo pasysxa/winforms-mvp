@@ -391,7 +391,7 @@ private void InitializeActionBindings()
     _binder.Add(CommonActions.Delete, _deleteButton);
     _binder.Add(UserActions.Edit, _editButton);
 
-    // ✅ No Bind() call here - Presenter will call View.ActionBinder.Bind()
+    // ✅ No Bind() call here - Framework automatically binds after RegisterViewActions()
 }
 ```
 
@@ -429,7 +429,8 @@ protected override void RegisterViewActions()
         OnDelete,
         canExecute: () => View.HasUsers);  // Use CanExecute, not conditional binding
 
-    View.ActionBinder.Bind(_dispatcher);  // Bind the pre-configured ActionBinder
+    // Note: Framework automatically calls View.ActionBinder?.Bind(_dispatcher)
+    // after this method completes. No manual binding needed!
 }
 
 // View - pure binding, no business logic
@@ -2703,7 +2704,7 @@ public interface IMyView : IWindowView
 **✅ Presenter interacts only through abstracted interfaces:**
 - Inject services (IMessageService, IDialogProvider, etc.) via constructor
 - Access View only through the interface (data properties and methods)
-- Call `View.ActionBinder.Bind(Dispatcher)` to bind the View's pre-configured action mappings
+- Framework automatically binds View.ActionBinder to Dispatcher after RegisterViewActions()
 - Use ViewAction system for command binding (see "ViewAction System" section)
 - Presenter has ZERO knowledge of Button, TextBox, or any UI elements
 
@@ -2729,7 +2730,7 @@ public class MyForm : Form, IMyView
     {
         _binder = new ViewActionBinder();
         _binder.Add(MyActions.Save, _saveButton);  // Map button to action
-        // No Bind() call here - Presenter will call View.ActionBinder.Bind(Dispatcher)
+        // No Bind() call here - Framework automatically binds after RegisterViewActions()
     }
 }
 ```

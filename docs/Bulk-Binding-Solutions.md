@@ -332,7 +332,7 @@ CreateAndBindOptions(_optionsPanel, options);
 **推荐：方案 1 (AddRange 元组) 或 方案 2 (AddRange 字典)**
 
 ```csharp
-public void BindActions(ViewActionDispatcher dispatcher)
+private void InitializeActionBindings()
 {
     _binder = new ViewActionBinder();
 
@@ -352,7 +352,7 @@ public void BindActions(ViewActionDispatcher dispatcher)
     };
     _binder.AddRange(themeMapping);
 
-    _binder.Bind(dispatcher);
+    // 框架会自动绑定（如果 ActionBinder 属性返回 _binder）
 }
 ```
 
@@ -363,7 +363,7 @@ public void BindActions(ViewActionDispatcher dispatcher)
 **推荐：方案 6 (数据驱动)**
 
 ```csharp
-public void BindActions(ViewActionDispatcher dispatcher)
+private void InitializeActionBindings()
 {
     _binder = new ViewActionBinder();
 
@@ -376,7 +376,7 @@ public void BindActions(ViewActionDispatcher dispatcher)
         _optionsPanel.Controls.Add(radio);
     }
 
-    _binder.Bind(dispatcher);
+    // 框架会自动绑定（如果 ActionBinder 属性返回 _binder）
 }
 ```
 
@@ -387,7 +387,7 @@ public void BindActions(ViewActionDispatcher dispatcher)
 **推荐：方案 1 (AddRange 元组)**
 
 ```csharp
-public void BindActions(ViewActionDispatcher dispatcher)
+private void InitializeActionBindings()
 {
     _binder = new ViewActionBinder();
 
@@ -399,7 +399,7 @@ public void BindActions(ViewActionDispatcher dispatcher)
         // ... 虽然代码多一些，但清晰明确
     );
 
-    _binder.Bind(dispatcher);
+    // 框架会自动绑定（如果 ActionBinder 属性返回 _binder）
 }
 ```
 
