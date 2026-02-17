@@ -7,7 +7,7 @@ This guide covers the complete set of Model-View-Presenter design rules based on
 ## 📚 Reference
 
 These design rules are based on the classic MVP pattern as described in:
-- **[Design Rules for Model-View-Presenter](http://st-www.cs.illinois.edu/users/smarch/st-docs/mvc.html)** by S. March (University of Illinois)
+- **[Design Rules for Model-View-Presenter](https://kjellsj.blogspot.com/2008/05/design-rules-for-model-view-presenter.html)** by Kjell-Sverre Jerijærvi
 
 The rules have been adapted and extended for the WinForms MVP Framework with modern .NET practices.
 
