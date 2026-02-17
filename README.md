@@ -7,7 +7,7 @@
 
 A modern, enterprise-grade **Model-View-Presenter (MVP)** framework for WinForms applications, bringing WPF-style command binding and clean architecture to .NET Framework 4.8.
 
-[Features](#-core-features) • [Quick Start](#-quick-start) • [Documentation](CLAUDE.md) • [Examples](#-examples)
+[What is MVP?](#-what-is-mvp) • [Features](#-core-features) • [Quick Start](#-quick-start) • [Documentation](CLAUDE.md) • [Examples](#-examples)
 
 ---
 
@@ -20,6 +20,232 @@ WinForms MVP Framework solves the classic problems of WinForms development:
 - **MessageBox hell** → Direct UI dependencies everywhere
 
 This framework provides a **clean, testable architecture** with **minimal boilerplate** and **maximum productivity**.
+
+---
+
+## 🎓 What is MVP?
+
+**MVP (Model-View-Presenter)** is an architectural pattern that separates your application into three distinct components, making your code more maintainable, testable, and scalable.
+
+### 📐 The Three Components
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         MVP Pattern                              │
+└─────────────────────────────────────────────────────────────────┘
+
+    ┌──────────────┐           ┌──────────────┐           ┌──────────────┐
+    │              │           │              │           │              │
+    │    Model     │◄──────────│  Presenter   │──────────►│     View     │
+    │              │           │              │           │  (Interface) │
+    │  Data & BL   │           │  Use Cases   │           │              │
+    └──────────────┘           └──────────────┘           └──────────────┘
+           ▲                          ▲                          ▲
+           │                          │                          │
+           │                          │                          │
+    ┌──────┴────────┐          ┌─────┴──────┐           ┌───────┴──────┐
+    │  Repositories │          │  Services  │           │  Form/Control│
+    │  DTOs/Entities│          │ Validation │           │ (WinForms UI)│
+    └───────────────┘          └────────────┘           └──────────────┘
+```
+
+#### 🎯 **Model** - Your Business Data
+- **What**: Business entities, data transfer objects (DTOs), domain logic
+- **Responsibility**: Represents the data and business rules
+- **Examples**: `Customer`, `Order`, `UserProfile`
+- **No knowledge of**: UI, Forms, Controls
+
+#### 🖼️ **View** - The User Interface
+- **What**: The visual representation (Forms, UserControls)
+- **Responsibility**: Display data and capture user input
+- **Examples**: `UserEditorForm`, `CustomerListControl`
+- **Exposes**: Interface with data properties and events (NOT UI controls!)
+- **No knowledge of**: Business logic, data validation
+
+#### 🎮 **Presenter** - The Orchestrator
+- **What**: The bridge between Model and View
+- **Responsibility**: Use-case logic, orchestration, state management
+- **Examples**: `UserEditorPresenter`, `CustomerListPresenter`
+- **Coordinates**: Data retrieval, business logic, view updates
+- **No knowledge of**: WinForms controls (Button, TextBox, etc.)
+
+### 🔄 How MVP Works
+
+```
+User Action Flow:
+──────────────────
+
+1. User clicks button
+        ↓
+2. View raises event (via ViewAction or traditional event)
+        ↓
+3. Presenter handles event
+        ↓
+4. Presenter calls Model/Service
+        ↓
+5. Presenter updates View through interface
+        ↓
+6. View displays updated data
+```
+
+### ❌ Traditional WinForms vs ✅ MVP
+
+<table>
+<tr>
+<td width="50%">
+
+**❌ Traditional WinForms**
+```csharp
+// Form code-behind
+public class UserForm : Form
+{
+    private void btnSave_Click(object sender, EventArgs e)
+    {
+        // 😱 Everything mixed together!
+
+        // Validation
+        if (string.IsNullOrEmpty(txtName.Text))
+        {
+            MessageBox.Show("Name required!");
+            return;
+        }
+
+        // Business logic
+        var user = new User
+        {
+            Name = txtName.Text,
+            Email = txtEmail.Text
+        };
+
+        // Data access
+        _repository.Save(user);
+
+        // UI feedback
+        MessageBox.Show("Saved!");
+        this.Close();
+    }
+}
+```
+
+**Problems:**
+- ❌ Cannot unit test (requires Form)
+- ❌ Business logic tied to UI
+- ❌ Hard to reuse logic
+- ❌ Tight coupling to MessageBox
+- ❌ Cannot mock data access
+
+</td>
+<td width="50%">
+
+**✅ MVP Pattern**
+```csharp
+// View Interface
+public interface IUserEditorView : IWindowView
+{
+    string UserName { get; set; }
+    string Email { get; set; }
+    ViewActionBinder ActionBinder { get; }
+}
+
+// Presenter (Testable!)
+public class UserEditorPresenter
+    : WindowPresenterBase<IUserEditorView>
+{
+    private readonly IUserRepository _repository;
+
+    public UserEditorPresenter(IUserRepository repo)
+    {
+        _repository = repo;
+    }
+
+    protected override void RegisterViewActions()
+    {
+        Dispatcher.Register(CommonActions.Save, OnSave);
+    }
+
+    private void OnSave()
+    {
+        // Validation
+        if (string.IsNullOrEmpty(View.UserName))
+        {
+            Messages.ShowError("Name required!");
+            return;
+        }
+
+        // Business logic
+        var user = new User
+        {
+            Name = View.UserName,
+            Email = View.Email
+        };
+
+        // Data access
+        _repository.Save(user);
+
+        // UI feedback
+        Messages.ShowInfo("Saved!");
+        RequestClose();
+    }
+}
+```
+
+**Benefits:**
+- ✅ Fully unit testable
+- ✅ Business logic separate
+- ✅ Reusable presenter
+- ✅ Mockable services
+- ✅ No WinForms dependencies
+
+</td>
+</tr>
+</table>
+
+### 🎯 Key Benefits of MVP
+
+| Benefit | Description |
+|---------|-------------|
+| **🧪 Testability** | Write unit tests without creating Forms - mock the View interface |
+| **🔧 Maintainability** | Clear separation makes code easier to understand and modify |
+| **♻️ Reusability** | Presenter logic can be reused across different Views |
+| **🎨 Flexibility** | Change UI without touching business logic |
+| **👥 Team Collaboration** | Designers work on Views, developers work on Presenters |
+| **📚 Learning Curve** | Once learned, makes large applications much easier to manage |
+
+### 🏗️ MVP in This Framework
+
+This framework implements the **Supervising Controller** variant of MVP:
+
+```
+Supervising Controller Pattern:
+────────────────────────────────
+
+┌─────────────────────────────────────────────────┐
+│  Presenter (Supervising Controller)             │
+│  • Handles complex logic                        │
+│  • Manages application state                    │
+│  • Coordinates between Model and View           │
+└─────────────────────────────────────────────────┘
+                    │
+                    ├────────────────┬────────────────┐
+                    ▼                ▼                ▼
+            ┌──────────────┐  ┌──────────────┐  ┌──────────────┐
+            │   Services   │  │  ViewActions │  │     View     │
+            │              │  │  Dispatcher  │  │  (Smart!)    │
+            └──────────────┘  └──────────────┘  └──────────────┘
+                                                        │
+                                    ┌───────────────────┼───────────────────┐
+                                    ▼                   ▼                   ▼
+                            Data Binding        Event Handling      UI Logic
+```
+
+**Key Principle:**
+> **Presenter handles use-case logic only, not view logic.**
+>
+> Modern WinForms Views are smart enough to handle data-binding and event processing.
+> Presenter focuses on **business workflow** (validate → save → notify),
+> while View handles **UI details** (how to display errors, which controls to use).
+
+---
 
 ### Why This Framework?
 
