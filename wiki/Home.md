@@ -4,6 +4,14 @@ Welcome to the **WinForms MVP Framework** wiki! This documentation provides comp
 
 ## 📖 Available Pages
 
+### 🚀 Getting Started
+
+- **[Quick Start Guide](Quick-Start-Guide)** ⚡ - **5-minute tutorial for beginners!**
+  - Step-by-step from Hello World to full MVP application
+  - Complete runnable code examples
+  - Learn View interfaces, Presenters, ViewActions, and Services
+  - Perfect for developers new to the framework
+
 ### 📋 Design Principles
 
 - **[MVP Design Rules](MVP-Design-Rules)** 📐 - Complete guide to 14 essential MVP design rules
