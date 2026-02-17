@@ -30,11 +30,6 @@ namespace WinformsMVP.Samples.ComplexInteractionDemo.OrderManagement
         event EventHandler SaveRequested;
 
         /// <summary>
-        /// ActionBinder for declarative command binding
-        /// </summary>
-        ViewActionBinder ActionBinder { get; }
-
-        /// <summary>
         /// Shows a success message
         /// </summary>
         void ShowSuccessMessage(string message);

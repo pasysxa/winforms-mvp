@@ -9,13 +9,12 @@ using WinformsMVP.Samples.ComplexInteractionDemo.OrderSummary;
 namespace WinformsMVP.Samples.ComplexInteractionDemo
 {
     /// <summary>
-    /// Entry point for Complex Interaction Demo
+    /// Launcher for Complex Interaction Demo
     /// Demonstrates parent-child MVP pattern with two UserControls
     /// </summary>
     public static class ComplexInteractionDemoProgram
     {
-        [STAThread]
-        public static void Main()
+        public static void Run()
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);

@@ -52,9 +52,14 @@ namespace WinformsMVP.Samples.ComplexInteractionDemo.OrderSummary
         event EventHandler SelectionChanged;
 
         /// <summary>
-        /// ActionBinder for declarative command binding
+        /// Raises the ItemRemoved event (called by Presenter)
         /// </summary>
-        ViewActionBinder ActionBinder { get; }
+        void RaiseItemRemoved(OrderItem item);
+
+        /// <summary>
+        /// Raises the TotalChanged event (called by Presenter)
+        /// </summary>
+        void RaiseTotalChanged(decimal oldTotal, decimal newTotal);
     }
 
     /// <summary>

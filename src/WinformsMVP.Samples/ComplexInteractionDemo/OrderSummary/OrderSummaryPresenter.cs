@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using WinformsMVP.Core.Presenters;
+using WinformsMVP.MVP.Presenters;
 using WinformsMVP.MVP.ViewActions;
 using WinformsMVP.Samples.ComplexInteractionDemo.Models;
 
@@ -25,6 +25,16 @@ namespace WinformsMVP.Samples.ComplexInteractionDemo.OrderSummary
     public class OrderSummaryPresenter : ControlPresenterBase<IOrderSummaryView>
     {
         private List<OrderItem> _orderItems = new List<OrderItem>();
+
+        /// <summary>
+        /// Exposes the View publicly for parent presenter coordination
+        /// </summary>
+        public new IOrderSummaryView View => base.View;
+
+        /// <summary>
+        /// Exposes the Dispatcher publicly for parent presenter coordination
+        /// </summary>
+        public new ViewActionDispatcher Dispatcher => base.Dispatcher;
 
         public OrderSummaryPresenter(IOrderSummaryView view) : base(view)
         {
@@ -106,7 +116,7 @@ namespace WinformsMVP.Samples.ComplexInteractionDemo.OrderSummary
             RaiseTotalChanged(oldTotal, newTotal);
 
             // Raise event for parent
-            View.ItemRemoved?.Invoke(this, new OrderItemRemovedEventArgs(item));
+            View.RaiseItemRemoved(item);
         }
 
         /// <summary>
@@ -146,7 +156,7 @@ namespace WinformsMVP.Samples.ComplexInteractionDemo.OrderSummary
         {
             if (oldTotal != newTotal)
             {
-                View.TotalChanged?.Invoke(this, new TotalChangedEventArgs(oldTotal, newTotal));
+                View.RaiseTotalChanged(oldTotal, newTotal);
             }
         }
     }

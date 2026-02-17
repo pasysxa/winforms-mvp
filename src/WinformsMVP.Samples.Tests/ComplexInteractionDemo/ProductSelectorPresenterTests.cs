@@ -40,11 +40,9 @@ namespace WindowsMVP.Samples.Tests.ComplexInteractionDemo
         {
             // Arrange
             var view = new MockProductSelectorView();
-            var presenter = new ProductSelectorPresenter(view);
 
-            // Act
-            presenter.AttachView(view);
-            presenter.Initialize();
+            // Act - Constructor automatically attaches and initializes
+            var presenter = new ProductSelectorPresenter(view);
 
             // Assert
             Assert.Equal(1, view.Quantity);
@@ -56,8 +54,6 @@ namespace WindowsMVP.Samples.Tests.ComplexInteractionDemo
             // Arrange
             var view = new MockProductSelectorView();
             var presenter = new ProductSelectorPresenter(view);
-            presenter.AttachView(view);
-            presenter.Initialize();
 
             var products = new List<Product>
             {
@@ -78,8 +74,6 @@ namespace WindowsMVP.Samples.Tests.ComplexInteractionDemo
             // Arrange
             var view = new MockProductSelectorView();
             var presenter = new ProductSelectorPresenter(view);
-            presenter.AttachView(view);
-            presenter.Initialize();
 
             var product = new Product { Id = 1, Name = "Laptop", Price = 999m, StockQuantity = 10 };
             view.SelectedProduct = product;
@@ -103,8 +97,6 @@ namespace WindowsMVP.Samples.Tests.ComplexInteractionDemo
             // Arrange
             var view = new MockProductSelectorView();
             var presenter = new ProductSelectorPresenter(view);
-            presenter.AttachView(view);
-            presenter.Initialize();
 
             view.SelectedProduct = null;
             view.Quantity = 1;
@@ -122,8 +114,6 @@ namespace WindowsMVP.Samples.Tests.ComplexInteractionDemo
             // Arrange
             var view = new MockProductSelectorView();
             var presenter = new ProductSelectorPresenter(view);
-            presenter.AttachView(view);
-            presenter.Initialize();
 
             var product = new Product { Id = 1, Name = "Laptop", Price = 999m, StockQuantity = 10 };
             view.SelectedProduct = product;
@@ -142,8 +132,6 @@ namespace WindowsMVP.Samples.Tests.ComplexInteractionDemo
             // Arrange
             var view = new MockProductSelectorView();
             var presenter = new ProductSelectorPresenter(view);
-            presenter.AttachView(view);
-            presenter.Initialize();
 
             var product = new Product { Id = 1, Name = "Laptop", Price = 999m, StockQuantity = 5 };
             view.SelectedProduct = product;
@@ -162,8 +150,6 @@ namespace WindowsMVP.Samples.Tests.ComplexInteractionDemo
             // Arrange
             var view = new MockProductSelectorView();
             var presenter = new ProductSelectorPresenter(view);
-            presenter.AttachView(view);
-            presenter.Initialize();
 
             var product = new Product { Id = 1, Name = "Laptop", Price = 999m, StockQuantity = 10 };
             view.SelectedProduct = product;

@@ -47,14 +47,14 @@ namespace WinformsMVP.Samples.ComplexInteractionDemo.ProductSelector
         event EventHandler SelectionChanged;
 
         /// <summary>
-        /// ActionBinder for declarative command binding
-        /// </summary>
-        ViewActionBinder ActionBinder { get; }
-
-        /// <summary>
         /// Displays an error message
         /// </summary>
         void ShowError(string message);
+
+        /// <summary>
+        /// Raises the ProductAdded event (called by Presenter)
+        /// </summary>
+        void RaiseProductAdded(Product product, int quantity);
     }
 
     /// <summary>

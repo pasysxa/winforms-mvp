@@ -68,6 +68,16 @@ namespace WinformsMVP.Samples.ComplexInteractionDemo.OrderSummary
 
         public bool HasItems => listOrderItems.Items.Count > 0;
 
+        public void RaiseItemRemoved(OrderItem item)
+        {
+            ItemRemoved?.Invoke(this, new OrderItemRemovedEventArgs(item));
+        }
+
+        public void RaiseTotalChanged(decimal oldTotal, decimal newTotal)
+        {
+            TotalChanged?.Invoke(this, new TotalChangedEventArgs(oldTotal, newTotal));
+        }
+
         private void RefreshOrderList()
         {
             listOrderItems.Items.Clear();

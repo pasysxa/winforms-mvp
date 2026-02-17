@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using WinformsMVP.Core.Presenters;
+using WinformsMVP.MVP.Presenters;
 using WinformsMVP.MVP.ViewActions;
 using WinformsMVP.Samples.ComplexInteractionDemo.Models;
 
@@ -22,6 +22,16 @@ namespace WinformsMVP.Samples.ComplexInteractionDemo.ProductSelector
     /// </summary>
     public class ProductSelectorPresenter : ControlPresenterBase<IProductSelectorView>
     {
+        /// <summary>
+        /// Exposes the View publicly for parent presenter coordination
+        /// </summary>
+        public new IProductSelectorView View => base.View;
+
+        /// <summary>
+        /// Exposes the Dispatcher publicly for parent presenter coordination
+        /// </summary>
+        public new ViewActionDispatcher Dispatcher => base.Dispatcher;
+
         public ProductSelectorPresenter(IProductSelectorView view) : base(view)
         {
         }
@@ -36,8 +46,9 @@ namespace WinformsMVP.Samples.ComplexInteractionDemo.ProductSelector
         {
             Dispatcher.Register(
                 ProductSelectorActions.AddToOrder,
-                OnAddToOrder,
-                canExecute: () => View.HasSelection && View.HasValidQuantity);
+                OnAddToOrder);
+            // Note: No canExecute predicate - validation happens inside OnAddToOrder
+            // This allows error messages to be shown for invalid inputs
 
             // Framework automatically binds View.ActionBinder
         }
@@ -83,7 +94,7 @@ namespace WinformsMVP.Samples.ComplexInteractionDemo.ProductSelector
             }
 
             // Raise event for parent to handle
-            View.ProductAdded?.Invoke(this, new ProductAddedEventArgs(product, quantity));
+            View.RaiseProductAdded(product, quantity);
 
             // Reset quantity after adding
             View.Quantity = 1;

@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using WinformsMVP.Core.Presenters;
+using WinformsMVP.MVP.Presenters;
 using WinformsMVP.MVP.ViewActions;
 using WinformsMVP.Samples.ComplexInteractionDemo.Models;
 using WinformsMVP.Samples.ComplexInteractionDemo.ProductSelector;
@@ -29,6 +29,11 @@ namespace WinformsMVP.Samples.ComplexInteractionDemo.OrderManagement
         private readonly ProductSelectorPresenter _productSelectorPresenter;
         private readonly OrderSummaryPresenter _orderSummaryPresenter;
         private readonly IList<Product> _availableProducts;
+
+        /// <summary>
+        /// Exposes the Dispatcher publicly for testing
+        /// </summary>
+        public new ViewActionDispatcher Dispatcher => base.Dispatcher;
 
         /// <summary>
         /// Constructor with child presenters and product data
@@ -61,8 +66,8 @@ namespace WinformsMVP.Samples.ComplexInteractionDemo.OrderManagement
         {
             Dispatcher.Register(
                 OrderManagementActions.SaveOrder,
-                OnSaveOrder,
-                canExecute: () => View.CanSaveOrder);
+                OnSaveOrder);
+            // Note: No canExecute - validation happens in OnSaveOrder to show error messages
 
             Dispatcher.Register(
                 OrderManagementActions.ClearOrder,

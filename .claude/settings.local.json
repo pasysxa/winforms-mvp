@@ -41,7 +41,8 @@
       "Bash(dir \"C:\\\\workspace\\\\winforms-mvp\")",
       "Bash(git rm:*)",
       "Bash(git ls-files:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(dir /s /b \"C:\\\\workspace\\\\winforms-mvp\\\\src\\\\WinformsMVP.Samples.Tests\\\\*OrderManagement*.cs\")"
     ]
   }
 }

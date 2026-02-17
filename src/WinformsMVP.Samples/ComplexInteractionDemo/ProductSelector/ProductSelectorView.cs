@@ -27,7 +27,6 @@ namespace WinformsMVP.Samples.ComplexInteractionDemo.ProductSelector
 
             // Wire up events
             listProducts.SelectedIndexChanged += (s, e) => SelectionChanged?.Invoke(this, EventArgs.Empty);
-            numQuantity.ValueChanged += (s, e) => Dispatcher.RaiseCanExecuteChanged();
         }
 
         private void InitializeActionBindings()
@@ -65,6 +64,11 @@ namespace WinformsMVP.Samples.ComplexInteractionDemo.ProductSelector
         public void ShowError(string message)
         {
             MessageBox.Show(message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
+
+        public void RaiseProductAdded(Product product, int quantity)
+        {
+            ProductAdded?.Invoke(this, new ProductAddedEventArgs(product, quantity));
         }
 
         private void RefreshProductList()

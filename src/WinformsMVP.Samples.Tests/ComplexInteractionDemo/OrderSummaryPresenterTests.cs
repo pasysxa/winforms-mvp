@@ -41,8 +41,6 @@ namespace WindowsMVP.Samples.Tests.ComplexInteractionDemo
             // Arrange
             var view = new MockOrderSummaryView();
             var presenter = new OrderSummaryPresenter(view);
-            presenter.AttachView(view);
-            presenter.Initialize();
 
             var product = new Product { Id = 1, Name = "Laptop", Price = 999m, StockQuantity = 10 };
 
@@ -62,8 +60,6 @@ namespace WindowsMVP.Samples.Tests.ComplexInteractionDemo
             // Arrange
             var view = new MockOrderSummaryView();
             var presenter = new OrderSummaryPresenter(view);
-            presenter.AttachView(view);
-            presenter.Initialize();
 
             var product = new Product { Id = 1, Name = "Mouse", Price = 29.99m, StockQuantity = 50 };
 
@@ -83,8 +79,6 @@ namespace WindowsMVP.Samples.Tests.ComplexInteractionDemo
             // Arrange
             var view = new MockOrderSummaryView();
             var presenter = new OrderSummaryPresenter(view);
-            presenter.AttachView(view);
-            presenter.Initialize();
 
             var product = new Product { Id = 1, Name = "Keyboard", Price = 79.99m, StockQuantity = 30 };
 
@@ -106,8 +100,6 @@ namespace WindowsMVP.Samples.Tests.ComplexInteractionDemo
             // Arrange
             var view = new MockOrderSummaryView();
             var presenter = new OrderSummaryPresenter(view);
-            presenter.AttachView(view);
-            presenter.Initialize();
 
             // Act & Assert
             Assert.Throws<ArgumentNullException>(() => presenter.AddProduct(null, 1));
@@ -119,8 +111,6 @@ namespace WindowsMVP.Samples.Tests.ComplexInteractionDemo
             // Arrange
             var view = new MockOrderSummaryView();
             var presenter = new OrderSummaryPresenter(view);
-            presenter.AttachView(view);
-            presenter.Initialize();
 
             var product = new Product { Id = 1, Name = "Test", Price = 10m, StockQuantity = 10 };
 
@@ -134,8 +124,6 @@ namespace WindowsMVP.Samples.Tests.ComplexInteractionDemo
             // Arrange
             var view = new MockOrderSummaryView();
             var presenter = new OrderSummaryPresenter(view);
-            presenter.AttachView(view);
-            presenter.Initialize();
 
             var product1 = new Product { Id = 1, Name = "Product1", Price = 10m, StockQuantity = 10 };
             var product2 = new Product { Id = 2, Name = "Product2", Price = 20m, StockQuantity = 10 };
@@ -160,8 +148,6 @@ namespace WindowsMVP.Samples.Tests.ComplexInteractionDemo
             // Arrange
             var view = new MockOrderSummaryView();
             var presenter = new OrderSummaryPresenter(view);
-            presenter.AttachView(view);
-            presenter.Initialize();
 
             var product = new Product { Id = 1, Name = "Test", Price = 10m, StockQuantity = 10 };
             presenter.AddProduct(product, 1);
@@ -185,8 +171,6 @@ namespace WindowsMVP.Samples.Tests.ComplexInteractionDemo
             // Arrange
             var view = new MockOrderSummaryView();
             var presenter = new OrderSummaryPresenter(view);
-            presenter.AttachView(view);
-            presenter.Initialize();
 
             presenter.AddProduct(new Product { Id = 1, Name = "P1", Price = 10m, StockQuantity = 10 }, 1);
             presenter.AddProduct(new Product { Id = 2, Name = "P2", Price = 20m, StockQuantity = 10 }, 1);
@@ -206,8 +190,6 @@ namespace WindowsMVP.Samples.Tests.ComplexInteractionDemo
             // Arrange
             var view = new MockOrderSummaryView();
             var presenter = new OrderSummaryPresenter(view);
-            presenter.AttachView(view);
-            presenter.Initialize();
 
             var product = new Product { Id = 1, Name = "Test", Price = 10m, StockQuantity = 10 };
             presenter.AddProduct(product, 2);
@@ -227,8 +209,6 @@ namespace WindowsMVP.Samples.Tests.ComplexInteractionDemo
             // Arrange
             var view = new MockOrderSummaryView();
             var presenter = new OrderSummaryPresenter(view);
-            presenter.AttachView(view);
-            presenter.Initialize();
 
             // Act
             presenter.AddProduct(new Product { Id = 1, Name = "P1", Price = 10.50m, StockQuantity = 10 }, 2);  // 21.00
