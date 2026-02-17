@@ -43,7 +43,11 @@
       "Bash(git ls-files:*)",
       "Bash(tree:*)",
       "Bash(dir /s /b \"C:\\\\workspace\\\\winforms-mvp\\\\src\\\\WinformsMVP.Samples.Tests\\\\*OrderManagement*.cs\")",
-      "WebSearch"
+      "WebSearch",
+      "Bash(explorer.exe QUICKSTART.md)",
+      "Bash(start QUICKSTART.md)",
+      "Bash(pwsh -NoProfile -ExecutionPolicy Bypass -File deploy-wiki.ps1)",
+      "Bash(dir:*)"
     ]
   }
 }

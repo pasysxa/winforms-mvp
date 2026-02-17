@@ -5,9 +5,9 @@ using System.Runtime.InteropServices;
 // Allow test project to access internal members
 [assembly: InternalsVisibleTo("WinformsMVP.Samples.Tests")]
 
-// アセンブリに関する一般情報は以下の属性セットをとおして制御されます。
-// 制御されます。アセンブリに関連付けられている情報を変更するには、
-// これらの属性値を変更してください。
+// General Information about an assembly is controlled through the following
+// set of attributes. Change these attribute values to modify the information
+// associated with an assembly.
 [assembly: AssemblyTitle("WinformsMVP")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
@@ -17,23 +17,23 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
-// ComVisible を false に設定すると、このアセンブリ内の型は COM コンポーネントから
-// 参照できなくなります。COM からこのアセンブリ内の型にアクセスする必要がある場合は、
-// その型の ComVisible 属性を true に設定してください。
+// Setting ComVisible to false makes the types in this assembly not visible
+// to COM components.  If you need to access a type in this assembly from
+// COM, set the ComVisible attribute to true on that type.
 [assembly: ComVisible(false)]
 
-// このプロジェクトが COM に公開される場合、次の GUID が typelib の ID になります
+// The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("c99309fc-bf3b-4a95-9750-a90ac626a0b3")]
 
-// アセンブリのバージョン情報は、以下の 4 つの値で構成されています:
+// Version information for an assembly consists of the following four values:
 //
-//      メジャー バージョン
-//      マイナー バージョン
-//      ビルド番号
-//      リビジョン
+//      Major Version
+//      Minor Version
+//      Build Number
+//      Revision
 //
-// すべての値を指定するか、次を使用してビルド番号とリビジョン番号を既定に設定できます
-// 既定値にすることができます:
+// You can specify all the values or you can default the Build and Revision Numbers
+// by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]

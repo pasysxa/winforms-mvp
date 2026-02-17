@@ -14,11 +14,11 @@ namespace WinformsMVP.Samples.ToDoDemo
         private static readonly ViewActionFactory Factory =
             ViewAction.Factory.WithQualifier("ToDoDemo");
 
-        // 业务特定动作 - 使用 Factory 添加 "ToDoDemo" 前缀
+        // Business-specific actions - Use Factory to add "ToDoDemo" prefix
         public static readonly ViewAction AddTask = Factory.Create("AddTask");        // "ToDoDemo.AddTask"
         public static readonly ViewAction RemoveTask = Factory.Create("RemoveTask");  // "ToDoDemo.RemoveTask"
         public static readonly ViewAction CompleteTask = Factory.Create("CompleteTask"); // "ToDoDemo.CompleteTask"
-        public static readonly ViewAction SaveAll = Factory.Create("Save"); // "ToDoDemo.Save"（使用标准名称但加前缀）
+        public static readonly ViewAction SaveAll = Factory.Create("Save"); // "ToDoDemo.Save" (use standard name but with prefix)
     }
 
     /// <summary>

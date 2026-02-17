@@ -6,29 +6,29 @@ using WinformsMVP.Common.Helpers;
 namespace WinformsMVP.Common
 {
     /// <summary>
-    /// オブジェクト T の変更を追跡し、変更の受け入れまたは破棄を可能にするクラスです。
-    /// T は参照型 (class) であり、クローン可能 (ICloneable) である必要があります。
+    /// Tracks changes to an object of type T and allows accepting or rejecting changes.
+    /// T must be a reference type (class) and cloneable (ICloneable).
     /// </summary>
-    /// <typeparam name="T">追跡する型。参照型であり、ICloneableを実装する必要があります。</typeparam>
+    /// <typeparam name="T">The type to track. Must be a reference type and implement ICloneable.</typeparam>
     /// <remarks>
     /// <para>
-    /// <strong>重要:</strong> T の ICloneable.Clone() 実装は<strong>必ず深いコピー（ディープコピー）</strong>を返す必要があります。
+    /// <strong>Important:</strong> The ICloneable.Clone() implementation of T <strong>must return a deep copy</strong>.
     /// </para>
     /// <para>
-    /// <strong>深いコピーとは:</strong> すべてのプロパティとネストされたオブジェクトが新しいインスタンスとしてコピーされ、
-    /// 元のオブジェクトと共有参照を持たないことを意味します。
+    /// <strong>Deep copy means:</strong> All properties and nested objects are copied as new instances,
+    /// with no shared references to the original object.
     /// </para>
     /// <para>
-    /// <strong>誤った実装例（浅いコピー - 使用禁止）:</strong>
+    /// <strong>Incorrect implementation (shallow copy - DO NOT USE):</strong>
     /// <code>
     /// public object Clone()
     /// {
-    ///     return this.MemberwiseClone();  // ❌NG: 浅いコピー（参照が共有される）
+    ///     return this.MemberwiseClone();  // ❌NG: Shallow copy (references are shared)
     /// }
     /// </code>
     /// </para>
     /// <para>
-    /// <strong>正しい実装例（深いコピー）:</strong>
+    /// <strong>Correct implementation (deep copy):</strong>
     /// <code>
     /// public object Clone()
     /// {
@@ -37,14 +37,14 @@ namespace WinformsMVP.Common
     ///         Name = this.Name,
     ///         Email = this.Email,
     ///         Age = this.Age,
-    ///         Address = this.Address?.Clone() as Address  // ネストされたオブジェクトも深くコピー
+    ///         Address = this.Address?.Clone() as Address  // Deep copy nested objects too
     ///     };
     /// }
     /// </code>
     /// </para>
     /// <para>
-    /// 浅いコピーを使用すると、元のオブジェクトと共有参照が発生し、
-    /// RejectChanges() が正しく動作しません（元の値も変更されてしまう）。
+    /// Using shallow copy will cause shared references with the original object,
+    /// and RejectChanges() will not work correctly (original values will also be modified).
     /// </para>
     /// </remarks>
     public class ChangeTracker<T> : IChangeTracking, IRevertibleChangeTracking where T : class, ICloneable
@@ -56,13 +56,13 @@ namespace WinformsMVP.Common
         private readonly object _lock = new object();
 
         /// <summary>
-        /// IsChanged 状態が変更されたときに発生します。
+        /// Occurs when the IsChanged state changes.
         /// </summary>
         public event EventHandler IsChangedChanged;
 
         /// <summary>
-        /// 現在追跡している値を取得します。
-        /// 値を変更する場合は UpdateCurrentValue() メソッドを使用してください。
+        /// Gets the currently tracked value.
+        /// To change the value, use the UpdateCurrentValue() method.
         /// </summary>
         public T CurrentValue
         {
@@ -83,7 +83,7 @@ namespace WinformsMVP.Common
                         _currentValue = value;
                         InvalidateIsChanged();
 
-                        // IsChanged 状態が変わった場合のみイベント発火
+                        // Fire event only if IsChanged state changed
                         if (wasChanged != IsChanged)
                         {
                             OnIsChangedChanged();
@@ -94,14 +94,14 @@ namespace WinformsMVP.Common
         }
 
         /// <summary>
-        /// 初期値を指定して ChangeTracker を初期化します。
+        /// Initializes a ChangeTracker with the specified initial value.
         /// </summary>
-        /// <param name="initialValue">追跡を開始する初期値。</param>
-        /// <param name="comparer">値の比較に使用するカスタム比較関数。nullの場合はEqualityHelperが使用されます。</param>
-        /// <exception cref="ArgumentNullException">initialValueがnullの場合。</exception>
+        /// <param name="initialValue">The initial value to start tracking.</param>
+        /// <param name="comparer">Custom comparison function for values. If null, EqualityHelper is used.</param>
+        /// <exception cref="ArgumentNullException">When initialValue is null.</exception>
         /// <remarks>
-        /// <strong>重要:</strong> initialValue の型 T は ICloneable.Clone() で<strong>深いコピー</strong>を返す必要があります。
-        /// 浅いコピー（MemberwiseClone）を返すと、変更追跡が正しく動作しません。
+        /// <strong>Important:</strong> Type T of initialValue must return a <strong>deep copy</strong> from ICloneable.Clone().
+        /// Returning a shallow copy (MemberwiseClone) will cause change tracking to not work correctly.
         /// </remarks>
         public ChangeTracker(T initialValue, Func<T, T, bool> comparer = null)
         {
@@ -114,22 +114,22 @@ namespace WinformsMVP.Common
         }
 
         /// <summary>
-        /// 初期値と IEqualityComparer を指定して ChangeTracker を初期化します。
+        /// Initializes a ChangeTracker with the specified initial value and IEqualityComparer.
         /// </summary>
-        /// <param name="initialValue">追跡を開始する初期値。</param>
-        /// <param name="comparer">値の比較に使用する IEqualityComparer。</param>
+        /// <param name="initialValue">The initial value to start tracking.</param>
+        /// <param name="comparer">The IEqualityComparer to use for value comparison.</param>
         public ChangeTracker(T initialValue, IEqualityComparer<T> comparer)
             : this(initialValue, comparer != null ? (Func<T, T, bool>)comparer.Equals : null)
         {
         }
 
         // ----------------------------------------------------------------------------------
-        // IChangeTracking / IRevertibleChangeTracking インターフェース実装
+        // IChangeTracking / IRevertibleChangeTracking interface implementation
         // ----------------------------------------------------------------------------------
 
         /// <summary>
-        /// 現在の値が元の値と異なるかどうかを示す値を取得します。
-        /// このプロパティはパフォーマンスのためにキャッシュを使用します。
+        /// Gets a value indicating whether the current value differs from the original value.
+        /// This property uses caching for performance.
         /// </summary>
         public bool IsChanged
         {
@@ -147,10 +147,10 @@ namespace WinformsMVP.Common
         }
 
         /// <summary>
-        /// 現在の値を新しいベースラインとしてコミットします。
+        /// Commits the current value as the new baseline.
         /// </summary>
         /// <remarks>
-        /// 内部で Clone() を呼び出して現在の値の深いコピーを作成します。
+        /// Internally calls Clone() to create a deep copy of the current value.
         /// </remarks>
         public void AcceptChanges()
         {
@@ -168,18 +168,18 @@ namespace WinformsMVP.Common
         }
 
         /// <summary>
-        /// 現在の値を最後に受け入れたベースラインに戻します。
+        /// Reverts the current value to the last accepted baseline.
         /// </summary>
         /// <remarks>
-        /// 内部で Clone() を呼び出して元の値の深いコピーを作成し、CurrentValueに設定します。
-        /// これにより、元の値が保護され、CurrentValueとの参照共有を防ぎます。
+        /// Internally calls Clone() to create a deep copy of the original value and sets it to CurrentValue.
+        /// This protects the original value and prevents reference sharing with CurrentValue.
         /// </remarks>
         public void RejectChanges()
         {
             lock (_lock)
             {
                 var wasChanged = IsChanged;
-                // クローンを使用して、参照が同一にならないようにします
+                // Use clone to prevent reference identity
                 _currentValue = (T)_originalValue.Clone();
                 InvalidateIsChanged();
 
@@ -191,15 +191,15 @@ namespace WinformsMVP.Common
         }
 
         // ----------------------------------------------------------------------------------
-        // 補助メソッド (Passive View / Supervising Controller パターン用)
+        // Helper methods (for Passive View / Supervising Controller patterns)
         // ----------------------------------------------------------------------------------
 
         /// <summary>
-        /// ビューからの値が元のベースラインと異なるかどうかを確認します。
-        /// Passive View / Supervising Controller パターンに便利です。
+        /// Checks whether the value from the view differs from the original baseline.
+        /// Useful for Passive View / Supervising Controller patterns.
         /// </summary>
-        /// <param name="currentValueFromView">ビューから取得した現在の値。</param>
-        /// <returns>ビューの値が元の値と異なる場合は true、それ以外の場合は false。</returns>
+        /// <param name="currentValueFromView">The current value retrieved from the view.</param>
+        /// <returns>True if the view value differs from the original value, otherwise false.</returns>
         public bool IsChangedWith(T currentValueFromView)
         {
             lock (_lock)
@@ -209,10 +209,10 @@ namespace WinformsMVP.Common
         }
 
         /// <summary>
-        /// 新しい値をベースラインとしてコミットし、現在の値を更新します。
+        /// Commits a new value as the baseline and updates the current value.
         /// </summary>
-        /// <param name="newValue">新しいベースラインおよび現在値として設定する値。</param>
-        /// <exception cref="ArgumentNullException">newValueがnullの場合。</exception>
+        /// <param name="newValue">The value to set as the new baseline and current value.</param>
+        /// <exception cref="ArgumentNullException">When newValue is null.</exception>
         public void AcceptChanges(T newValue)
         {
             if (newValue == null)
@@ -233,9 +233,9 @@ namespace WinformsMVP.Common
         }
 
         /// <summary>
-        /// 元のベースライン値のコピーを取得します。
+        /// Gets a copy of the original baseline value.
         /// </summary>
-        /// <returns>元の値の深いコピー。</returns>
+        /// <returns>A deep copy of the original value.</returns>
         public T GetOriginalValue()
         {
             lock (_lock)
@@ -245,13 +245,13 @@ namespace WinformsMVP.Common
         }
 
         /// <summary>
-        /// 現在追跡している値を更新します。
+        /// Updates the currently tracked value.
         /// </summary>
-        /// <param name="newValue">新しい現在値。</param>
-        /// <exception cref="ArgumentNullException">newValueがnullの場合。</exception>
+        /// <param name="newValue">The new current value.</param>
+        /// <exception cref="ArgumentNullException">When newValue is null.</exception>
         /// <remarks>
-        /// このメソッドは CurrentValue プロパティを更新し、
-        /// IsChanged 状態が変化した場合は IsChangedChanged イベントを発火します。
+        /// This method updates the CurrentValue property and
+        /// fires the IsChangedChanged event if the IsChanged state changes.
         /// </remarks>
         public void UpdateCurrentValue(T newValue)
         {
@@ -262,17 +262,17 @@ namespace WinformsMVP.Common
         }
 
         // ----------------------------------------------------------------------------------
-        // 検証サポート
+        // Validation support
         // ----------------------------------------------------------------------------------
 
         /// <summary>
-        /// 変更を受け入れることができるかどうかを確認します。
+        /// Checks whether changes can be accepted.
         /// </summary>
-        /// <param name="error">受け入れできない場合のエラーメッセージ。受け入れ可能な場合はnull。</param>
-        /// <returns>変更を受け入れることができる場合は true、それ以外の場合は false。</returns>
+        /// <param name="error">Error message if changes cannot be accepted. Null if acceptable.</param>
+        /// <returns>True if changes can be accepted, otherwise false.</returns>
         /// <remarks>
-        /// デフォルト実装では常に true を返します。
-        /// カスタム検証が必要な場合は、派生クラスでこのメソッドをオーバーライドしてください。
+        /// Default implementation always returns true.
+        /// Override this method in derived classes if custom validation is needed.
         /// </remarks>
         public virtual bool CanAcceptChanges(out string error)
         {
@@ -281,13 +281,13 @@ namespace WinformsMVP.Common
         }
 
         /// <summary>
-        /// 変更を破棄することができるかどうかを確認します。
+        /// Checks whether changes can be rejected.
         /// </summary>
-        /// <param name="error">破棄できない場合のエラーメッセージ。破棄可能な場合はnull。</param>
-        /// <returns>変更を破棄することができる場合は true、それ以外の場合は false。</returns>
+        /// <param name="error">Error message if changes cannot be rejected. Null if rejectable.</param>
+        /// <returns>True if changes can be rejected, otherwise false.</returns>
         /// <remarks>
-        /// デフォルト実装では常に true を返します。
-        /// カスタム検証が必要な場合は、派生クラスでこのメソッドをオーバーライドしてください。
+        /// Default implementation always returns true.
+        /// Override this method in derived classes if custom validation is needed.
         /// </remarks>
         public virtual bool CanRejectChanges(out string error)
         {
@@ -296,7 +296,7 @@ namespace WinformsMVP.Common
         }
 
         // ----------------------------------------------------------------------------------
-        // プライベートヘルパーメソッド
+        // Private helper methods
         // ----------------------------------------------------------------------------------
 
         private void InvalidateIsChanged()

@@ -4,19 +4,19 @@ using WinformsMVP.Services.Implementations;
 namespace WinformsMVP.Services
 {
     /// <summary>
-    /// プラットフォームサービスへの静的アクセスを提供します。
+    /// Provides static access to platform services.
     ///
-    /// 使用方法：
+    /// Usage:
     ///
-    /// 1. 本番環境（デフォルトサービスを使用）：
-    ///    var presenter = new MyPresenter();  // 自動的に PlatformServices.Default を使用
+    /// 1. Production environment (using default services):
+    ///    var presenter = new MyPresenter();  // Automatically uses PlatformServices.Default
     ///
-    /// 2. テスト環境（mockを注入）：
+    /// 2. Test environment (inject mocks):
     ///    var mockServices = new MockPlatformServices();
     ///    var presenter = new MyPresenter().WithPlatformServices(mockServices);
     ///
-    /// 3. カスタムグローバルサービス：
-    ///    // アプリケーション起動時に設定
+    /// 3. Custom global services:
+    ///    // Set at application startup
     ///    PlatformServices.Default = new CustomPlatformServices();
     ///
     /// </summary>
@@ -26,8 +26,8 @@ namespace WinformsMVP.Services
         private static readonly object _lock = new object();
 
         /// <summary>
-        /// デフォルトのサービスインスタンスを取得または設定します。
-        /// スレッドセーフな遅延初期化。
+        /// Gets or sets the default service instance.
+        /// Thread-safe lazy initialization.
         /// </summary>
         public static IPlatformServices Default
         {
@@ -55,7 +55,7 @@ namespace WinformsMVP.Services
         }
 
         /// <summary>
-        /// デフォルト実装にリセットします（主にテストシナリオ用）。
+        /// Resets to default implementation (primarily for test scenarios).
         /// </summary>
         public static void Reset()
         {

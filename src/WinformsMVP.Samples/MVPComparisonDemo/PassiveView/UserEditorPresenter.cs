@@ -11,7 +11,7 @@ namespace WinformsMVP.Samples.MVPComparisonDemo.PassiveView
     /// </summary>
     public static class UserEditorActions
     {
-        // 直接使用标准动作（无前缀）
+        // Use standard actions directly (no prefix)
         public static readonly ViewAction Save = StandardActions.Save;
         public static readonly ViewAction Reset = StandardActions.Reset;
         public static readonly ViewAction Close = StandardActions.Close;

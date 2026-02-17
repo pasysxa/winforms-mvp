@@ -12,34 +12,34 @@ namespace WinformsMVP.Services.Implementations
     {
         private readonly IViewMappingRegister _viewMappingRegister;
         private readonly Dictionary<object, Form> _openForms = new Dictionary<object, Form>();
-        private readonly object _lock = new object(); // 用于线程同步
+        private readonly object _lock = new object(); // For thread synchronization
 
         public WindowNavigator(IViewMappingRegister viewMappingRegister)
         {
             _viewMappingRegister = viewMappingRegister;
         }
 
-        #region Modal (模态)
+        #region Modal
 
         public InteractionResult<TResult> ShowWindowAsModal<TPresenter, TResult>(TPresenter presenter, IWin32Window owner = null) where TPresenter : IPresenter
         {
             Type viewInterfaceType = presenter.ViewInterfaceType;
             var form = CreateAndBindForm(presenter, viewInterfaceType);
             if (form == null)
-                return InteractionResult<TResult>.Error($"Viewインスタンスを作成できません: {viewInterfaceType.Name}");
+                return InteractionResult<TResult>.Error($"Cannot create View instance: {viewInterfaceType.Name}");
 
             InteractionResult<TResult> result = InteractionResult<TResult>.Cancel();
 
-            // 附加模态关闭处理器
+            // Attach modal close handlers
             AttachModalCloseHandlers<TResult>(presenter, form, r => result = r);
 
-            // WinForms 模态阻塞
+            // WinForms modal blocking
             if (owner != null)
                 form.ShowDialog(owner);
             else
                 form.ShowDialog();
 
-            // 模态窗口关闭后，立即释放 Presenter 资源
+            // Immediately release Presenter resources after modal window closes
             (presenter as IDisposable)?.Dispose();
 
             return result;
@@ -48,7 +48,7 @@ namespace WinformsMVP.Services.Implementations
         public InteractionResult ShowWindowAsModal<TPresenter>(TPresenter presenter, IWin32Window owner = null)
         where TPresenter : IPresenter
         {
-            // 内部调用泛型版本，使用 object 作为占位符结果类型
+            // Internally call generic version, using object as placeholder result type
             return ShowWindowAsModal<TPresenter, object>(presenter, owner);
         }
 
@@ -58,23 +58,23 @@ namespace WinformsMVP.Services.Implementations
             Type viewInterfaceType = presenter.ViewInterfaceType;
             var form = CreateAndBindForm(presenter, viewInterfaceType, callInitialize: false);
             if (form == null)
-                return InteractionResult<TResult>.Error($"Viewインスタンスを作成できません: {viewInterfaceType.Name}");
+                return InteractionResult<TResult>.Error($"Cannot create View instance: {viewInterfaceType.Name}");
 
             // Initialize presenter with parameters
             presenter.Initialize(parameters);
 
             InteractionResult<TResult> result = InteractionResult<TResult>.Cancel();
 
-            // 附加模态关闭处理器
+            // Attach modal close handlers
             AttachModalCloseHandlers<TResult>(presenter, form, r => result = r);
 
-            // WinForms 模态阻塞
+            // WinForms modal blocking
             if (owner != null)
                 form.ShowDialog(owner);
             else
                 form.ShowDialog();
 
-            // 模态窗口关闭后，立即释放 Presenter 资源
+            // Immediately release Presenter resources after modal window closes
             (presenter as IDisposable)?.Dispose();
 
             return result;
@@ -83,13 +83,13 @@ namespace WinformsMVP.Services.Implementations
         public InteractionResult ShowWindowAsModal<TPresenter, TParam>(TPresenter presenter, TParam parameters, IWin32Window owner = null)
             where TPresenter : IPresenter, IInitializable<TParam>
         {
-            // 内部调用泛型版本，使用 object 作为占位符结果类型
+            // Internally call generic version, using object as placeholder result type
             return ShowWindowAsModal<TPresenter, TParam, object>(presenter, parameters, owner);
         }
 
         #endregion
 
-        #region Non-Modal (非模态)
+        #region Non-Modal
 
         public IWindowView ShowWindow<TPresenter, TResult>(
             TPresenter presenter,
@@ -99,7 +99,7 @@ namespace WinformsMVP.Services.Implementations
             )
             where TPresenter : IPresenter
         {
-            // 如果 onClosed 为 null，则使用一个安全的空操作，确保 ShowWindowInternal 不必进行 null 检查
+            // If onClosed is null, use a safe no-op to ensure ShowWindowInternal doesn't need null checking
             Action<InteractionResult<TResult>> finalOnClosed = onClosed ?? (r => { });
 
             return ShowWindowInternal(
@@ -114,13 +114,13 @@ namespace WinformsMVP.Services.Implementations
         IWin32Window owner = null,
         Func<TPresenter, object> keySelector = null) where TPresenter : IPresenter
         {
-            // 内部调用 ShowWindow<TPresenter, TResult> 的完整泛型版本，
-            // TResult 设为 object，onClosed 设为 null。
+            // Internally call the complete generic version of ShowWindow<TPresenter, TResult>,
+            // with TResult set to object and onClosed set to null.
             return ShowWindow<TPresenter, object>(
                 presenter,
                 owner,
                 keySelector,
-                onClosed: null // 这里 onClosed 是 null，因为这个重载没有提供回调参数
+                onClosed: null // onClosed is null here because this overload doesn't provide a callback parameter
             );
         }
 
@@ -136,7 +136,7 @@ namespace WinformsMVP.Services.Implementations
             object instanceKey = null;
             Form existingForm = null;
 
-            // 1. **计算 Key 并检查单例/激活 (线程安全)**
+            // 1. Calculate key and check singleton/activation (thread-safe)
             if (keySelector != null)
             {
                 instanceKey = keySelector(presenter);
@@ -147,15 +147,15 @@ namespace WinformsMVP.Services.Implementations
                         if (existingForm != null && !existingForm.IsDisposed)
                         {
                             existingForm.Activate();
-                            (presenter as IDisposable)?.Dispose(); // 释放新的 Presenter 实例
+                            (presenter as IDisposable)?.Dispose(); // Release new Presenter instance
                             return (IWindowView)existingForm;
                         }
-                        _openForms.Remove(instanceKey); // 清理无效的旧引用
+                        _openForms.Remove(instanceKey); // Clean up invalid old reference
                     }
                 }
             }
 
-            // 2. **创建新 Form (不自动初始化)**
+            // 2. Create new Form (no automatic initialization)
             Type viewInterfaceType = presenter.ViewInterfaceType;
             var newForm = CreateAndBindForm(presenter, viewInterfaceType, callInitialize: false);
 
@@ -163,24 +163,24 @@ namespace WinformsMVP.Services.Implementations
             {
                 (presenter as IDisposable)?.Dispose();
                 Action<InteractionResult<TResult>> finalOnClosed = onClosed ?? (r => { });
-                finalOnClosed.Invoke(InteractionResult<TResult>.Error($"Viewインスタンスを作成できません: {viewInterfaceType.Name}"));
+                finalOnClosed.Invoke(InteractionResult<TResult>.Error($"Cannot create View instance: {viewInterfaceType.Name}"));
                 return null;
             }
 
-            // 3. **使用参数初始化 Presenter**
+            // 3. Initialize Presenter with parameters
             presenter.Initialize(parameters);
 
-            // 4. **处理关闭逻辑 (非模态)**
+            // 4. Handle close logic (non-modal)
             Action<InteractionResult<TResult>> safeOnClosed = onClosed ?? (r => { });
             AttachNonModalCloseHandlers<TResult>(instanceKey, presenter, newForm, safeOnClosed);
 
-            // 5. **显示窗口**
+            // 5. Show window
             if (owner != null)
                 newForm.Show(owner);
             else
                 newForm.Show();
 
-            // 6. **返回 IWindowView 句柄**
+            // 6. Return IWindowView handle
             return (IWindowView)newForm;
         }
 
@@ -191,8 +191,8 @@ namespace WinformsMVP.Services.Implementations
             Func<TPresenter, object> keySelector = null)
             where TPresenter : IPresenter, IInitializable<TParam>
         {
-            // 内部调用 ShowWindow<TPresenter, TParam, TResult> 的完整泛型版本，
-            // TResult 设为 object，onClosed 设为 null。
+            // Internally call the complete generic version of ShowWindow<TPresenter, TParam, TResult>,
+            // with TResult set to object and onClosed set to null.
             return ShowWindow<TPresenter, TParam, object>(
                 presenter,
                 parameters,
@@ -203,7 +203,7 @@ namespace WinformsMVP.Services.Implementations
         }
         #endregion
 
-        #region Core (核心逻辑)
+        #region Core
 
         private IWindowView ShowWindowInternal<TPresenter, TResult>(
             TPresenter presenter,
@@ -215,7 +215,7 @@ namespace WinformsMVP.Services.Implementations
             object instanceKey = null;
             Form existingForm = null;
 
-            // 1. **计算 Key 并检查单例/激活 (线程安全)**
+            // 1. Calculate key and check singleton/activation (thread-safe)
             if (keySelector != null)
             {
                 instanceKey = keySelector(presenter);
@@ -226,41 +226,41 @@ namespace WinformsMVP.Services.Implementations
                         if (existingForm != null && !existingForm.IsDisposed)
                         {
                             existingForm.Activate();
-                            (presenter as IDisposable)?.Dispose(); // 释放新的 Presenter 实例
+                            (presenter as IDisposable)?.Dispose(); // Release new Presenter instance
                             return (IWindowView)existingForm;
                         }
-                        _openForms.Remove(instanceKey); // 清理无效的旧引用
+                        _openForms.Remove(instanceKey); // Clean up invalid old reference
                     }
                 }
             }
 
-            // 2. **创建新 Form**
+            // 2. Create new Form
             Type viewInterfaceType = presenter.ViewInterfaceType;
             var newForm = CreateAndBindForm(presenter, viewInterfaceType);
 
             if (newForm == null)
             {
                 (presenter as IDisposable)?.Dispose();
-                onClosed.Invoke(InteractionResult<TResult>.Error($"Viewインスタンスを作成できません: {viewInterfaceType.Name}"));
+                onClosed.Invoke(InteractionResult<TResult>.Error($"Cannot create View instance: {viewInterfaceType.Name}"));
                 return null;
             }
 
-            // 3. **处理关闭逻辑 (非模态)**
+            // 3. Handle close logic (non-modal)
             AttachNonModalCloseHandlers<TResult>(instanceKey, presenter, newForm, onClosed);
 
-            // 4. **显示窗口**
+            // 4. Show window
             if (owner != null)
                 newForm.Show(owner);
             else
                 newForm.Show();
 
-            // 5. **返回 IWindowView 句柄**
+            // 5. Return IWindowView handle
             return (IWindowView)newForm;
         }
 
         #endregion
 
-        #region Close Handlers (关闭事件处理)
+        #region Close Handlers
 
         private void AttachModalCloseHandlers<TResult>(
             IPresenter presenter,
@@ -269,42 +269,42 @@ namespace WinformsMVP.Services.Implementations
         {
             var requestCloser = presenter as IRequestClose<TResult>;
             TResult finalResult = default(TResult);
-            InteractionStatus finalStatus = InteractionStatus.Cancel; // 默认操作被用户取消
+            InteractionStatus finalStatus = InteractionStatus.Cancel; // Default: operation cancelled by user
 
             EventHandler<CloseRequestedEventArgs<TResult>> closeRequestedHandler = null;
             FormClosingEventHandler formClosingHandler = null;
             FormClosedEventHandler formClosedHandler = null;
 
-            // 1. **Presenter 主动请求关闭 (IRequestClose.CloseRequested)**
+            // 1. Presenter actively requests close (IRequestClose.CloseRequested)
             if (requestCloser != null)
             {
                 closeRequestedHandler = (s, e) =>
                 {
-                    // Presenter 已设置结果
+                    // Presenter has set the result
                     finalResult = e.Result;
-                    finalStatus = e.Status; // 标记为 Presenter 主动关闭
+                    finalStatus = e.Status; // Mark as active Presenter close
 
-                    // 触发 Form 关闭。这会接着触发 FormClosing 事件。
+                    // Trigger Form close. This will then trigger the FormClosing event.
                     form.Close();
                 };
                 requestCloser.CloseRequested += closeRequestedHandler;
             }
 
-            // 2. **View 询问是否可以关闭 (Form.FormClosing)**
+            // 2. View asks if it can close (Form.FormClosing)
             formClosingHandler = (s, e) =>
             {
-                // 只有在被动关闭 (用户点击 X) 且 Presenter 不允许关闭时，才取消关闭。
+                // Only cancel close if it's a passive close (user clicked X) and Presenter doesn't allow closing.
                 if (requestCloser != null && finalStatus == InteractionStatus.Cancel && !requestCloser.CanClose())
                 {
-                    e.Cancel = true; // 取消关闭
+                    e.Cancel = true; // Cancel close
                 }
             };
             form.FormClosing += formClosingHandler;
 
-            // 3. **View 实际关闭后 (Form.FormClosed)**
+            // 3. After View actually closes (Form.FormClosed)
             formClosedHandler = (s, e) =>
             {
-                // A. 立即解除所有事件订阅，防止泄漏
+                // A. Immediately unsubscribe from all events to prevent leaks
                 form.FormClosed -= formClosedHandler;
                 form.FormClosing -= formClosingHandler;
                 if (requestCloser != null)
@@ -312,7 +312,7 @@ namespace WinformsMVP.Services.Implementations
                     requestCloser.CloseRequested -= closeRequestedHandler;
                 }
 
-                // B. 封装最终结果
+                // B. Wrap final result
                 InteractionResult<TResult> result;
                 switch (finalStatus)
                 {
@@ -320,7 +320,7 @@ namespace WinformsMVP.Services.Implementations
                         result = InteractionResult<TResult>.Ok(finalResult);
                         break;
                     case InteractionStatus.Error:
-                        result = InteractionResult<TResult>.Error("操作失敗");
+                        result = InteractionResult<TResult>.Error("Operation failed");
                         break;
                     case InteractionStatus.Cancel:
                     default:
@@ -328,10 +328,10 @@ namespace WinformsMVP.Services.Implementations
                         break;
                 }
 
-                // C. 通过回调返回结果
+                // C. Return result via callback
                 setResultCallback.Invoke(result);
 
-                // D. 释放 Form 资源
+                // D. Release Form resources
                 form.Dispose();
             };
             form.FormClosed += formClosedHandler;
@@ -345,17 +345,17 @@ namespace WinformsMVP.Services.Implementations
         {
             var requestCloser = presenter as IRequestClose<TResult>;
 
-            // 我们需要声明事件处理器变量，以便在 FormClosed 中能够解除订阅
+            // We need to declare event handler variables so we can unsubscribe in FormClosed
             EventHandler<CloseRequestedEventArgs<TResult>> closeRequestedHandler = null;
             FormClosingEventHandler formClosingHandler = null;
             FormClosedEventHandler formClosedHandler = null;
 
-            // 默认假设关闭是被动（用户）行为，需要走 CanClose 流程
+            // Default assumption: close is passive (user) behavior, needs CanClose flow
             bool isPresenterClosing = false;
             TResult finalResult = default(TResult);
             InteractionStatus finalStatus = InteractionStatus.Cancel;
 
-            // 1. **注册到 _openForms 字典 (线程安全)**
+            // 1. Register in _openForms dictionary (thread-safe)
             if (instanceKey != null)
             {
                 lock (_lock)
@@ -367,12 +367,12 @@ namespace WinformsMVP.Services.Implementations
                 }
             }
 
-            // 2. **处理 Presenter 主动请求关闭 (IRequestClose.CloseRequested)**
+            // 2. Handle Presenter actively requesting close (IRequestClose.CloseRequested)
             if (requestCloser != null)
             {
                 closeRequestedHandler = (s, e) =>
                 {
-                    // 在 Form.Close() 之前设置标志，避免 FormClosing 错误地调用 CanClose
+                    // Set flag before Form.Close() to avoid FormClosing incorrectly calling CanClose
                     isPresenterClosing = true;
                     finalResult = e.Result;
                     finalStatus = e.Status;
@@ -382,22 +382,22 @@ namespace WinformsMVP.Services.Implementations
                 requestCloser.CloseRequested += closeRequestedHandler;
             }
 
-            // 3. **处理 View 询问是否可以关闭 (Form.FormClosing)**
+            // 3. Handle View asking if it can close (Form.FormClosing)
             formClosingHandler = (s, e) =>
             {
-                // 只有当不是 Presenter 主动关闭时，才需要检查 CanClose
+                // Only check CanClose when it's not an active Presenter close
                 if (!isPresenterClosing && requestCloser != null && !requestCloser.CanClose())
                 {
-                    e.Cancel = true; // 阻止关闭
+                    e.Cancel = true; // Prevent close
                 }
             };
             form.FormClosing += formClosingHandler;
 
 
-            // 4. **处理 FormClosed 事件：解除框架引用、释放资源和回调**
+            // 4. Handle FormClosed event: unregister framework references, release resources, and invoke callback
             formClosedHandler = (s, e) =>
             {
-                // A. 清理框架状态 (线程安全)
+                // A. Clean up framework state (thread-safe)
                 if (instanceKey != null)
                 {
                     lock (_lock)
@@ -406,7 +406,7 @@ namespace WinformsMVP.Services.Implementations
                     }
                 }
 
-                // B. 获取结果并触发回调
+                // B. Get result and trigger callback
                 InteractionResult<TResult> result;
                 switch (finalStatus)
                 {
@@ -414,7 +414,7 @@ namespace WinformsMVP.Services.Implementations
                         result = InteractionResult<TResult>.Ok(finalResult);
                         break;
                     case InteractionStatus.Error:
-                        result = InteractionResult<TResult>.Error("操作失敗");
+                        result = InteractionResult<TResult>.Error("Operation failed");
                         break;
                     case InteractionStatus.Cancel:
                     default:
@@ -424,15 +424,15 @@ namespace WinformsMVP.Services.Implementations
 
                 onClosed.Invoke(result);
 
-                // C. 释放 Presenter 资源
+                // C. Release Presenter resources
                 (presenter as IDisposable)?.Dispose();
 
-                // D. 清理所有事件订阅和 Form 资源
+                // D. Clean up all event subscriptions and Form resources
                 form.FormClosed -= formClosedHandler;
-                form.FormClosing -= formClosingHandler; // 解除 FormClosing
+                form.FormClosing -= formClosingHandler; // Unsubscribe FormClosing
                 if (requestCloser != null)
                 {
-                    requestCloser.CloseRequested -= closeRequestedHandler; // 解除 Presenter 事件
+                    requestCloser.CloseRequested -= closeRequestedHandler; // Unsubscribe Presenter event
                 }
                 form.Dispose();
             };
@@ -441,29 +441,29 @@ namespace WinformsMVP.Services.Implementations
 
         #endregion
 
-        #region Utility (工具方法)
+        #region Utility
 
         private Form CreateAndBindForm(IPresenter presenter, Type viewInterfaceType, bool callInitialize = true)
         {
-            // 1. View インスタンスの作成 (ViewMappingRegisterを使用してインスタンス化)
+            // 1. Create View instance (instantiate using ViewMappingRegister)
             var newForm = _viewMappingRegister.CreateInstance(viewInterfaceType) as Form;
             if (newForm == null)
             {
                 throw new InvalidOperationException(
-                    $"View インターフェース {viewInterfaceType.Name} の実装が Form ではありません。" +
-                    $"WindowNavigator で使用する View は System.Windows.Forms.Form を継承する必要があります。");
+                    $"The implementation of View interface {viewInterfaceType.Name} is not a Form. " +
+                    $"Views used with WindowNavigator must inherit from System.Windows.Forms.Form.");
             }
 
-            // 关键：确保 View 实现了 IWindowView 接口
+            // Critical: Ensure View implements IWindowView interface
             if (!(newForm is IWindowView))
             {
-                throw new InvalidOperationException($"View {newForm.GetType().Name} 必须实现 IWindowView 接口以支持 WindowNavigator 的非模态功能.");
+                throw new InvalidOperationException($"View {newForm.GetType().Name} must implement IWindowView interface to support WindowNavigator's non-modal functionality.");
             }
 
-            // 2. View を Presenter に注入
+            // 2. Inject View into Presenter
             InjectViewIntoPresenter(presenter, newForm as IViewBase);
 
-            // 3. 業務ロジックの初期化
+            // 3. Initialize business logic
             if (callInitialize && presenter is IInitializable initializable)
             {
                 initializable.Initialize();
@@ -485,7 +485,7 @@ namespace WinformsMVP.Services.Implementations
             }
             else
             {
-                throw new InvalidOperationException($"Presenter {presenter.GetType().Name} がインターフェース {attacherType.Name} を正しく実装していません。");
+                throw new InvalidOperationException($"Presenter {presenter.GetType().Name} does not correctly implement interface {attacherType.Name}.");
             }
         }
 

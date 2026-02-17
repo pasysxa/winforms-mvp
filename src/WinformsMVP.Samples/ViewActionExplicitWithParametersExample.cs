@@ -262,8 +262,8 @@ namespace WinformsMVP.Samples
 
         protected override void OnViewAttached()
         {
-            // ✅ 直接使用基类提供的 OnViewActionTriggered 方法！
-            // 它会自动检查参数、提取参数、并调用 Dispatcher.Dispatch()
+            // ✅ Use the OnViewActionTriggered method provided by the base class!
+            // It automatically checks parameters, extracts them, and calls Dispatcher.Dispatch()
             View.ActionRequest += OnViewActionTriggered;
 
             // Initialize
@@ -286,11 +286,11 @@ namespace WinformsMVP.Samples
             // Mode detection recognizes explicit pattern and prevents double-dispatch
         }
 
-        // ✅ 不需要手动写参数检查逻辑！
-        // OnViewActionTriggered (基类方法) 已经自动处理了：
-        // - 检查 e is IActionRequestEventArgsWithValue
-        // - 提取参数 payload = valueProvider.GetValue()
-        // - 调用 Dispatcher.Dispatch(actionKey, payload)
+        // ✅ No need to manually write parameter checking logic!
+        // OnViewActionTriggered (base class method) has already handled:
+        // - Check e is IActionRequestEventArgsWithValue
+        // - Extract parameter payload = valueProvider.GetValue()
+        // - Call Dispatcher.Dispatch(actionKey, payload)
 
         // Simple action handlers (no parameters)
 
@@ -361,10 +361,10 @@ namespace WinformsMVP.Samples
      *    - For parameterized actions: Create ActionRequestEventArgs<T> with parameter
      *    - For simple actions: Forward original ActionRequestEventArgs
      *
-     * 3. PRESENTER (使用基类方法 - 超简单):
-     *    - 直接订阅: View.ActionRequest += OnViewActionTriggered;
-     *    - 基类的 OnViewActionTriggered 自动处理参数检查和提取
-     *    - 不需要手动写任何参数处理代码！
+     * 3. PRESENTER (Using Base Class Method - Super Simple):
+     *    - Subscribe directly: View.ActionRequest += OnViewActionTriggered;
+     *    - Base class OnViewActionTriggered automatically handles parameter checking and extraction
+     *    - No need to manually write any parameter handling code!
      *
      * 4. DISPATCHER REGISTRATION:
      *    - Simple actions: Dispatcher.Register(action, handler)
@@ -384,7 +384,7 @@ namespace WinformsMVP.Samples
      * Button Click → ActionTriggered(ActionRequestEventArgs)
      *              → Determine parameter (tab index)
      *              → ActionRequest(ActionRequestEventArgs<int>)
-     *              → OnViewActionTriggered (基类自动检查并提取参数)
+     *              → OnViewActionTriggered (base class automatically checks and extracts parameter)
      *              → Dispatcher.Dispatch(actionKey, tabIndex)
      *              → OnSelectTab(int tabIndex)
      *
@@ -412,10 +412,10 @@ namespace WinformsMVP.Samples
      * BEST PRACTICES:
      * ---------------
      *
-     * 1. Use base class OnViewActionTriggered method (最重要！)
-     *    - 直接订阅: View.ActionRequest += OnViewActionTriggered;
-     *    - 基类自动处理参数检查和提取
-     *    - 不需要手动写 if (e is IActionRequestEventArgsWithValue) 逻辑
+     * 1. Use base class OnViewActionTriggered method (Most Important!)
+     *    - Subscribe directly: View.ActionRequest += OnViewActionTriggered;
+     *    - Base class automatically handles parameter checking and extraction
+     *    - No need to manually write if (e is IActionRequestEventArgsWithValue) logic
      *
      * 2. Keep parameter extraction in View layer
      *    - View knows about UI controls (_txtDocument, _numZoom)

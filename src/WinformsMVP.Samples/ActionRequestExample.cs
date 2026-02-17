@@ -7,21 +7,21 @@ using WinformsMVP.MVP.ViewActions;
 namespace WinformsMVP.Samples
 {
     /// <summary>
-    /// 示例：使用 ActionRequestEventArgs 解决复杂画面中的事件爆炸问题
+    /// Example: Using ActionRequestEventArgs to solve the event explosion problem in complex forms
     ///
-    /// 问题场景：
-    /// 在复杂的表单中，可能有几十个按钮/操作（保存、取消、删除、导出、打印、刷新等）
-    /// 如果为每个操作都定义一个单独的事件，View 接口会变得非常臃肿。
+    /// Problem Scenario:
+    /// In complex forms, there may be dozens of buttons/operations (Save, Cancel, Delete, Export, Print, Refresh, etc.)
+    /// If you define a separate event for each operation, the View interface becomes very bloated.
     ///
-    /// 解决方案：
-    /// 使用统一的 ActionRequest 事件，通过 ViewAction 区分不同的操作。
+    /// Solution:
+    /// Use a unified ActionRequest event, distinguishing different operations through ViewAction.
     /// </summary>
     public static class ComplexDataGridActions
     {
         private static readonly ViewActionFactory Factory =
             ViewAction.Factory.WithQualifier("ComplexDataGrid");
 
-        // 定义所有操作的 ActionKey
+        // Define ActionKeys for all operations
         public static readonly ViewAction Add = Factory.Create("Add");
         public static readonly ViewAction Edit = Factory.Create("Edit");
         public static readonly ViewAction Delete = Factory.Create("Delete");
@@ -34,15 +34,15 @@ namespace WinformsMVP.Samples
         public static readonly ViewAction Search = Factory.Create("Search");
     }
 
-    #region 传统方式（事件爆炸） vs ActionRequest 方式对比
+    #region Traditional Approach (Event Explosion) vs ActionRequest Approach Comparison
 
     /// <summary>
-    /// ❌ 传统方式 - 事件爆炸问题
-    /// 每个操作都需要定义一个单独的事件，导致接口臃肿
+    /// ❌ Traditional Approach - Event Explosion Problem
+    /// Each operation requires a separate event definition, leading to bloated interfaces
     /// </summary>
     public interface IDataGridView_Traditional : IWindowView
     {
-        // 😱 需要定义大量事件
+        // 😱 Requires defining numerous events
         event EventHandler AddRequested;
         event EventHandler EditRequested;
         event EventHandler DeleteRequested;
@@ -53,16 +53,16 @@ namespace WinformsMVP.Samples
         event EventHandler FilterRequested;
         event EventHandler SortRequested;
         event EventHandler SearchRequested;
-        // ... 可能还有更多操作
+        // ... possibly more operations
     }
 
     /// <summary>
-    /// ✅ ActionRequest 方式 - 简洁优雅
-    /// 只需要一个统一的事件，通过 ActionKey 区分操作
+    /// ✅ ActionRequest Approach - Concise and Elegant
+    /// Only requires a single unified event, distinguishing operations through ActionKey
     /// </summary>
     public interface IDataGridView : IWindowView
     {
-        // ✅ 只需要一个事件！
+        // ✅ Only requires one event!
         event EventHandler<ActionRequestEventArgs> ActionRequested;
 
         void UpdateStatus(string message);
@@ -70,22 +70,22 @@ namespace WinformsMVP.Samples
 
     #endregion
 
-    #region Presenter 实现 - 使用 ActionRequest
+    #region Presenter Implementation - Using ActionRequest
 
     /// <summary>
-    /// Presenter 使用 ActionRequestEventArgs 处理所有操作
+    /// Presenter uses ActionRequestEventArgs to handle all operations
     /// </summary>
     public class DataGridPresenter : WindowPresenterBase<IDataGridView>
     {
         protected override void OnViewAttached()
         {
-            // ✅ 只需要订阅一个事件
-            View.ActionRequested += OnViewActionTriggered;  // 使用基类提供的辅助方法
+            // ✅ Only need to subscribe to one event
+            View.ActionRequested += OnViewActionTriggered;  // Use helper method provided by base class
         }
 
         protected override void RegisterViewActions()
         {
-            // 注册所有操作的处理器
+            // Register handlers for all operations
             _dispatcher.Register(ComplexDataGridActions.Add, OnAdd);
             _dispatcher.Register(ComplexDataGridActions.Edit, OnEdit);
             _dispatcher.Register(ComplexDataGridActions.Delete, OnDelete, canExecute: () => HasSelection());
@@ -102,75 +102,75 @@ namespace WinformsMVP.Samples
 
         protected override void OnInitialize()
         {
-            View.UpdateStatus("准备就绪");
+            View.UpdateStatus("Ready");
         }
 
         #region Action Handlers
 
         private void OnAdd()
         {
-            View.UpdateStatus("添加新记录...");
-            // 实现添加逻辑
+            View.UpdateStatus("Adding new record...");
+            // Implement add logic
         }
 
         private void OnEdit()
         {
-            View.UpdateStatus("编辑记录...");
-            // 实现编辑逻辑
+            View.UpdateStatus("Editing record...");
+            // Implement edit logic
         }
 
         private void OnDelete()
         {
-            View.UpdateStatus("删除记录...");
-            // 实现删除逻辑
+            View.UpdateStatus("Deleting record...");
+            // Implement delete logic
         }
 
         private void OnRefresh()
         {
-            View.UpdateStatus("刷新数据...");
-            // 实现刷新逻辑
+            View.UpdateStatus("Refreshing data...");
+            // Implement refresh logic
         }
 
         private void OnExport()
         {
-            View.UpdateStatus("导出数据...");
-            // 实现导出逻辑
+            View.UpdateStatus("Exporting data...");
+            // Implement export logic
         }
 
         private void OnImport()
         {
-            View.UpdateStatus("导入数据...");
-            // 实现导入逻辑
+            View.UpdateStatus("Importing data...");
+            // Implement import logic
         }
 
         private void OnPrint()
         {
-            View.UpdateStatus("打印...");
-            // 实现打印逻辑
+            View.UpdateStatus("Printing...");
+            // Implement print logic
         }
 
         private void OnFilter()
         {
-            View.UpdateStatus("筛选数据...");
-            // 实现筛选逻辑
+            View.UpdateStatus("Filtering data...");
+            // Implement filter logic
         }
 
         private void OnSort()
         {
-            View.UpdateStatus("排序数据...");
-            // 实现排序逻辑
+            View.UpdateStatus("Sorting data...");
+            // Implement sort logic
         }
 
         private void OnSearch()
         {
-            View.UpdateStatus("搜索数据...");
-            // 实现搜索逻辑
+            View.UpdateStatus("Searching data...");
+            // Implement search logic
         }
 
         private bool HasSelection()
         {
-            // 检查是否有选中项
-            return true;  // 示例
+            // Check if there is a selected item
+            return true;  // Example
         }
 
         #endregion
@@ -186,11 +186,11 @@ namespace WinformsMVP.Samples
 
     #endregion
 
-    #region 带参数的 ActionRequest 示例
+    #region ActionRequest Example with Parameters
 
     /// <summary>
-    /// 示例：带参数的 ActionRequest
-    /// 用于需要传递数据的操作（如搜索关键字、筛选条件等）
+    /// Example: ActionRequest with Parameters
+    /// Used for operations that need to pass data (such as search keywords, filter conditions, etc.)
     /// </summary>
     public static class SearchActions
     {
@@ -202,33 +202,33 @@ namespace WinformsMVP.Samples
     }
 
     /// <summary>
-    /// View 接口 - 支持带参数的 ActionRequest
+    /// View interface - Supports ActionRequest with parameters
     /// </summary>
     public interface ISearchableDataGridView : IWindowView
     {
-        // 无参数的操作
+        // Operations without parameters
         event EventHandler<ActionRequestEventArgs> ActionRequested;
 
-        // 带参数的操作（如搜索关键字）
+        // Operations with parameters (such as search keywords)
         event EventHandler<ActionRequestEventArgs<string>> SearchActionRequested;
 
         void UpdateStatus(string message);
     }
 
     /// <summary>
-    /// Presenter - 处理带参数的 ActionRequest
+    /// Presenter - Handles ActionRequest with parameters
     /// </summary>
     public class SearchableDataGridPresenter : WindowPresenterBase<ISearchableDataGridView>
     {
         protected override void OnViewAttached()
         {
             View.ActionRequested += OnViewActionTriggered;
-            View.SearchActionRequested += OnSearchActionTriggered;  // 带参数的事件
+            View.SearchActionRequested += OnSearchActionTriggered;  // Event with parameters
         }
 
         protected override void RegisterViewActions()
         {
-            // 注册带参数的操作
+            // Register operations with parameters
             _dispatcher.Register<string>(
                 SearchActions.SearchByKeyword,
                 OnSearchByKeyword);
@@ -242,25 +242,25 @@ namespace WinformsMVP.Samples
 
         protected override void OnInitialize()
         {
-            View.UpdateStatus("准备就绪");
+            View.UpdateStatus("Ready");
         }
 
-        // 处理带参数的 SearchAction 事件
+        // Handle SearchAction event with parameters
         private void OnSearchActionTriggered(object sender, ActionRequestEventArgs<string> e)
         {
-            DispatchAction(e);  // 使用基类的 DispatchAction 方法
+            DispatchAction(e);  // Use base class DispatchAction method
         }
 
         private void OnSearchByKeyword(string keyword)
         {
-            View.UpdateStatus($"搜索关键字: {keyword}");
-            // 实现搜索逻辑
+            View.UpdateStatus($"Searching for keyword: {keyword}");
+            // Implement search logic
         }
 
         private void OnFilterByCategory(string category)
         {
-            View.UpdateStatus($"筛选分类: {category}");
-            // 实现筛选逻辑
+            View.UpdateStatus($"Filtering by category: {category}");
+            // Implement filter logic
         }
 
         protected override void Cleanup()
@@ -275,32 +275,32 @@ namespace WinformsMVP.Samples
 
     #endregion
 
-    #region 总结和对比
+    #region Summary and Comparison
 
     /*
-     * ActionRequestEventArgs 的优势：
+     * Advantages of ActionRequestEventArgs:
      *
-     * 1. ✅ 解决事件爆炸问题
-     *    - 传统方式：10 个操作 = 10 个事件
-     *    - ActionRequest：10 个操作 = 1 个事件
+     * 1. ✅ Solves Event Explosion Problem
+     *    - Traditional approach: 10 operations = 10 events
+     *    - ActionRequest: 10 operations = 1 event
      *
-     * 2. ✅ View 接口更简洁
-     *    - 不需要为每个操作定义单独的事件
-     *    - 接口更容易维护和扩展
+     * 2. ✅ More Concise View Interface
+     *    - No need to define separate events for each operation
+     *    - Interface is easier to maintain and extend
      *
-     * 3. ✅ 统一的事件处理模式
-     *    - 所有操作都通过 ActionRequestEventArgs 传递
-     *    - Presenter 使用统一的 DispatchAction 方法处理
+     * 3. ✅ Unified Event Handling Pattern
+     *    - All operations are passed through ActionRequestEventArgs
+     *    - Presenter uses unified DispatchAction method for handling
      *
-     * 4. ✅ 支持带参数的操作
-     *    - ActionRequestEventArgs<T> 支持传递参数
-     *    - 类型安全，编译时检查
+     * 4. ✅ Supports Operations with Parameters
+     *    - ActionRequestEventArgs<T> supports passing parameters
+     *    - Type-safe, compile-time checking
      *
-     * 使用建议：
+     * Usage Recommendations:
      *
-     * - 简单画面（< 5 个操作）：可以使用传统的独立事件
-     * - 复杂画面（> 5 个操作）：推荐使用 ActionRequestEventArgs
-     * - 需要传递参数的操作：使用 ActionRequestEventArgs<T>
+     * - Simple forms (< 5 operations): Can use traditional separate events
+     * - Complex forms (> 5 operations): Recommend using ActionRequestEventArgs
+     * - Operations that need to pass parameters: Use ActionRequestEventArgs<T>
      */
 
     #endregion

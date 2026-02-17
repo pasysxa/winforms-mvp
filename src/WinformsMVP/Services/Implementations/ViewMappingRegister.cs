@@ -5,8 +5,8 @@ using System.Windows.Forms;
 namespace WinformsMVP.Services.Implementations
 {
     /// <summary>
-    /// View インターフェースと実装 Form のマッピングを管理する標準実装。
-    /// 型ベースのマッピングとファクトリメソッドの両方をサポートします。
+    /// Standard implementation for managing mappings between View interfaces and implementation Forms.
+    /// Supports both type-based mappings and factory methods.
     /// </summary>
     public class ViewMappingRegister : IViewMappingRegister
     {
@@ -14,7 +14,7 @@ namespace WinformsMVP.Services.Implementations
         private readonly Dictionary<Type, Func<object>> _factoryMappings = new Dictionary<Type, Func<object>>();
 
         /// <summary>
-        /// View インターフェースと実装 Form のマッピングを登録します（型ベース）。
+        /// Registers a mapping between a View interface and an implementation Form (type-based).
         /// </summary>
         public void Register<TViewInterface, TViewImplementation>(bool allowOverride = false)
             where TViewImplementation : Form, TViewInterface
@@ -22,23 +22,23 @@ namespace WinformsMVP.Services.Implementations
             var interfaceType = typeof(TViewInterface);
             var implementationType = typeof(TViewImplementation);
 
-            // 既存チェック
+            // Check for existing registration
             if (!allowOverride && (_typeMappings.ContainsKey(interfaceType) || _factoryMappings.ContainsKey(interfaceType)))
             {
                 throw new InvalidOperationException(
-                    $"View インターフェース {interfaceType.Name} は既に登録されています。" +
-                    $"上書きする場合は allowOverride = true を指定してください。");
+                    $"View interface {interfaceType.Name} is already registered. " +
+                    $"To override, specify allowOverride = true.");
             }
 
-            // ファクトリマッピングを削除（型ベース優先）
+            // Remove factory mapping (type-based takes priority)
             _factoryMappings.Remove(interfaceType);
 
-            // 型ベースマッピングを登録
+            // Register type-based mapping
             _typeMappings[interfaceType] = implementationType;
         }
 
         /// <summary>
-        /// View インターフェースと実装 Form のマッピングを登録します（ファクトリメソッド）。
+        /// Registers a mapping between a View interface and an implementation Form (factory method).
         /// </summary>
         public void Register<TViewInterface>(Func<TViewInterface> factory, bool allowOverride = false)
             where TViewInterface : class
@@ -48,56 +48,56 @@ namespace WinformsMVP.Services.Implementations
 
             var interfaceType = typeof(TViewInterface);
 
-            // 既存チェック
+            // Check for existing registration
             if (!allowOverride && (_typeMappings.ContainsKey(interfaceType) || _factoryMappings.ContainsKey(interfaceType)))
             {
                 throw new InvalidOperationException(
-                    $"View インターフェース {interfaceType.Name} は既に登録されています。" +
-                    $"上書きする場合は allowOverride = true を指定してください。");
+                    $"View interface {interfaceType.Name} is already registered. " +
+                    $"To override, specify allowOverride = true.");
             }
 
-            // 型ベースマッピングを削除（ファクトリ優先）
+            // Remove type-based mapping (factory takes priority)
             _typeMappings.Remove(interfaceType);
 
-            // ファクトリマッピングを登録（型消去してobjectで保存）
+            // Register factory mapping (type-erased, stored as object)
             _factoryMappings[interfaceType] = () => factory();
         }
 
         /// <summary>
-        /// View インターフェースに対応する実装型を取得します。
-        /// ファクトリメソッドで登録されている場合は null を返します。
+        /// Gets the implementation type corresponding to a View interface.
+        /// Returns null if registered via factory method.
         /// </summary>
         public Type GetViewImplementationType(Type viewInterfaceType)
         {
-            // 型ベースマッピングをチェック
+            // Check type-based mapping
             if (_typeMappings.TryGetValue(viewInterfaceType, out Type implementationType))
             {
                 return implementationType;
             }
 
-            // ファクトリマッピングの場合は null（型情報なし）
+            // For factory mapping, return null (no type information)
             if (_factoryMappings.ContainsKey(viewInterfaceType))
             {
-                return null;  // ファクトリは型を返さない
+                return null;  // Factory doesn't expose type
             }
 
             throw new KeyNotFoundException(
-                $"View インターフェース {viewInterfaceType.Name} に対応する実装型が見つかりません。" +
-                $"アプリケーションの起動時に Register<{viewInterfaceType.Name}, TImplementation>() で登録されているか確認してください。");
+                $"Implementation type not found for View interface {viewInterfaceType.Name}. " +
+                $"Verify that it is registered via Register<{viewInterfaceType.Name}, TImplementation>() at application startup.");
         }
 
         /// <summary>
-        /// View インターフェースに対応する実装インスタンスを作成します。
+        /// Creates an implementation instance corresponding to a View interface.
         /// </summary>
         public object CreateInstance(Type viewInterfaceType)
         {
-            // ファクトリマッピングを優先
+            // Prioritize factory mapping
             if (_factoryMappings.TryGetValue(viewInterfaceType, out Func<object> factory))
             {
                 return factory();
             }
 
-            // 型ベースマッピング
+            // Type-based mapping
             if (_typeMappings.TryGetValue(viewInterfaceType, out Type implementationType))
             {
                 try
@@ -107,20 +107,20 @@ namespace WinformsMVP.Services.Implementations
                 catch (Exception ex)
                 {
                     throw new InvalidOperationException(
-                        $"View 実装型 {implementationType.Name} のインスタンス作成に失敗しました。" +
-                        $"パラメータなしのコンストラクタが存在するか確認してください。" +
-                        $"パラメータが必要な場合は Register<{viewInterfaceType.Name}>(factory) を使用してください。",
+                        $"Failed to create instance of View implementation type {implementationType.Name}. " +
+                        $"Verify that a parameterless constructor exists. " +
+                        $"If parameters are required, use Register<{viewInterfaceType.Name}>(factory).",
                         ex);
                 }
             }
 
             throw new KeyNotFoundException(
-                $"View インターフェース {viewInterfaceType.Name} に対応する実装が見つかりません。" +
-                $"アプリケーションの起動時に Register() で登録されているか確認してください。");
+                $"Implementation not found for View interface {viewInterfaceType.Name}. " +
+                $"Verify that it is registered via Register() at application startup.");
         }
 
         /// <summary>
-        /// 指定された View インターフェースが登録されているかを確認します。
+        /// Checks whether a specified View interface is registered.
         /// </summary>
         public bool IsRegistered(Type viewInterfaceType)
         {

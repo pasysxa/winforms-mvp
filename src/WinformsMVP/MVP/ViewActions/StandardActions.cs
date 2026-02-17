@@ -3,23 +3,23 @@ using System;
 namespace WinformsMVP.MVP.ViewActions
 {
     /// <summary>
-    /// 标准动作库 - 提供常见动作的 ViewAction 实例
+    /// Standard action library - Provides ViewAction instances for common actions
     ///
-    /// 用途：
-    /// 1. 直接使用标准的 ViewAction（无修饰符）
-    /// 2. 确保应用中动作命名的一致性
-    /// 3. 减少重复代码
+    /// Purpose:
+    /// 1. Directly use standard ViewAction (without qualifiers)
+    /// 2. Ensure consistency in action naming across application
+    /// 3. Reduce code duplication
     ///
-    /// 使用示例：
+    /// Usage examples:
     /// <code>
-    /// // 方式1: 直接使用标准动作（无修饰符）
+    /// // Method 1: Directly use standard actions (no qualifiers)
     /// public static class MyModuleActions
     /// {
     ///     public static readonly ViewAction Save = StandardActions.Save;
     ///     public static readonly ViewAction Cancel = StandardActions.Cancel;
     /// }
     ///
-    /// // 方式2: 需要模块前缀时，使用 Factory
+    /// // Method 2: When module prefix is needed, use Factory
     /// public static class MyModuleActions
     /// {
     ///     private static readonly ViewActionFactory Factory =
@@ -32,62 +32,62 @@ namespace WinformsMVP.MVP.ViewActions
     /// </summary>
     public static class StandardActions
     {
-        // ==================== 最常用的对话框动作 ====================
+        // ==================== Common Dialog Actions ====================
 
-        /// <summary>确定</summary>
+        /// <summary>OK</summary>
         public static readonly ViewAction Ok = ViewAction.Create("Ok");
 
-        /// <summary>取消</summary>
+        /// <summary>Cancel</summary>
         public static readonly ViewAction Cancel = ViewAction.Create("Cancel");
 
-        /// <summary>是</summary>
+        /// <summary>Yes</summary>
         public static readonly ViewAction Yes = ViewAction.Create("Yes");
 
-        /// <summary>否</summary>
+        /// <summary>No</summary>
         public static readonly ViewAction No = ViewAction.Create("No");
 
-        /// <summary>应用</summary>
+        /// <summary>Apply</summary>
         public static readonly ViewAction Apply = ViewAction.Create("Apply");
 
-        /// <summary>关闭</summary>
+        /// <summary>Close</summary>
         public static readonly ViewAction Close = ViewAction.Create("Close");
 
-        /// <summary>重试</summary>
+        /// <summary>Retry</summary>
         public static readonly ViewAction Retry = ViewAction.Create("Retry");
 
-        /// <summary>忽略</summary>
+        /// <summary>Ignore</summary>
         public static readonly ViewAction Ignore = ViewAction.Create("Ignore");
 
-        /// <summary>中止</summary>
+        /// <summary>Abort</summary>
         public static readonly ViewAction Abort = ViewAction.Create("Abort");
 
-        // ==================== CRUD 操作 ====================
+        // ==================== CRUD Operations ====================
 
-        /// <summary>保存</summary>
+        /// <summary>Save</summary>
         public static readonly ViewAction Save = ViewAction.Create("Save");
 
-        /// <summary>添加/新建</summary>
+        /// <summary>Add/New</summary>
         public static readonly ViewAction Add = ViewAction.Create("Add");
 
-        /// <summary>编辑/修改</summary>
+        /// <summary>Edit/Modify</summary>
         public static readonly ViewAction Edit = ViewAction.Create("Edit");
 
-        /// <summary>删除</summary>
+        /// <summary>Delete</summary>
         public static readonly ViewAction Delete = ViewAction.Create("Delete");
 
-        /// <summary>移除（与 Delete 类似，但语义更轻）</summary>
+        /// <summary>Remove (similar to Delete, but lighter semantics)</summary>
         public static readonly ViewAction Remove = ViewAction.Create("Remove");
 
-        /// <summary>创建</summary>
+        /// <summary>Create</summary>
         public static readonly ViewAction Create = ViewAction.Create("Create");
 
-        /// <summary>更新</summary>
+        /// <summary>Update</summary>
         public static readonly ViewAction Update = ViewAction.Create("Update");
 
-        /// <summary>刷新</summary>
+        /// <summary>Refresh</summary>
         public static readonly ViewAction Refresh = ViewAction.Create("Refresh");
 
-        /// <summary>重置</summary>
+        /// <summary>Reset</summary>
         public static readonly ViewAction Reset = ViewAction.Create("Reset");
 
         // ==================== 文件操作（File 前缀） ====================

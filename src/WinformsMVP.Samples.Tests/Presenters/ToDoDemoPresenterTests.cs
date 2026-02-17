@@ -7,13 +7,13 @@ using WinformsMVP.Samples.Tests.TestHelpers;
 namespace WinformsMVP.Samples.Tests.Presenters
 {
     /// <summary>
-    /// 単体テスト例：ToDoDemoPresenterをテスト
+    /// Unit test example: Testing ToDoDemoPresenter
     ///
-    /// デモンストレーション：
-    /// 1. MockPlatformServicesを使用してモックサービスを注入
-    /// 2. MockToDoViewを使用してビューをモック
-    /// 3. Presenterのビジネスロジックを検証
-    /// 4. サービス呼び出し（MessageServiceなど）を検証
+    /// Demonstrates:
+    /// 1. Injecting mock services using MockPlatformServices
+    /// 2. Mocking the view using MockToDoView
+    /// 3. Verifying presenter business logic
+    /// 4. Verifying service calls (MessageService, etc.)
     /// </summary>
     public class ToDoDemoPresenterTests
     {
@@ -23,27 +23,27 @@ namespace WinformsMVP.Samples.Tests.Presenters
 
         public ToDoDemoPresenterTests()
         {
-            // 各テスト前にコンストラクターが実行される
+            // Constructor runs before each test
             SetupTest();
         }
 
         private void SetupTest()
         {
-            // 1. モックサービスを作成
+            // 1. Create mock services
             _mockServices = new MockPlatformServices();
 
-            // 2. Presenterを作成し、WithPlatformServicesでモックサービスを注入
+            // 2. Create presenter and inject mock services with WithPlatformServices
             _presenter = new ToDoDemoPresenter()
                 .WithPlatformServices(_mockServices);
 
-            // 3. モックビューを作成
+            // 3. Create mock view
             _mockView = new MockToDoView();
 
-            // 4. ビューをアタッチして初期化
+            // 4. Attach view and initialize
             _presenter.AttachView(_mockView);
             _presenter.Initialize();
 
-            // 初期化時の呼び出し記録をクリア（必要に応じて）
+            // Clear initialization call records (as needed)
             _mockServices.Reset();
             _mockView.MethodCalls.Clear();
             _mockView.StatusMessages.Clear();
@@ -88,7 +88,7 @@ namespace WinformsMVP.Samples.Tests.Presenters
             // Act
             _presenter.Dispatch(ToDoDemoActions.AddTask);
 
-            // Assert - 验证MessageService被调用
+            // Assert - Verify MessageService was called
             Assert.True(_mockServices.MessageService.InfoMessageShown);
             Assert.True(_mockServices.MessageService.HasCall(
                 MessageType.Info,
@@ -104,7 +104,7 @@ namespace WinformsMVP.Samples.Tests.Presenters
             // Act
             _presenter.Dispatch(ToDoDemoActions.AddTask);
 
-            // Assert - 验证显示了警告消息
+            // Assert - Verify warning message was displayed
             Assert.True(_mockServices.MessageService.WarningMessageShown);
             Assert.False(_mockView.MethodCalls.Contains("AddTaskToList"));
         }
@@ -152,7 +152,7 @@ namespace WinformsMVP.Samples.Tests.Presenters
             _mockView.TaskText = "Task to keep";
             _presenter.Dispatch(ToDoDemoActions.AddTask);
             _mockView.SelectTask(0);
-            _mockServices.MessageService.ConfirmYesNoResult = false;  // 用户点击No
+            _mockServices.MessageService.ConfirmYesNoResult = false;  // User clicks No
 
             // Act
             _presenter.Dispatch(ToDoDemoActions.RemoveTask);
@@ -160,7 +160,7 @@ namespace WinformsMVP.Samples.Tests.Presenters
             // Assert
             Assert.True(_mockServices.MessageService.ConfirmDialogShown);
             Assert.DoesNotContain("RemoveSelectedTask()", _mockView.MethodCalls);
-            Assert.Equal(1, _mockView.TaskCount);  // 任务没有被删除
+            Assert.Equal(1, _mockView.TaskCount);  // Task was not deleted
         }
 
         #endregion
@@ -213,7 +213,7 @@ namespace WinformsMVP.Samples.Tests.Presenters
             // Act
             _presenter.Dispatch(ToDoDemoActions.SaveAll);
 
-            // Assert - 验证显示了成功消息
+            // Assert - Verify success message was displayed
             Assert.True(_mockServices.MessageService.InfoMessageShown);
             Assert.True(_mockServices.MessageService.HasCall(
                 MessageType.Info,
@@ -264,19 +264,19 @@ namespace WinformsMVP.Samples.Tests.Presenters
         [Fact]
         public void SelectionChanged_TriggersCanExecuteUpdate()
         {
-            // 这个测试展示View事件如何影响action可用性
-            // 实际的CanExecute验证需要访问dispatcher的内部状态
-            // 这里只验证事件订阅正常工作
+            // This test demonstrates how View events affect action availability
+            // Actual CanExecute verification requires accessing dispatcher's internal state
+            // Here we only verify that event subscription works correctly
 
             // Arrange
             _mockView.TaskText = "Test task";
             _presenter.Dispatch(ToDoDemoActions.AddTask);
 
-            // Act - 触发SelectionChanged事件
+            // Act - Trigger SelectionChanged event
             _mockView.SelectTask(0);
 
-            // Assert - CanExecute应该被重新评估
-            // 在实际场景中，RemoveTask和CompleteTask按钮会变为可用
+            // Assert - CanExecute should be re-evaluated
+            // In real scenarios, RemoveTask and CompleteTask buttons would become enabled
             Assert.True(_mockView.HasSelectedTask);
         }
 
@@ -287,13 +287,13 @@ namespace WinformsMVP.Samples.Tests.Presenters
         [Fact]
         public void Presenter_UsesInjectedMockServices()
         {
-            // 这个测试验证mock服务确实被使用了
+            // This test verifies that mock services are actually being used
 
             // Act
             _mockView.TaskText = "Test";
             _presenter.Dispatch(ToDoDemoActions.AddTask);
 
-            // Assert - 验证mock服务记录了调用
+            // Assert - Verify mock service recorded the call
             Assert.Equal(1, _mockServices.MessageService.Calls.Count);
             Assert.Equal(MessageType.Info, _mockServices.MessageService.Calls[0].Type);
         }
@@ -301,10 +301,10 @@ namespace WinformsMVP.Samples.Tests.Presenters
         [Fact]
         public void MultipleTests_DontInterfere()
         {
-            // 每个测试都有独立的mock实例（通过构造函数创建）
-            // 这个测试验证测试之间不会相互影响
+            // Each test has independent mock instances (created via constructor)
+            // This test verifies that tests don't interfere with each other
 
-            // Assert - 新测试开始时状态是干净的
+            // Assert - State is clean at the start of new test
             Assert.Equal(0, _mockServices.MessageService.Calls.Count);
             Assert.Equal(0, _mockView.TaskCount);
         }

@@ -4,53 +4,53 @@ using System.Windows.Forms;
 namespace WinformsMVP.Services
 {
     /// <summary>
-    /// View インターフェースと実装 Form のマッピングを管理します。
-    /// WindowNavigator が View インスタンスを自動的に作成するために使用されます。
+    /// Manages the mapping between View interfaces and their Form implementations.
+    /// Used by WindowNavigator to automatically create View instances.
     /// </summary>
     public interface IViewMappingRegister
     {
         /// <summary>
-        /// View インターフェースに対応する実装型を取得します。
+        /// Gets the implementation type corresponding to a View interface.
         /// </summary>
-        /// <param name="viewInterfaceType">View インターフェース型</param>
-        /// <returns>実装 Form 型</returns>
-        /// <exception cref="System.Collections.Generic.KeyNotFoundException">対応する実装型が見つからない場合</exception>
+        /// <param name="viewInterfaceType">View interface type</param>
+        /// <returns>Implementation Form type</returns>
+        /// <exception cref="System.Collections.Generic.KeyNotFoundException">Thrown when no corresponding implementation type is found</exception>
         Type GetViewImplementationType(Type viewInterfaceType);
 
         /// <summary>
-        /// View インターフェースと実装 Form のマッピングを登録します（型ベース）。
+        /// Registers a mapping between a View interface and its Form implementation (type-based).
         /// </summary>
-        /// <typeparam name="TViewInterface">View インターフェース型</typeparam>
-        /// <typeparam name="TViewImplementation">実装 Form 型</typeparam>
-        /// <param name="allowOverride">既存のマッピングを上書きするかどうか（デフォルト: false）</param>
-        /// <exception cref="InvalidOperationException">既に登録されている場合（allowOverride = false のとき）</exception>
+        /// <typeparam name="TViewInterface">View interface type</typeparam>
+        /// <typeparam name="TViewImplementation">Implementation Form type</typeparam>
+        /// <param name="allowOverride">Whether to override existing mappings (default: false)</param>
+        /// <exception cref="InvalidOperationException">Thrown when already registered (when allowOverride = false)</exception>
         void Register<TViewInterface, TViewImplementation>(bool allowOverride = false)
             where TViewImplementation : Form, TViewInterface;
 
         /// <summary>
-        /// View インターフェースと実装 Form のマッピングを登録します（ファクトリメソッド）。
-        /// コンストラクタにパラメータが必要な View や、特殊な初期化が必要な場合に使用します。
+        /// Registers a mapping between a View interface and its Form implementation (factory method).
+        /// Use this for Views that require constructor parameters or special initialization.
         /// </summary>
-        /// <typeparam name="TViewInterface">View インターフェース型</typeparam>
-        /// <param name="factory">View インスタンスを作成するファクトリメソッド</param>
-        /// <param name="allowOverride">既存のマッピングを上書きするかどうか（デフォルト: false）</param>
-        /// <exception cref="InvalidOperationException">既に登録されている場合（allowOverride = false のとき）</exception>
+        /// <typeparam name="TViewInterface">View interface type</typeparam>
+        /// <param name="factory">Factory method to create View instances</param>
+        /// <param name="allowOverride">Whether to override existing mappings (default: false)</param>
+        /// <exception cref="InvalidOperationException">Thrown when already registered (when allowOverride = false)</exception>
         void Register<TViewInterface>(Func<TViewInterface> factory, bool allowOverride = false)
             where TViewInterface : class;
 
         /// <summary>
-        /// View インターフェースに対応する実装インスタンスを作成します。
+        /// Creates an implementation instance corresponding to a View interface.
         /// </summary>
-        /// <param name="viewInterfaceType">View インターフェース型</param>
-        /// <returns>作成された View インスタンス</returns>
-        /// <exception cref="System.Collections.Generic.KeyNotFoundException">対応する実装型が見つからない場合</exception>
+        /// <param name="viewInterfaceType">View interface type</param>
+        /// <returns>Created View instance</returns>
+        /// <exception cref="System.Collections.Generic.KeyNotFoundException">Thrown when no corresponding implementation type is found</exception>
         object CreateInstance(Type viewInterfaceType);
 
         /// <summary>
-        /// 指定された View インターフェースが登録されているかを確認します。
+        /// Checks whether a specified View interface is registered.
         /// </summary>
-        /// <param name="viewInterfaceType">View インターフェース型</param>
-        /// <returns>登録されている場合 true</returns>
+        /// <param name="viewInterfaceType">View interface type</param>
+        /// <returns>True if registered</returns>
         bool IsRegistered(Type viewInterfaceType);
     }
 }

@@ -16,7 +16,7 @@ namespace WinformsMVP.Samples.Tests.TestHelpers
         public static void Dispatch<TView>(this PresenterBase<TView> presenter, ViewAction action)
             where TView : class, IViewBase
         {
-            // 使用反射访问protected _dispatcher字段
+            // Use reflection to access the protected _dispatcher field
             var dispatcherField = typeof(PresenterBase<TView>)
                 .GetField("_dispatcher", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
 

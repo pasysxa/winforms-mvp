@@ -1,28 +1,28 @@
 namespace WinformsMVP.Services
 {
     /// <summary>
-    /// プラットフォームサービスのインターフェース。
-    /// メッセージ、ダイアログ、ファイル操作などの基盤サービスを提供します。
+    /// Interface for platform services.
+    /// Provides infrastructure services such as messages, dialogs, and file operations.
     /// </summary>
     public interface IPlatformServices
     {
         /// <summary>
-        /// ダイアログプロバイダー（ファイルを開く、保存、フォルダ選択など）
+        /// Dialog provider (file open, save, folder selection, etc.)
         /// </summary>
         IDialogProvider DialogProvider { get; }
 
         /// <summary>
-        /// メッセージサービス（メッセージボックス、トースト通知など）
+        /// Message service (message boxes, toast notifications, etc.)
         /// </summary>
         IMessageService MessageService { get; }
 
         /// <summary>
-        /// ファイルサービス（ファイル読み書き、ディレクトリ操作など）
+        /// File service (file read/write, directory operations, etc.)
         /// </summary>
         IFileService FileService { get; }
 
         /// <summary>
-        /// ウィンドウナビゲーター（モーダル/非モーダルウィンドウの表示）
+        /// Window navigator (modal/non-modal window display)
         /// </summary>
         IWindowNavigator WindowNavigator { get; }
     }

@@ -13,14 +13,14 @@ namespace WinformsMVP.Samples.CheckBoxDemo
         private static readonly ViewActionFactory Factory =
             ViewAction.Factory.WithQualifier("Settings");
 
-        // 业务特定的动作
+        // Business-specific actions
         public static readonly ViewAction ToggleAutoSave = Factory.Create("ToggleAutoSave");
         public static readonly ViewAction ToggleNotifications = Factory.Create("ToggleNotifications");
         public static readonly ViewAction SelectLightTheme = Factory.Create("SelectLightTheme");
         public static readonly ViewAction SelectDarkTheme = Factory.Create("SelectDarkTheme");
         public static readonly ViewAction SelectAutoTheme = Factory.Create("SelectAutoTheme");
 
-        // 标准动作 - 直接使用（无前缀）
+        // Standard actions - use directly (no prefix)
         public static readonly ViewAction ApplySettings = StandardActions.Apply;
         public static readonly ViewAction ResetSettings = StandardActions.Reset;
     }

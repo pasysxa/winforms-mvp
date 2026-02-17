@@ -1,99 +1,99 @@
 namespace WinformsMVP.Services
 {
     /// <summary>
-    /// ダイアログプロバイダーのデフォルト値を提供します。
-    /// これらの値はアプリケーション起動時にカスタマイズできます。
+    /// Provides default values for dialog providers.
+    /// These values can be customized at application startup.
     /// </summary>
     public static class DialogDefaults
     {
         #region File Dialog Defaults
 
         /// <summary>
-        /// ファイルを開くダイアログのデフォルトタイトル
+        /// Default title for open file dialog
         /// </summary>
-        public static string OpenFileDialogTitle { get; set; } = "ファイルを開く";
+        public static string OpenFileDialogTitle { get; set; } = "Open File";
 
         /// <summary>
-        /// ファイルを保存ダイアログのデフォルトタイトル
+        /// Default title for save file dialog
         /// </summary>
-        public static string SaveFileDialogTitle { get; set; } = "ファイルを保存";
+        public static string SaveFileDialogTitle { get; set; } = "Save File";
 
         /// <summary>
-        /// フォルダ選択ダイアログのデフォルトタイトル
+        /// Default title for folder browser dialog
         /// </summary>
-        public static string FolderBrowserDialogTitle { get; set; } = "フォルダを選択";
+        public static string FolderBrowserDialogTitle { get; set; } = "Select Folder";
 
         /// <summary>
-        /// ファイルダイアログのデフォルトフィルター
+        /// Default filter for file dialogs
         /// </summary>
-        public static string DefaultFileFilter { get; set; } = "すべてのファイル (*.*)|*.*";
+        public static string DefaultFileFilter { get; set; } = "All Files (*.*)|*.*";
 
         /// <summary>
-        /// フォルダ選択ダイアログのデフォルト説明文
+        /// Default description for folder browser dialog
         /// </summary>
-        public static string FolderBrowserDescription { get; set; } = "フォルダを選択してください";
+        public static string FolderBrowserDescription { get; set; } = "Please select a folder";
 
         #endregion
 
         #region Print Dialog Defaults
 
         /// <summary>
-        /// 印刷プレビューダイアログのデフォルトタイトル
+        /// Default title for print preview dialog
         /// </summary>
-        public static string PrintPreviewDialogTitle { get; set; } = "印刷プレビュー";
+        public static string PrintPreviewDialogTitle { get; set; } = "Print Preview";
 
         #endregion
 
         #region Message Dialog Defaults
 
         /// <summary>
-        /// メッセージボックスのデフォルトキャプション
+        /// Default caption for message boxes
         /// </summary>
-        public static string DefaultMessageCaption { get; set; } = "システム";
+        public static string DefaultMessageCaption { get; set; } = "System";
 
         #endregion
 
         #region Error Messages
 
         /// <summary>
-        /// ファイルを開く操作が失敗した時のエラーメッセージ
+        /// Error message when file open operation fails
         /// </summary>
-        public static string FileOpenErrorMessage { get; set; } = "ファイルを開くに失敗しました";
+        public static string FileOpenErrorMessage { get; set; } = "Failed to open file";
 
         /// <summary>
-        /// ファイルを保存操作が失敗した時のエラーメッセージ
+        /// Error message when file save operation fails
         /// </summary>
-        public static string FileSaveErrorMessage { get; set; } = "ファイルの保存に失敗しました";
+        public static string FileSaveErrorMessage { get; set; } = "Failed to save file";
 
         /// <summary>
-        /// フォルダ選択が失敗した時のエラーメッセージ
+        /// Error message when folder selection fails
         /// </summary>
-        public static string FolderSelectErrorMessage { get; set; } = "フォルダ選択に失敗しました";
+        public static string FolderSelectErrorMessage { get; set; } = "Failed to select folder";
 
         /// <summary>
-        /// 色選択が失敗した時のエラーメッセージ
+        /// Error message when color selection fails
         /// </summary>
-        public static string ColorSelectErrorMessage { get; set; } = "色選択に失敗しました";
+        public static string ColorSelectErrorMessage { get; set; } = "Failed to select color";
 
         /// <summary>
-        /// フォント選択が失敗した時のエラーメッセージ
+        /// Error message when font selection fails
         /// </summary>
-        public static string FontSelectErrorMessage { get; set; } = "フォント選択に失敗しました";
+        public static string FontSelectErrorMessage { get; set; } = "Failed to select font";
 
         /// <summary>
-        /// 印刷ダイアログが失敗した時のエラーメッセージ
+        /// Error message when print dialog fails
         /// </summary>
-        public static string PrintDialogErrorMessage { get; set; } = "印刷ダイアログに失敗しました";
+        public static string PrintDialogErrorMessage { get; set; } = "Print dialog failed";
 
         /// <summary>
-        /// ページ設定が失敗した時のエラーメッセージ
+        /// Error message when page setup fails
         /// </summary>
-        public static string PageSetupErrorMessage { get; set; } = "ページ設定に失敗しました";
+        public static string PageSetupErrorMessage { get; set; } = "Page setup failed";
 
         /// <summary>
-        /// 印刷プレビューが失敗した時のエラーメッセージ
+        /// Error message when print preview fails
         /// </summary>
-        public static string PrintPreviewErrorMessage { get; set; } = "印刷プレビューに失敗しました";
+        public static string PrintPreviewErrorMessage { get; set; } = "Print preview failed";
 
         #endregion
     }

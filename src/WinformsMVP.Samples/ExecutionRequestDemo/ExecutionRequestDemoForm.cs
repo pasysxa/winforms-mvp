@@ -9,7 +9,7 @@ using WinformsMVP.MVP.ViewActions;
 namespace WinformsMVP.Samples.ExecutionRequestDemo
 {
     /// <summary>
-    /// ExecutionRequest模式演示窗体
+    /// ExecutionRequest pattern demonstration form
     /// </summary>
     public partial class ExecutionRequestDemoForm : Form, IExecutionRequestDemoView
     {
@@ -24,7 +24,7 @@ namespace WinformsMVP.Samples.ExecutionRequestDemo
 
         private ViewActionBinder _viewActionBinder;
 
-        // ExecutionRequest事件（符合三条铁律：只使用业务数据类型）
+        // ExecutionRequest events (follows three iron rules: use only business data types)
         public event EventHandler<ExecutionRequestEventArgs<CustomerData, CustomerData>>
             EditCustomerRequested;
 
@@ -39,15 +39,15 @@ namespace WinformsMVP.Samples.ExecutionRequestDemo
 
         private void InitializeComponent()
         {
-            this.Text = "ExecutionRequest模式演示";
+            this.Text = "ExecutionRequest Pattern Demo";
             this.Size = new Size(700, 600);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.Font = new Font("Segoe UI", 9f);
 
-            // 标题
+            // Title
             var titleLabel = new Label
             {
-                Text = "ExecutionRequest 模式演示",
+                Text = "ExecutionRequest Pattern Demo",
                 Font = new Font("Segoe UI", 16f, FontStyle.Bold),
                 Location = new Point(30, 20),
                 Size = new Size(640, 35),
@@ -56,17 +56,17 @@ namespace WinformsMVP.Samples.ExecutionRequestDemo
 
             var descLabel = new Label
             {
-                Text = "演示如何使用ExecutionRequest模式集成遗留代码和处理特殊逻辑",
+                Text = "Demonstrates how to use ExecutionRequest pattern to integrate legacy code and handle special logic",
                 Location = new Point(30, 60),
                 Size = new Size(640, 25),
                 ForeColor = Color.Gray,
                 Font = new Font("Segoe UI", 10f)
             };
 
-            // 场景1: 编辑客户信息（ExecutionRequest）
+            // Scenario 1: Edit customer information (ExecutionRequest)
             var scenario1Label = new Label
             {
-                Text = "场景1: 编辑客户信息（ExecutionRequest 模式）",
+                Text = "Scenario 1: Edit Customer Information (ExecutionRequest Pattern)",
                 Font = new Font("Segoe UI", 11f, FontStyle.Bold),
                 Location = new Point(30, 110),
                 Size = new Size(640, 25),
@@ -75,7 +75,7 @@ namespace WinformsMVP.Samples.ExecutionRequestDemo
 
             var scenario1DescLabel = new Label
             {
-                Text = "✅ 正确用法：参数和返回值都是业务数据（CustomerData），无 UI 类型",
+                Text = "✅ Correct Usage: Parameters and return values are business data (CustomerData), no UI types",
                 Location = new Point(30, 135),
                 Size = new Size(640, 20),
                 ForeColor = Color.DarkGreen
@@ -83,7 +83,7 @@ namespace WinformsMVP.Samples.ExecutionRequestDemo
 
             _openLegacyButton = new Button
             {
-                Text = "编辑客户信息",
+                Text = "Edit Customer Info",
                 Location = new Point(30, 165),
                 Size = new Size(200, 40),
                 BackColor = Color.FromArgb(0, 120, 215),
@@ -95,17 +95,17 @@ namespace WinformsMVP.Samples.ExecutionRequestDemo
 
             _customerInfoLabel = new Label
             {
-                Text = "客户信息：（未设置）",
+                Text = "Customer Info: (Not Set)",
                 Location = new Point(250, 170),
                 Size = new Size(400, 30),
                 Font = new Font("Segoe UI", 10f),
                 ForeColor = Color.Gray
             };
 
-            // 场景2: 文件选择对话框
+            // Scenario 2: File selection dialog
             var scenario2Label = new Label
             {
-                Text = "场景2: 文件选择对话框（推荐：服务接口）",
+                Text = "Scenario 2: File Selection Dialog (Recommended: Service Interface)",
                 Font = new Font("Segoe UI", 11f, FontStyle.Bold),
                 Location = new Point(30, 230),
                 Size = new Size(640, 25),
@@ -114,7 +114,7 @@ namespace WinformsMVP.Samples.ExecutionRequestDemo
 
             var scenario2DescLabel = new Label
             {
-                Text = "✅ 推荐做法：使用 IDialogProvider 服务接口（更简单、更易测试）",
+                Text = "✅ Recommended Approach: Use IDialogProvider service interface (simpler and easier to test)",
                 Location = new Point(30, 255),
                 Size = new Size(640, 20),
                 ForeColor = Color.DarkGreen
@@ -122,7 +122,7 @@ namespace WinformsMVP.Samples.ExecutionRequestDemo
 
             _selectFileButton = new Button
             {
-                Text = "选择文件",
+                Text = "Select File",
                 Location = new Point(30, 285),
                 Size = new Size(200, 40),
                 BackColor = Color.FromArgb(16, 137, 62),
@@ -134,7 +134,7 @@ namespace WinformsMVP.Samples.ExecutionRequestDemo
 
             _filePathLabel = new Label
             {
-                Text = "选中的文件：（未选择）",
+                Text = "Selected File: (None)",
                 Location = new Point(250, 290),
                 Size = new Size(400, 30),
                 Font = new Font("Segoe UI", 10f),
@@ -142,10 +142,10 @@ namespace WinformsMVP.Samples.ExecutionRequestDemo
                 AutoEllipsis = true
             };
 
-            // 场景3: 保存数据
+            // Scenario 3: Save data
             var scenario3Label = new Label
             {
-                Text = "场景3: 保存业务数据（ExecutionRequest 模式）",
+                Text = "Scenario 3: Save Business Data (ExecutionRequest Pattern)",
                 Font = new Font("Segoe UI", 11f, FontStyle.Bold),
                 Location = new Point(30, 350),
                 Size = new Size(640, 25),
@@ -154,7 +154,7 @@ namespace WinformsMVP.Samples.ExecutionRequestDemo
 
             var scenario3DescLabel = new Label
             {
-                Text = "✅ 正确用法：参数是业务数据（CustomerData），返回值是业务结果（bool）",
+                Text = "✅ Correct Usage: Parameter is business data (CustomerData), return value is business result (bool)",
                 Location = new Point(30, 375),
                 Size = new Size(640, 20),
                 ForeColor = Color.DarkGreen
@@ -162,27 +162,27 @@ namespace WinformsMVP.Samples.ExecutionRequestDemo
 
             _saveDataButton = new Button
             {
-                Text = "保存客户数据",
+                Text = "Save Customer Data",
                 Location = new Point(30, 405),
                 Size = new Size(200, 40),
                 BackColor = Color.FromArgb(139, 69, 19),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI", 10f),
-                Enabled = false  // 初始禁用，有数据后启用
+                Enabled = false  // Initially disabled, enabled after data is available
             };
             _saveDataButton.FlatAppearance.BorderSize = 0;
 
             var saveHintLabel = new Label
             {
-                Text = "💡 提示：先打开遗留窗体添加客户数据，然后才能保存",
+                Text = "💡 Hint: First open the legacy form to add customer data, then save",
                 Location = new Point(250, 410),
                 Size = new Size(400, 30),
                 Font = new Font("Segoe UI", 9f),
                 ForeColor = Color.Orange
             };
 
-            // 状态栏
+            // Status bar
             _statusPanel = new Panel
             {
                 Location = new Point(0, 480),
@@ -193,7 +193,7 @@ namespace WinformsMVP.Samples.ExecutionRequestDemo
 
             var statusTitleLabel = new Label
             {
-                Text = "状态:",
+                Text = "Status:",
                 Location = new Point(20, 15),
                 Size = new Size(50, 20),
                 Font = new Font("Segoe UI", 9f, FontStyle.Bold)
@@ -201,7 +201,7 @@ namespace WinformsMVP.Samples.ExecutionRequestDemo
 
             _statusLabel = new Label
             {
-                Text = "准备就绪",
+                Text = "Ready",
                 Location = new Point(70, 15),
                 Size = new Size(600, 40),
                 ForeColor = Color.FromArgb(64, 64, 64),
@@ -212,7 +212,7 @@ namespace WinformsMVP.Samples.ExecutionRequestDemo
                 statusTitleLabel, _statusLabel
             });
 
-            // 添加所有控件
+            // Add all controls
             this.Controls.AddRange(new Control[] {
                 titleLabel, descLabel,
                 scenario1Label, scenario1DescLabel, _openLegacyButton, _customerInfoLabel,
@@ -226,13 +226,13 @@ namespace WinformsMVP.Samples.ExecutionRequestDemo
 
         public void ShowCustomerInfo(CustomerData data)
         {
-            _customerInfoLabel.Text = $"客户信息：{data}";
+            _customerInfoLabel.Text = $"Customer Info: {data}";
             _customerInfoLabel.ForeColor = Color.DarkGreen;
         }
 
         public void ShowSelectedFile(string filePath)
         {
-            _filePathLabel.Text = $"选中的文件：{filePath}";
+            _filePathLabel.Text = $"Selected File: {filePath}";
             _filePathLabel.ForeColor = Color.DarkGreen;
         }
 
@@ -250,59 +250,59 @@ namespace WinformsMVP.Samples.ExecutionRequestDemo
         {
             _viewActionBinder = new ViewActionBinder();
             _viewActionBinder.Add(ExecutionRequestDemoActions.EditCustomer, _openLegacyButton);
-            _viewActionBinder.Add(ExecutionRequestDemoActions.SelectFile, _selectFileButton);  // 直接触发 ViewAction，Presenter 用 IDialogProvider
+            _viewActionBinder.Add(ExecutionRequestDemoActions.SelectFile, _selectFileButton);  // Directly triggers ViewAction, Presenter uses IDialogProvider
             _viewActionBinder.Add(ExecutionRequestDemoActions.SaveData, _saveDataButton);
 
-            // 场景1和场景3使用 ExecutionRequest
-            // 场景2直接通过 ViewAction + IDialogProvider
+            // Scenario 1 and 3 use ExecutionRequest
+            // Scenario 2 uses ViewAction + IDialogProvider directly
             _openLegacyButton.Click += OnEditCustomerButtonClick;
             _saveDataButton.Click += OnSaveDataButtonClick;
         }
 
         #endregion
 
-        #region Event Handlers - 触发ExecutionRequest
+        #region Event Handlers - Trigger ExecutionRequest
 
         /// <summary>
-        /// 场景1：编辑客户信息
-        /// ✅ 符合铁律：只传递业务数据（CustomerData），不传递 UI 类型
+        /// Scenario 1: Edit customer information
+        /// ✅ Follows the iron rule: Only passes business data (CustomerData), not UI types
         /// </summary>
         private void OnEditCustomerButtonClick(object sender, EventArgs e)
         {
-            // 获取当前客户数据（null 表示新建）
+            // Get current customer data (null means new)
             var currentCustomer = GetCurrentCustomerData();
 
-            // 创建 ExecutionRequest - View 只传递业务数据和回调
+            // Create ExecutionRequest - View only passes business data and callback
             var request = new ExecutionRequestEventArgs<CustomerData, CustomerData>(
-                param: currentCustomer,         // ✅ 业务数据
-                callback: OnCustomerEdited      // ✅ 回调函数
+                param: currentCustomer,         // ✅ Business data
+                callback: OnCustomerEdited      // ✅ Callback function
             );
 
-            // 触发事件
+            // Trigger event
             EditCustomerRequested?.Invoke(this, request);
         }
 
-        // ✅ 场景2：文件选择 - 不使用 ExecutionRequest
-        // _selectFileButton 直接绑定到 ViewAction，Presenter 使用 IDialogProvider
+        // ✅ Scenario 2: File selection - Does not use ExecutionRequest
+        // _selectFileButton is directly bound to ViewAction, Presenter uses IDialogProvider
 
         /// <summary>
-        /// 场景3：保存数据
-        /// ✅ 符合铁律：参数和返回值都是业务数据类型
+        /// Scenario 3: Save data
+        /// ✅ Follows the iron rule: Parameters and return values are business data types
         /// </summary>
         private void OnSaveDataButtonClick(object sender, EventArgs e)
         {
-            // 获取当前客户数据
+            // Get current customer data
             var customerData = GetCurrentCustomerData();
             if (customerData == null)
             {
-                UpdateStatus("没有可保存的数据", false);
+                UpdateStatus("No data to save", false);
                 return;
             }
 
-            // 创建 ExecutionRequest
+            // Create ExecutionRequest
             var request = new ExecutionRequestEventArgs<CustomerData, bool>(
-                param: customerData,    // ✅ 业务数据
-                callback: OnDataSaved   // ✅ 回调函数
+                param: customerData,    // ✅ Business data
+                callback: OnDataSaved   // ✅ Callback function
             );
 
             SaveDataRequested?.Invoke(this, request);
@@ -310,38 +310,38 @@ namespace WinformsMVP.Samples.ExecutionRequestDemo
 
         #endregion
 
-        #region Callbacks - 处理ExecutionRequest的结果
+        #region Callbacks - Handle ExecutionRequest results
 
         /// <summary>
-        /// 客户编辑完成的回调
+        /// Callback for customer editing completion
         /// </summary>
         private void OnCustomerEdited(CustomerData editedCustomer)
         {
             if (editedCustomer != null)
             {
-                // 用户确认了编辑
+                // User confirmed edit
                 ShowCustomerInfo(editedCustomer);
-                UpdateStatus($"客户信息已更新：{editedCustomer.Name}", true);
+                UpdateStatus($"Customer information updated: {editedCustomer.Name}", true);
             }
             else
             {
-                // 用户取消了编辑
-                UpdateStatus("用户取消了操作", false);
+                // User cancelled edit
+                UpdateStatus("User cancelled operation", false);
             }
         }
 
         /// <summary>
-        /// 数据保存完成的回调
+        /// Callback for data save completion
         /// </summary>
         private void OnDataSaved(bool success)
         {
             if (success)
             {
-                UpdateStatus("数据保存成功！", true);
+                UpdateStatus("Data saved successfully!", true);
             }
             else
             {
-                UpdateStatus("数据保存失败", false);
+                UpdateStatus("Data save failed", false);
             }
         }
 
@@ -351,16 +351,16 @@ namespace WinformsMVP.Samples.ExecutionRequestDemo
 
         private CustomerData GetCurrentCustomerData()
         {
-            // 这里应该从实际的数据源获取
-            // 为了演示，我们从customerInfoLabel解析
+            // This should retrieve from actual data source
+            // For demo purposes, we parse from customerInfoLabel
             var text = _customerInfoLabel.Text;
-            if (text.Contains("未设置"))
+            if (text.Contains("Not Set"))
                 return null;
 
-            // 简化处理：实际应用中应该保存在字段中
+            // Simplified: In real applications, this should be stored in a field
             return new CustomerData
             {
-                Name = "示例客户",
+                Name = "Sample Customer",
                 Email = "example@test.com",
                 Age = 30
             };

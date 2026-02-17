@@ -9,12 +9,12 @@ using WinformsMVP.Services;
 namespace WinformsMVP.Samples.Tests.Mocks
 {
     /// <summary>
-    /// IWindowNavigatorのモック実装（テスト用）。
-    /// ウィンドウ表示を記録し、テストで検証可能にします。
+    /// Mock implementation of IWindowNavigator for testing.
+    /// Records window displays and makes them verifiable in tests.
     /// </summary>
     public class MockWindowNavigator : IWindowNavigator
     {
-        // 記録用
+        // For recording
         public List<object> ShowModalCalls { get; private set; } = new List<object>();
         public int ShowWindowCalls { get; private set; }
         public object LastPresenter { get; private set; }
@@ -42,7 +42,7 @@ namespace WinformsMVP.Samples.Tests.Mocks
         {
             ShowWindowCalls++;
             LastPresenter = presenter;
-            return null;  // テスト用mockなのでnullを返す
+            return null;  // Return null for test mock
         }
 
         public IWindowView ShowWindow<TPresenter>(

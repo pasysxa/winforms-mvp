@@ -7,20 +7,20 @@ using WinformsMVP.Common;
 namespace WinformsMVP.Samples.Tests.Common
 {
     /// <summary>
-    /// ChangeTracker<T> の単体テスト
+    /// Unit tests for ChangeTracker<T>
     ///
-    /// テスト対象：
-    /// - 基本機能（AcceptChanges、RejectChanges、IsChanged）
-    /// - UpdateCurrentValue() メソッド
-    /// - IsChangedChanged イベント
-    /// - IsChanged キャッシング
-    /// - スレッド安全性
-    /// - 検証サポート（CanAcceptChanges、CanRejectChanges）
-    /// - 深いコピー要件
+    /// Test coverage:
+    /// - Basic functionality (AcceptChanges, RejectChanges, IsChanged)
+    /// - UpdateCurrentValue() method
+    /// - IsChangedChanged event
+    /// - IsChanged caching
+    /// - Thread safety
+    /// - Validation support (CanAcceptChanges, CanRejectChanges)
+    /// - Deep copy requirements
     /// </summary>
     public class ChangeTrackerTests
     {
-        #region テストモデル
+        #region Test Models
 
         private class TestModel : ICloneable, IEquatable<TestModel>
         {
@@ -63,7 +63,7 @@ namespace WinformsMVP.Samples.Tests.Common
                 return new NestedModel
                 {
                     Title = this.Title,
-                    Child = this.Child?.Clone() as ChildModel  // 深いコピー
+                    Child = this.Child?.Clone() as ChildModel  // Deep copy
                 };
             }
 
@@ -114,7 +114,7 @@ namespace WinformsMVP.Samples.Tests.Common
 
         #endregion
 
-        #region コンストラクタテスト
+        #region Constructor Tests
 
         [Fact]
         public void Constructor_WithNullInitialValue_ThrowsArgumentNullException()
@@ -147,15 +147,15 @@ namespace WinformsMVP.Samples.Tests.Common
 
             // Act
             var tracker = new ChangeTracker<TestModel>(model);
-            model.Name = "Modified";  // 元のオブジェクトを変更
+            model.Name = "Modified";  // Modify the original object
 
             // Assert
-            Assert.Equal("Original", tracker.CurrentValue.Name);  // trackerは影響を受けない
+            Assert.Equal("Original", tracker.CurrentValue.Name);  // tracker is not affected
         }
 
         #endregion
 
-        #region UpdateCurrentValue テスト
+        #region UpdateCurrentValue Tests
 
         [Fact]
         public void UpdateCurrentValue_WithValidValue_UpdatesCurrentValue()
@@ -187,7 +187,7 @@ namespace WinformsMVP.Samples.Tests.Common
 
         #endregion
 
-        #region IsChangedChanged イベントテスト
+        #region IsChangedChanged Event Tests
 
         [Fact]
         public void IsChangedChanged_WhenValueChanges_EventFires()
@@ -224,7 +224,7 @@ namespace WinformsMVP.Samples.Tests.Common
             tracker.AcceptChanges();
 
             // Assert
-            Assert.True(eventFired);  // IsChangedがtrue→falseに変化
+            Assert.True(eventFired);  // IsChanged changed from true → false
         }
 
         [Fact]
@@ -244,7 +244,7 @@ namespace WinformsMVP.Samples.Tests.Common
             tracker.RejectChanges();
 
             // Assert
-            Assert.True(eventFired);  // IsChangedがtrue→falseに変化
+            Assert.True(eventFired);  // IsChanged changed from true → false
         }
 
         [Fact]
@@ -257,16 +257,16 @@ namespace WinformsMVP.Samples.Tests.Common
             var eventFired = false;
             tracker.IsChangedChanged += (s, e) => eventFired = true;
 
-            // Act - 変更されていない状態でAcceptChanges
+            // Act - AcceptChanges with no changes
             tracker.AcceptChanges();
 
             // Assert
-            Assert.False(eventFired);  // IsChanged状態が変化していないのでイベント発火しない
+            Assert.False(eventFired);  // Event does not fire because IsChanged state did not change
         }
 
         #endregion
 
-        #region AcceptChanges テスト
+        #region AcceptChanges Tests
 
         [Fact]
         public void AcceptChanges_AfterModification_SetsIsChangedToFalse()
@@ -296,11 +296,11 @@ namespace WinformsMVP.Samples.Tests.Common
             tracker.UpdateCurrentValue(new TestModel { Id = 2, Name = "Updated" });
             tracker.AcceptChanges();
 
-            // Act - さらに変更
+            // Act - further modification
             tracker.UpdateCurrentValue(new TestModel { Id = 3, Name = "Modified Again" });
 
             // Assert
-            Assert.True(tracker.IsChanged);  // 新しいベースラインから変更されている
+            Assert.True(tracker.IsChanged);  // Changed from the new baseline
         }
 
         [Fact]
@@ -322,7 +322,7 @@ namespace WinformsMVP.Samples.Tests.Common
 
         #endregion
 
-        #region RejectChanges テスト
+        #region RejectChanges Tests
 
         [Fact]
         public void RejectChanges_RestoresOriginalValue()
@@ -361,13 +361,13 @@ namespace WinformsMVP.Samples.Tests.Common
 
             // Assert
             Assert.False(tracker.IsChanged);
-            Assert.Equal(2, tracker.CurrentValue.Id);  // "First Change"に戻る
+            Assert.Equal(2, tracker.CurrentValue.Id);  // Reverts to "First Change"
             Assert.Equal("First Change", tracker.CurrentValue.Name);
         }
 
         #endregion
 
-        #region 深いコピーテスト
+        #region Deep Copy Tests
 
         [Fact]
         public void DeepCopy_NestedObjects_AreIndependent()
@@ -380,16 +380,16 @@ namespace WinformsMVP.Samples.Tests.Common
             };
             var tracker = new ChangeTracker<NestedModel>(model);
 
-            // Act - ネストされたオブジェクトを変更
+            // Act - Modify nested object
             tracker.CurrentValue.Child.Value = "Modified Child";
 
-            // Assert - IsChangedが正しく検出される
+            // Assert - IsChanged is correctly detected
             Assert.True(tracker.IsChanged);
 
             // Act - RejectChanges
             tracker.RejectChanges();
 
-            // Assert - 元の値に戻る
+            // Assert - Reverts to original value
             Assert.Equal("Original Child", tracker.CurrentValue.Child.Value);
         }
 
@@ -404,14 +404,14 @@ namespace WinformsMVP.Samples.Tests.Common
             var original = tracker.GetOriginalValue();
             original.Name = "Modified Copy";
 
-            // Assert - trackerのオリジナルは影響を受けない
+            // Assert - tracker's original is not affected
             tracker.RejectChanges();
             Assert.Equal("Original", tracker.CurrentValue.Name);
         }
 
         #endregion
 
-        #region IsChangedWith テスト
+        #region IsChangedWith Tests
 
         [Fact]
         public void IsChangedWith_ComparesAgainstOriginal()
@@ -445,20 +445,20 @@ namespace WinformsMVP.Samples.Tests.Common
 
         #endregion
 
-        #region カスタム比較テスト
+        #region Custom Comparer Tests
 
         [Fact]
         public void CustomComparer_UsedForChangeDetection()
         {
-            // Arrange - IDのみで比較するカスタム比較関数
+            // Arrange - Custom comparer that only compares ID
             Func<TestModel, TestModel, bool> comparer = (a, b) => a.Id == b.Id;
             var model = new TestModel { Id = 1, Name = "Original" };
             var tracker = new ChangeTracker<TestModel>(model, comparer);
 
-            // Act - Nameのみ変更（IDは同じ）
+            // Act - Only change Name (ID remains the same)
             tracker.UpdateCurrentValue(new TestModel { Id = 1, Name = "Modified" });
 
-            // Assert - カスタム比較ではIDが同じなので変更なしと判定
+            // Assert - Custom comparer considers it unchanged because ID is the same
             Assert.False(tracker.IsChanged);
         }
 
@@ -470,16 +470,16 @@ namespace WinformsMVP.Samples.Tests.Common
             var model = new TestModel { Id = 1, Name = "Original" };
             var tracker = new ChangeTracker<TestModel>(model, comparer);
 
-            // Act - IDを変更
+            // Act - Change ID
             tracker.UpdateCurrentValue(new TestModel { Id = 2, Name = "Original" });
 
-            // Assert - カスタム比較でIDが異なるので変更と判定
+            // Assert - Custom comparer considers it changed because ID is different
             Assert.True(tracker.IsChanged);
         }
 
         #endregion
 
-        #region スレッド安全性テスト
+        #region Thread Safety Tests
 
         [Fact]
         public void ThreadSafety_ConcurrentAccess_NoExceptions()
@@ -488,7 +488,7 @@ namespace WinformsMVP.Samples.Tests.Common
             var model = new TestModel { Id = 1, Name = "Original" };
             var tracker = new ChangeTracker<TestModel>(model);
 
-            // Act - 複数スレッドから同時アクセス
+            // Act - Concurrent access from multiple threads
             var tasks = new List<Task>();
             for (int i = 0; i < 10; i++)
             {
@@ -510,9 +510,9 @@ namespace WinformsMVP.Samples.Tests.Common
                 }));
             }
 
-            // Assert - 例外が発生しないことを確認
+            // Assert - Verify no exceptions are thrown
             Task.WaitAll(tasks.ToArray());
-            Assert.True(true);  // 例外なく完了すればOK
+            Assert.True(true);  // OK if completed without exceptions
         }
 
         [Fact]
@@ -522,24 +522,24 @@ namespace WinformsMVP.Samples.Tests.Common
             var model = new TestModel { Id = 1, Name = "Original" };
             var tracker = new ChangeTracker<TestModel>(model);
 
-            // Act - 複数スレッドからIsChangedを同時読み取り
+            // Act - Concurrent reads of IsChanged from multiple threads
             var tasks = new List<Task>();
             for (int i = 0; i < 20; i++)
             {
                 tasks.Add(Task.Run(() =>
                 {
-                    var _ = tracker.IsChanged;  // キャッシュの読み取り
+                    var _ = tracker.IsChanged;  // Read from cache
                 }));
             }
 
-            // Assert - 例外が発生しないことを確認
+            // Assert - Verify no exceptions are thrown
             Task.WaitAll(tasks.ToArray());
             Assert.True(true);
         }
 
         #endregion
 
-        #region 検証サポートテスト
+        #region Validation Support Tests
 
         [Fact]
         public void CanAcceptChanges_DefaultImplementation_ReturnsTrue()
@@ -571,7 +571,7 @@ namespace WinformsMVP.Samples.Tests.Common
             Assert.Null(error);
         }
 
-        // 派生クラスでの検証サポートのテスト
+        // Test validation support in derived classes
         private class ValidatedChangeTracker : ChangeTracker<TestModel>
         {
             public ValidatedChangeTracker(TestModel initialValue) : base(initialValue) { }
@@ -595,7 +595,7 @@ namespace WinformsMVP.Samples.Tests.Common
             var model = new TestModel { Id = 1, Name = "Valid" };
             var tracker = new ValidatedChangeTracker(model);
 
-            // Act - 無効な値に変更
+            // Act - Change to invalid value
             tracker.UpdateCurrentValue(new TestModel { Id = 2, Name = "Invalid" });
 
             // Assert
@@ -605,7 +605,7 @@ namespace WinformsMVP.Samples.Tests.Common
 
         #endregion
 
-        #region IsChanged キャッシングテスト
+        #region IsChanged Caching Tests
 
         [Fact]
         public void IsChanged_Caching_DoesNotRecomputeUntilValueChanges()
@@ -614,12 +614,12 @@ namespace WinformsMVP.Samples.Tests.Common
             var model = new TestModel { Id = 1, Name = "Original" };
             var tracker = new ChangeTracker<TestModel>(model);
 
-            // Act - 複数回IsChangedを呼び出し
+            // Act - Call IsChanged multiple times
             var result1 = tracker.IsChanged;
             var result2 = tracker.IsChanged;
             var result3 = tracker.IsChanged;
 
-            // Assert - キャッシュが機能している（例外なく高速に動作）
+            // Assert - Cache is working (operates quickly without exceptions)
             Assert.False(result1);
             Assert.False(result2);
             Assert.False(result3);
@@ -632,12 +632,12 @@ namespace WinformsMVP.Samples.Tests.Common
             var model = new TestModel { Id = 1, Name = "Original" };
             var tracker = new ChangeTracker<TestModel>(model);
 
-            var _ = tracker.IsChanged;  // キャッシュを作成
+            var _ = tracker.IsChanged;  // Create cache
 
-            // Act - 値を変更
+            // Act - Change value
             tracker.UpdateCurrentValue(new TestModel { Id = 2, Name = "Updated" });
 
-            // Assert - キャッシュが無効化され、新しい値で再計算
+            // Assert - Cache is invalidated and recalculated with new value
             Assert.True(tracker.IsChanged);
         }
 

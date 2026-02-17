@@ -5,24 +5,24 @@ using WinformsMVP.Services;
 namespace WinformsMVP.Samples.Tests.TestHelpers
 {
     /// <summary>
-    /// プレゼンターをテスト用のモックプラットフォームサービスで拡張するためのメソッド。
-    /// プレゼンター初期化前にモックサービスを注入するためのFluentAPIを提供します。
+    /// Extension methods for testing presenters with mock platform services.
+    /// Provides a Fluent API for injecting mock services before presenter initialization.
     /// </summary>
     public static class PresenterPlatformExtensions
     {
         /// <summary>
-        /// テスト用にモックプラットフォームサービスを注入します。
-        /// AttachView() または Initialize() より前に呼び出す必要があります。
+        /// Injects mock platform services for testing.
+        /// Must be called before AttachView() or Initialize().
         /// </summary>
-        /// <typeparam name="T">プレゼンターの型</typeparam>
-        /// <param name="presenter">プレゼンターインスタンス</param>
-        /// <param name="platform">モックプラットフォームサービス</param>
-        /// <returns>メソッドチェーン用のプレゼンター</returns>
+        /// <typeparam name="T">The presenter type</typeparam>
+        /// <param name="presenter">The presenter instance</param>
+        /// <param name="platform">The mock platform services</param>
+        /// <returns>The presenter for method chaining</returns>
         /// <example>
         /// <code>
         /// var mockServices = new MockPlatformServices();
         /// var presenter = new MyPresenter()
-        ///     .WithPlatformServices(mockServices);  // 初期化前に！
+        ///     .WithPlatformServices(mockServices);  // Before initialization!
         ///
         /// presenter.AttachView(mockView);
         /// presenter.Initialize();
@@ -31,8 +31,8 @@ namespace WinformsMVP.Samples.Tests.TestHelpers
         public static T WithPlatformServices<T>(this T presenter, IPlatformServices platform)
             where T : class
         {
-            // InternalsVisibleTo属性により内部メソッドにアクセス可能
-            // dynamicを使用してSetPlatformServicesを呼び出し
+            // InternalsVisibleTo attribute allows access to internal methods
+            // Use dynamic to call SetPlatformServices
             dynamic dynamicPresenter = presenter;
             dynamicPresenter.SetPlatformServices(platform);
             return presenter;

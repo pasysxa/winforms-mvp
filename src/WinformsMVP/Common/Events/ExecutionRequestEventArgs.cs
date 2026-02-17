@@ -3,8 +3,8 @@
 namespace WinformsMVP.Common.Events
 {
     /// <summary>
-    /// ExecutionRequest 事件参数 - 单参数版本
-    /// View 通过此事件请求 Presenter 执行特定逻辑，并通过回调或Executor获取结果
+    /// ExecutionRequest event args - Single parameter version
+    /// View uses this event to request Presenter to execute specific logic, and gets result through callback or Executor
     /// </summary>
     public class ExecutionRequestEventArgs<T, TResult> : EventArgs
     {
@@ -13,7 +13,7 @@ namespace WinformsMVP.Common.Events
         public Func<T, ExecutionResult<TResult>> Executor { get; }
 
         /// <summary>
-        /// 构造函数 - Callback 版本（向后兼容）
+        /// Constructor - Callback version (backward compatible)
         /// </summary>
         public ExecutionRequestEventArgs(T param, Action<TResult> callback)
         {
@@ -22,7 +22,7 @@ namespace WinformsMVP.Common.Events
         }
 
         /// <summary>
-        /// 构造函数 - Executor 版本（用于遗留窗体集成）
+        /// Constructor - Executor version (for legacy form integration)
         /// </summary>
         public ExecutionRequestEventArgs(Func<T, ExecutionResult<TResult>> executor, T param)
         {
@@ -32,7 +32,7 @@ namespace WinformsMVP.Common.Events
     }
 
     /// <summary>
-    /// ExecutionRequest 事件参数 - 双参数版本
+    /// ExecutionRequest event args - Two parameter version
     /// </summary>
     public class ExecutionRequestEventArgs<T1, T2, TResult> : EventArgs
     {
@@ -42,7 +42,7 @@ namespace WinformsMVP.Common.Events
         public Func<T1, T2, ExecutionResult<TResult>> Executor { get; }
 
         /// <summary>
-        /// 构造函数 - Callback 版本（向后兼容）
+        /// Constructor - Callback version (backward compatible)
         /// </summary>
         public ExecutionRequestEventArgs(T1 param1, T2 param2, Action<TResult> callback)
         {
@@ -52,7 +52,7 @@ namespace WinformsMVP.Common.Events
         }
 
         /// <summary>
-        /// 构造函数 - Executor 版本（用于遗留窗体集成）
+        /// Constructor - Executor version (for legacy form integration)
         /// </summary>
         public ExecutionRequestEventArgs(Func<T1, T2, ExecutionResult<TResult>> executor, T1 param1, T2 param2)
         {
@@ -63,7 +63,7 @@ namespace WinformsMVP.Common.Events
     }
 
     /// <summary>
-    /// ExecutionRequest 事件参数 - 三参数版本
+    /// ExecutionRequest event args - Three parameter version
     /// </summary>
     public class ExecutionRequestEventArgs<T1, T2, T3, TResult> : EventArgs
     {
@@ -74,7 +74,7 @@ namespace WinformsMVP.Common.Events
         public Func<T1, T2, T3, ExecutionResult<TResult>> Executor { get; }
 
         /// <summary>
-        /// 构造函数 - Callback 版本（向后兼容）
+        /// Constructor - Callback version (backward compatible)
         /// </summary>
         public ExecutionRequestEventArgs(T1 param1, T2 param2, T3 param3, Action<TResult> callback)
         {
@@ -85,7 +85,7 @@ namespace WinformsMVP.Common.Events
         }
 
         /// <summary>
-        /// 构造函数 - Executor 版本（用于遗留窗体集成）
+        /// Constructor - Executor version (for legacy form integration)
         /// </summary>
         public ExecutionRequestEventArgs(Func<T1, T2, T3, ExecutionResult<TResult>> executor, T1 param1, T2 param2, T3 param3)
         {

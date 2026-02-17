@@ -11,12 +11,12 @@ namespace WinformsMVP.Samples.Tests.Mocks
     /// </summary>
     public class MockToDoView : IToDoView
     {
-        // 内部状态
+        // Internal state
         private readonly List<string> _tasks = new List<string>();
         private int _selectedIndex = -1;
         private bool _hasPendingChanges = false;
 
-        // 记录方法调用
+        // Record method calls
         public List<string> MethodCalls { get; } = new List<string>();
         public List<string> StatusMessages { get; } = new List<string>();
 
@@ -29,7 +29,7 @@ namespace WinformsMVP.Samples.Tests.Mocks
             MethodCalls.Add("Activate()");
         }
 
-        // IToDoView 实现
+        // IToDoView implementation
         public string TaskText { get; set; }
 
         public bool HasSelectedTask => _selectedIndex >= 0 && _selectedIndex < _tasks.Count;
@@ -86,7 +86,7 @@ namespace WinformsMVP.Samples.Tests.Mocks
         public event EventHandler SelectionChanged;
         public event EventHandler DataChanged;
 
-        // 测试辅助方法
+        // Test helper methods
         public void SelectTask(int index)
         {
             _selectedIndex = index;

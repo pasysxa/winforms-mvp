@@ -13,21 +13,21 @@ namespace WinformsMVP.Samples.Tests.Mocks
     /// </summary>
     public class MockMessageService : IMessageService
     {
-        // 记录所有调用
+        // Record all calls
         public List<MessageCall> Calls { get; } = new List<MessageCall>();
 
-        // 便捷属性 - 检查特定消息是否被显示
+        // Convenience properties - Check if specific messages were displayed
         public bool InfoMessageShown => Calls.Exists(c => c.Type == MessageType.Info);
         public bool WarningMessageShown => Calls.Exists(c => c.Type == MessageType.Warning);
         public bool ErrorMessageShown => Calls.Exists(c => c.Type == MessageType.Error);
         public bool ConfirmDialogShown => Calls.Exists(c => c.Type == MessageType.Confirm);
 
-        // 控制返回值
+        // Control return values
         public bool ConfirmYesNoResult { get; set; } = true;
         public bool ConfirmOkCancelResult { get; set; } = true;
         public DialogResult ConfirmYesNoCancelResult { get; set; } = DialogResult.Yes;
 
-        // 实现接口方法
+        // Implement interface methods
         public void ShowInfo(string text, string caption = "")
         {
             Calls.Add(new MessageCall { Type = MessageType.Info, Message = text, Title = caption });
@@ -99,7 +99,7 @@ namespace WinformsMVP.Samples.Tests.Mocks
             Calls.Add(new MessageCall { Type = MessageType.Toast, Message = text });
         }
 
-        // 辅助方法
+        // Helper methods
         public void Clear()
         {
             Calls.Clear();
@@ -119,7 +119,7 @@ namespace WinformsMVP.Samples.Tests.Mocks
     }
 
     /// <summary>
-    /// 记录一次消息服务调用
+    /// Records a message service call
     /// </summary>
     public class MessageCall
     {

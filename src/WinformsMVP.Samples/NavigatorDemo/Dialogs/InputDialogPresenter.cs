@@ -65,7 +65,7 @@ namespace WinformsMVP.Samples.NavigatorDemo
 
     public static class InputDialogActions
     {
-        // 直接使用标准动作（无前缀）
+        // Directly use standard actions (no prefix)
         public static readonly ViewAction Ok = StandardActions.Ok;
         public static readonly ViewAction Cancel = StandardActions.Cancel;
     }

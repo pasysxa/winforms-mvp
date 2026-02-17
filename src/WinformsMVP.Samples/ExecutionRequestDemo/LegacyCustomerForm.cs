@@ -5,10 +5,10 @@ using System.Windows.Forms;
 namespace WinformsMVP.Samples.ExecutionRequestDemo
 {
     /// <summary>
-    /// 遗留的旧窗体 - 不是MVP模式
+    /// Legacy old form - Not MVP pattern
     ///
-    /// 这代表项目中的旧代码，无法或不便修改为MVP架构。
-    /// 通过ExecutionRequest模式，可以从新的MVP窗体中打开它。
+    /// This represents old code in the project that cannot or is inconvenient to modify to MVP architecture.
+    /// Through the ExecutionRequest pattern, it can be opened from new MVP forms.
     /// </summary>
     public class LegacyCustomerForm : Form
     {
@@ -18,7 +18,7 @@ namespace WinformsMVP.Samples.ExecutionRequestDemo
         private Button _saveButton;
         private Button _cancelButton;
 
-        // 公开属性供调用者获取结果
+        // Public properties for callers to retrieve results
         public string CustomerName { get; set; }
         public string Email { get; set; }
         public int Age { get; set; }
@@ -31,17 +31,17 @@ namespace WinformsMVP.Samples.ExecutionRequestDemo
 
         private void InitializeComponent()
         {
-            this.Text = "客户信息编辑（遗留窗体 - 非MVP）";
+            this.Text = "Customer Information Editor (Legacy Form - Non-MVP)";
             this.Size = new Size(450, 300);
             this.StartPosition = FormStartPosition.CenterParent;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
 
-            // 标题
+            // Title
             var titleLabel = new Label
             {
-                Text = "⚠️ 这是遗留的旧窗体（非MVP模式）",
+                Text = "⚠️ This is a legacy old form (Non-MVP pattern)",
                 Font = new Font("Segoe UI", 12f, FontStyle.Bold),
                 ForeColor = Color.DarkOrange,
                 Location = new Point(20, 20),
@@ -50,16 +50,16 @@ namespace WinformsMVP.Samples.ExecutionRequestDemo
 
             var infoLabel = new Label
             {
-                Text = "这个窗体代表项目中的旧代码，通过ExecutionRequest模式集成",
+                Text = "This form represents old code in the project, integrated via ExecutionRequest pattern",
                 ForeColor = Color.Gray,
                 Location = new Point(20, 50),
                 Size = new Size(400, 20)
             };
 
-            // 客户名称
+            // Customer name
             var nameLabel = new Label
             {
-                Text = "客户名称:",
+                Text = "Customer Name:",
                 Location = new Point(30, 90),
                 Size = new Size(100, 20)
             };
@@ -69,10 +69,10 @@ namespace WinformsMVP.Samples.ExecutionRequestDemo
                 Size = new Size(270, 23)
             };
 
-            // 邮箱
+            // Email
             var emailLabel = new Label
             {
-                Text = "邮箱:",
+                Text = "Email:",
                 Location = new Point(30, 125),
                 Size = new Size(100, 20)
             };
@@ -82,10 +82,10 @@ namespace WinformsMVP.Samples.ExecutionRequestDemo
                 Size = new Size(270, 23)
             };
 
-            // 年龄
+            // Age
             var ageLabel = new Label
             {
-                Text = "年龄:",
+                Text = "Age:",
                 Location = new Point(30, 160),
                 Size = new Size(100, 20)
             };
@@ -98,10 +98,10 @@ namespace WinformsMVP.Samples.ExecutionRequestDemo
                 Value = 30
             };
 
-            // 按钮
+            // Buttons
             _saveButton = new Button
             {
-                Text = "保存",
+                Text = "Save",
                 Location = new Point(240, 210),
                 Size = new Size(80, 35),
                 BackColor = Color.FromArgb(0, 120, 215),
@@ -112,12 +112,12 @@ namespace WinformsMVP.Samples.ExecutionRequestDemo
 
             _cancelButton = new Button
             {
-                Text = "取消",
+                Text = "Cancel",
                 Location = new Point(330, 210),
                 Size = new Size(80, 35)
             };
 
-            // 添加控件
+            // Add controls
             this.Controls.AddRange(new Control[] {
                 titleLabel, infoLabel,
                 nameLabel, _customerNameTextBox,
@@ -135,22 +135,22 @@ namespace WinformsMVP.Samples.ExecutionRequestDemo
 
         private void OnSaveClick(object sender, EventArgs e)
         {
-            // 简单验证
+            // Simple validation
             if (string.IsNullOrWhiteSpace(_customerNameTextBox.Text))
             {
-                MessageBox.Show("请输入客户名称", "验证失败",
+                MessageBox.Show("Please enter customer name", "Validation Failed",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(_emailTextBox.Text))
             {
-                MessageBox.Show("请输入邮箱", "验证失败",
+                MessageBox.Show("Please enter email", "Validation Failed",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            // 保存数据到公开属性
+            // Save data to public properties
             CustomerName = _customerNameTextBox.Text;
             Email = _emailTextBox.Text;
             Age = (int)_ageNumericUpDown.Value;

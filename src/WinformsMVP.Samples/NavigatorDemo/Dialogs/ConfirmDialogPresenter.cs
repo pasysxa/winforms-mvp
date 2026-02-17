@@ -90,7 +90,7 @@ namespace WinformsMVP.Samples.NavigatorDemo
 
     public static class ConfirmDialogActions
     {
-        // 直接使用标准动作（无前缀）
+        // Directly use standard actions (no prefix)
         public static readonly ViewAction Yes = StandardActions.Yes;
         public static readonly ViewAction No = StandardActions.No;
         public static readonly ViewAction Cancel = StandardActions.Cancel;

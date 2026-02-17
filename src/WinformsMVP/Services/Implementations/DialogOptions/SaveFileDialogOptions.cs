@@ -1,43 +1,43 @@
 ﻿namespace WinformsMVP.Services.Implementations.DialogOptions
 {
     /// <summary>
-    /// ファイルを保存ダイアログのオプション設定
-    /// Titleは指定不要（自動的に日本語デフォルト値が使用されます）
+    /// Option settings for Save File Dialog.
+    /// Title is optional (automatically uses default value if not specified).
     /// </summary>
     public class SaveFileDialogOptions
     {
         /// <summary>
-        /// ファイルフィルター（例: "テキストファイル|*.txt|すべてのファイル|*.*"）
+        /// File filter (e.g., "Text Files|*.txt|All Files|*.*")
         /// </summary>
         public string Filter { get; set; }
 
         /// <summary>
-        /// デフォルト拡張子（例: "txt"）
+        /// Default extension (e.g., "txt")
         /// </summary>
         public string DefaultExt { get; set; }
 
         /// <summary>
-        /// 初期ディレクトリ
+        /// Initial directory
         /// </summary>
         public string InitialDirectory { get; set; }
 
         /// <summary>
-        /// デフォルトファイル名
+        /// Default file name
         /// </summary>
         public string FileName { get; set; }
 
         /// <summary>
-        /// 上書き確認を表示するか
+        /// Whether to display overwrite confirmation
         /// </summary>
         public bool OverwritePrompt { get; set; } = true;
 
         /// <summary>
-        /// パスが存在しない場合に自動作成するか
+        /// Whether to automatically create the path if it doesn't exist
         /// </summary>
         public bool CreatePrompt { get; set; } = false;
 
         /// <summary>
-        /// タイトル（通常は指定不要、nullの場合はDialogDefaults.SaveFileDialogTitleが使用されます）
+        /// Title (normally not required; if null, DialogDefaults.SaveFileDialogTitle is used)
         /// </summary>
         public string Title { get; set; }
     }

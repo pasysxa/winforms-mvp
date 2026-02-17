@@ -3,8 +3,8 @@ using System;
 namespace WinformsMVP.Services.Implementations
 {
     /// <summary>
-    /// プラットフォームサービスのデフォルト実装。
-    /// 各サービスは遅延初期化されます。
+    /// Default implementation of platform services.
+    /// Each service is lazy-initialized.
     /// </summary>
     public class DefaultPlatformServices : IPlatformServices
     {
@@ -14,16 +14,16 @@ namespace WinformsMVP.Services.Implementations
         private readonly Lazy<IWindowNavigator> _windowNavigator;
 
         /// <summary>
-        /// デフォルトコンストラクタ - ViewMappingRegisterなしで初期化
+        /// Default constructor - Initializes without ViewMappingRegister
         /// </summary>
         public DefaultPlatformServices() : this(null)
         {
         }
 
         /// <summary>
-        /// ViewMappingRegisterを指定して初期化
+        /// Initializes with a specified ViewMappingRegister
         /// </summary>
-        /// <param name="viewMappingRegister">ビューマッピングレジスタ（nullの場合は新規作成）</param>
+        /// <param name="viewMappingRegister">View mapping register (creates new one if null)</param>
         public DefaultPlatformServices(IViewMappingRegister viewMappingRegister)
         {
             _windowNavigator = new Lazy<IWindowNavigator>(() =>
