@@ -10,6 +10,7 @@ using WinformsMVP.Samples.ExecutionRequestDemo;
 using WinformsMVP.Samples.MessageBoxDemo;
 using WinformsMVP.Samples.EmailDemo;
 using WinformsMVP.Samples.EmailDemo.Services;
+using WinformsMVP.Samples.ComplexInteractionDemo;
 using WinformsMVP.Services;
 using WinformsMVP.Services.Implementations;
 
@@ -29,7 +30,7 @@ namespace WinformsMVP.Samples
         {
             // Form settings
             this.Text = "WinForms MVP - Sample Launcher";
-            this.Size = new Size(500, 900);
+            this.Size = new Size(500, 990);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.Font = new Font("Segoe UI", 9f);
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -247,6 +248,30 @@ namespace WinformsMVP.Samples
                 TextAlign = ContentAlignment.MiddleCenter
             };
 
+            // Complex Interaction Demo Button
+            var complexInteractionButton = new Button
+            {
+                Text = "Complex Interaction Demo",
+                Location = new Point(100, 840),
+                Size = new Size(300, 50),
+                Font = new Font("Segoe UI", 11f),
+                BackColor = Color.FromArgb(50, 50, 150),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Cursor = Cursors.Hand
+            };
+            complexInteractionButton.FlatAppearance.BorderSize = 0;
+            complexInteractionButton.Click += (s, e) => LaunchComplexInteractionDemo();
+
+            var complexInteractionInfoLabel = new Label
+            {
+                Text = "Order Management • Parent-Child MVP • UserControls",
+                Location = new Point(100, 895),
+                Size = new Size(300, 20),
+                ForeColor = Color.DarkGray,
+                TextAlign = ContentAlignment.MiddleCenter
+            };
+
             // Add controls
             this.Controls.AddRange(new Control[] {
                 titleLabel, subtitleLabel,
@@ -257,7 +282,8 @@ namespace WinformsMVP.Samples
                 mvpComparisonButton, mvpComparisonInfoLabel,
                 executionRequestButton, executionRequestInfoLabel,
                 messageBoxButton, messageBoxInfoLabel,
-                emailDemoButton, emailDemoInfoLabel
+                emailDemoButton, emailDemoInfoLabel,
+                complexInteractionButton, complexInteractionInfoLabel
             });
         }
 
@@ -382,6 +408,14 @@ namespace WinformsMVP.Samples
 
             this.Hide();
             view.FormClosed += (s, e) => this.Show();
+        }
+
+        private void LaunchComplexInteractionDemo()
+        {
+            ComplexInteractionDemoProgram.Run();
+
+            // After the demo closes, show the launcher again
+            this.Show();
         }
     }
 }
