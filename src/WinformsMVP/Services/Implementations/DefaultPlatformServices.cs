@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Extensions.Logging;
 
 namespace WinformsMVP.Services.Implementations
 {
@@ -12,11 +13,12 @@ namespace WinformsMVP.Services.Implementations
         private readonly Lazy<IMessageService> _messageService = new Lazy<IMessageService>(() => new MessageService());
         private readonly Lazy<IFileService> _fileService = new Lazy<IFileService>(() => new FileService());
         private readonly Lazy<IWindowNavigator> _windowNavigator;
+        private readonly Lazy<ILoggerFactory> _loggerFactory;
 
         /// <summary>
-        /// Default constructor - Initializes without ViewMappingRegister
+        /// Default constructor - Initializes with Debug logger
         /// </summary>
-        public DefaultPlatformServices() : this(null)
+        public DefaultPlatformServices() : this(null, null)
         {
         }
 
@@ -25,11 +27,36 @@ namespace WinformsMVP.Services.Implementations
         /// </summary>
         /// <param name="viewMappingRegister">View mapping register (creates new one if null)</param>
         public DefaultPlatformServices(IViewMappingRegister viewMappingRegister)
+            : this(viewMappingRegister, null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes with specified ViewMappingRegister and LoggerFactory
+        /// </summary>
+        /// <param name="viewMappingRegister">View mapping register (creates new one if null)</param>
+        /// <param name="loggerFactory">Logger factory (creates default Debug logger if null)</param>
+        public DefaultPlatformServices(
+            IViewMappingRegister viewMappingRegister,
+            ILoggerFactory loggerFactory)
         {
             _windowNavigator = new Lazy<IWindowNavigator>(() =>
             {
                 var register = viewMappingRegister ?? new ViewMappingRegister();
                 return new WindowNavigator(register);
+            });
+
+            _loggerFactory = new Lazy<ILoggerFactory>(() =>
+            {
+                if (loggerFactory != null)
+                    return loggerFactory;
+
+                // Default: Debug provider for development
+                return Microsoft.Extensions.Logging.LoggerFactory.Create(builder =>
+                {
+                    builder.AddDebug();
+                    builder.SetMinimumLevel(LogLevel.Debug);
+                });
             });
         }
 
@@ -37,5 +64,6 @@ namespace WinformsMVP.Services.Implementations
         public IMessageService MessageService => _messageService.Value;
         public IFileService FileService => _fileService.Value;
         public IWindowNavigator WindowNavigator => _windowNavigator.Value;
+        public ILoggerFactory LoggerFactory => _loggerFactory.Value;
     }
 }

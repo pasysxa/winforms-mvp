@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using WinformsMVP.Services;
 
 namespace WinformsMVP.Samples.Tests.Mocks
@@ -14,6 +16,9 @@ namespace WinformsMVP.Samples.Tests.Mocks
             DialogProvider = new MockDialogProvider();
             FileService = new MockFileService();
             WindowNavigator = new MockWindowNavigator();
+
+            // Use NullLoggerFactory for tests (no logging output, zero performance overhead)
+            LoggerFactory = NullLoggerFactory.Instance;
         }
 
         // Expose as concrete types (for test verification)
@@ -27,6 +32,13 @@ namespace WinformsMVP.Samples.Tests.Mocks
         IDialogProvider IPlatformServices.DialogProvider => DialogProvider;
         IFileService IPlatformServices.FileService => FileService;
         IWindowNavigator IPlatformServices.WindowNavigator => WindowNavigator;
+
+        /// <summary>
+        /// Logger factory for tests.
+        /// Default: NullLoggerFactory (no output).
+        /// Can be replaced with custom factory for logging verification tests.
+        /// </summary>
+        public ILoggerFactory LoggerFactory { get; set; }
 
         /// <summary>
         /// Resets all mock states

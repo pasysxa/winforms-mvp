@@ -1,8 +1,10 @@
+using Microsoft.Extensions.Logging;
+
 namespace WinformsMVP.Services
 {
     /// <summary>
     /// Interface for platform services.
-    /// Provides infrastructure services such as messages, dialogs, and file operations.
+    /// Provides infrastructure services such as messages, dialogs, logging, and file operations.
     /// </summary>
     public interface IPlatformServices
     {
@@ -25,5 +27,12 @@ namespace WinformsMVP.Services
         /// Window navigator (modal/non-modal window display)
         /// </summary>
         IWindowNavigator WindowNavigator { get; }
+
+        /// <summary>
+        /// Logger factory for creating loggers.
+        /// Default implementation uses Debug provider for development.
+        /// Can be replaced with custom providers (Console, File, Application Insights, Seq, etc.)
+        /// </summary>
+        ILoggerFactory LoggerFactory { get; }
     }
 }

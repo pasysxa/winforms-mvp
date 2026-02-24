@@ -3,7 +3,7 @@
 [![.NET Framework](https://img.shields.io/badge/.NET%20Framework-4.8-blue.svg)](https://dotnet.microsoft.com/download/dotnet-framework/net48)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/pasysxa/winforms-mvp)
-[![Tests](https://img.shields.io/badge/tests-41%20passing-success.svg)](https://github.com/pasysxa/winforms-mvp)
+[![Tests](https://img.shields.io/badge/tests-131%20passing-success.svg)](https://github.com/pasysxa/winforms-mvp)
 
 A modern, enterprise-grade **Model-View-Presenter (MVP)** framework for WinForms applications, bringing WPF-style command binding and clean architecture to .NET Framework 4.8.
 
@@ -345,6 +345,61 @@ var result = Dialogs.ShowOpenFileDialog();
 if (result.IsSuccess) { ... }
 ```
 
+### 📊 Structured Logging
+
+Built-in logging using **Microsoft.Extensions.Logging** - the same industry-standard abstraction used by ASP.NET Core:
+
+```csharp
+public class MyPresenter : WindowPresenterBase<IMyView>
+{
+    // No constructor needed - Logger property automatically available!
+
+    private void OnSave()
+    {
+        try
+        {
+            SaveData();
+
+            // Structured logging - parameters are captured for querying
+            Logger.LogInformation("User {UserId} saved data successfully", userId);
+        }
+        catch (Exception ex)
+        {
+            // Exception logging with context
+            Logger.LogError(ex, "Failed to save data for user {UserId}", userId);
+            Messages.ShowError("Failed to save data", "Error");
+        }
+    }
+}
+```
+
+**Key Benefits:**
+- ✅ **Structured data** - Parameterized messages enable powerful querying in log aggregation systems
+- ✅ **Extensible** - Rich ecosystem of providers (Debug, Console, File, Application Insights, Seq, Elasticsearch)
+- ✅ **Cloud-ready** - Easy integration with Azure Monitor, AWS CloudWatch, etc.
+- ✅ **Testable** - NullLoggerFactory for zero overhead in tests
+- ✅ **Zero learning curve** - If you know ILogger, you already know how to use it
+
+**Custom Configuration:**
+```csharp
+// Program.cs - Configure logging provider
+var loggerFactory = LoggerFactory.Create(builder =>
+{
+    builder
+        .AddDebug()                              // Visual Studio Output window
+        .SetMinimumLevel(LogLevel.Information);  // Only log Info and above
+
+    // Add cloud providers:
+    // builder.AddApplicationInsights(config);   // Azure
+    // builder.AddSeq("http://localhost:5341");  // Seq
+});
+
+var platformServices = new DefaultPlatformServices(null, loggerFactory);
+PlatformServices.Default = platformServices;
+```
+
+See [`LoggingDemoExample.cs`](src/WinformsMVP.Samples/LoggingDemoExample.cs) for a complete working example.
+
 ### 🎨 Flexible Dependency Injection
 
 **Service Locator** (rapid prototyping):
@@ -639,6 +694,15 @@ The repository includes comprehensive examples:
 - Long-running operations without UI freezing
 - Multiple async operation patterns
 
+### 📊 [Logging Demo](src/WinformsMVP.Samples/LoggingDemoExample.cs) **NEW!**
+- Microsoft.Extensions.Logging integration
+- Different log levels (Debug, Information, Warning, Error)
+- Structured logging with parameters
+- Exception logging with context
+- Custom logger factory configuration
+- Cloud logging integration patterns (Application Insights, Seq)
+- Testing with NullLoggerFactory
+
 ---
 
 ## 🧪 Testing
@@ -670,7 +734,7 @@ public void OnSave_WithValidData_ShowsSuccessMessage()
 }
 ```
 
-**Test Results**: ✅ 41/41 tests passing
+**Test Results**: ✅ 131/131 tests passing
 
 ---
 

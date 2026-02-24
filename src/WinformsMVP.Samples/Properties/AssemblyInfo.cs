@@ -34,3 +34,6 @@ using System.Runtime.InteropServices;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
+
+// Make internal members visible to test assembly
+[assembly: InternalsVisibleTo("WinformsMVP.Samples.Tests")]

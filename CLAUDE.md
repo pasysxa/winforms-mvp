@@ -1557,6 +1557,283 @@ Common application services accessed via `ICommonServices`. These services are e
 - **IFileService**: File I/O operations
   - Abstracts file system access for testability
 
+- **ILogger / ILoggerFactory**: Structured logging using Microsoft.Extensions.Logging
+  - Use instead of `Console.WriteLine()` or `Debug.WriteLine()`
+  - Access via `Logger` property in all presenters
+  - Supports structured logging with parameterized messages
+  - Extensible via providers (Debug, Console, File, Application Insights, Seq, etc.)
+  - Default: Debug provider for development
+  - See [Logging](#logging) section for details
+
+### Logging
+
+The framework integrates **Microsoft.Extensions.Logging** for structured, flexible logging across all presenters.
+
+#### Why Microsoft.Extensions.Logging?
+
+- **Industry standard**: Same logging abstraction used by ASP.NET Core
+- **Structured logging**: Parameterized messages enable powerful querying in log aggregation systems
+- **Extensible**: Rich ecosystem of providers (Console, File, Application Insights, Seq, Elasticsearch, etc.)
+- **Zero learning curve**: If you know ILogger, you already know how to use it
+- **Cloud-ready**: Easy integration with Azure Monitor, AWS CloudWatch, etc.
+
+#### Using Logger in Presenters
+
+All presenters have automatic access to logging via the `Logger` property:
+
+```csharp
+public class MyPresenter : WindowPresenterBase<IMyView>
+{
+    // No constructor needed - Logger property automatically available!
+
+    protected override void OnInitialize()
+    {
+        Logger.LogInformation("MyPresenter initialized");
+    }
+
+    private void OnSave()
+    {
+        try
+        {
+            var userId = GetCurrentUserId();
+            SaveData();
+
+            // Structured logging - parameters are captured for querying
+            Logger.LogInformation("User {UserId} saved data successfully", userId);
+        }
+        catch (Exception ex)
+        {
+            // Exception logging with context
+            Logger.LogError(ex, "Failed to save data for user {UserId}", userId);
+            Messages.ShowError("Failed to save data", "Error");
+        }
+    }
+
+    private void OnComplexOperation()
+    {
+        // Different log levels
+        Logger.LogDebug("Starting complex operation");
+        Logger.LogInformation("Processing started");
+        Logger.LogWarning("This might take a while");
+
+        if (errorCondition)
+        {
+            Logger.LogError("Operation failed due to {Reason}", reason);
+        }
+    }
+}
+```
+
+#### Log Levels
+
+| Level | When to Use | Example |
+|-------|-------------|---------|
+| **Debug** | Detailed diagnostic information | `Logger.LogDebug("Cache hit for key {Key}", key)` |
+| **Information** | General informational messages | `Logger.LogInformation("User {UserName} logged in", userName)` |
+| **Warning** | Potentially harmful situations | `Logger.LogWarning("Retry attempt {Attempt} of {MaxAttempts}", attempt, max)` |
+| **Error** | Error events that don't stop execution | `Logger.LogError(ex, "Failed to process order {OrderId}", orderId)` |
+| **Critical** | Very serious errors causing app failure | `Logger.LogCritical(ex, "Database connection lost")` |
+
+#### Structured Logging Best Practices
+
+**✅ Good - Structured parameters:**
+```csharp
+// Parameters are captured as structured data
+Logger.LogInformation("User {UserName} opened document {DocumentId}", userName, docId);
+
+// Log aggregation systems can query: WHERE UserName = 'Alice'
+// Can create metrics: COUNT(DocumentId) GROUP BY UserName
+```
+
+**❌ Bad - String interpolation:**
+```csharp
+// String interpolation loses structure - can't query by UserName
+Logger.LogInformation($"User {userName} opened document {docId}");
+```
+
+#### Configuring Custom Log Providers
+
+**Default Configuration (Debug Provider):**
+
+The framework uses Debug provider by default - logs appear in Visual Studio Output window during development.
+
+**Custom Configuration in Program.cs:**
+
+```csharp
+using Microsoft.Extensions.Logging;
+using WinformsMVP.Services.Implementations;
+
+static class Program
+{
+    [STAThread]
+    static void Main()
+    {
+        Application.EnableVisualStyles();
+        Application.SetCompatibleTextRenderingDefault(false);
+
+        // Create custom logger factory
+        var loggerFactory = LoggerFactory.Create(builder =>
+        {
+            builder
+                .AddDebug()                              // Debug window
+                .AddConsole()                            // Console output (requires Microsoft.Extensions.Logging.Console)
+                .SetMinimumLevel(LogLevel.Information);  // Only log Info and above
+        });
+
+        // Configure platform services with custom logger
+        var platformServices = new DefaultPlatformServices(
+            viewMappingRegister: null,
+            loggerFactory: loggerFactory);
+
+        // Set as default for all presenters
+        PlatformServices.Default = platformServices;
+
+        // Run application
+        Application.Run(new MainForm());
+    }
+}
+```
+
+#### Cloud Logging Integration
+
+For WinForms client + cloud backend scenarios, use centralized logging:
+
+**Example: Azure Application Insights**
+
+```csharp
+// 1. Install NuGet: Microsoft.ApplicationInsights.WorkerService
+
+// 2. Configure in Program.cs
+var loggerFactory = LoggerFactory.Create(builder =>
+{
+    builder.AddApplicationInsights(
+        configureTelemetryConfiguration: config =>
+        {
+            config.ConnectionString = "InstrumentationKey=xxx";
+        },
+        configureApplicationInsightsLoggerOptions: options => { }
+    );
+});
+
+// 3. Use correlation IDs to link client and server logs
+public class MyPresenter : WindowPresenterBase<IMyView>
+{
+    private void OnSubmitOrder()
+    {
+        var correlationId = Guid.NewGuid();
+
+        Logger.LogInformation("Client submitting order {OrderId} with correlation {CorrelationId}",
+            orderId, correlationId);
+
+        // Send correlationId to server API
+        var result = _apiClient.SubmitOrder(orderId, correlationId);
+
+        // Server logs will include same correlationId
+        // Query in Application Insights: WHERE CorrelationId = 'xxx'
+    }
+}
+```
+
+**Example: Seq (Local Development)**
+
+```csharp
+// 1. Install NuGet: Seq.Extensions.Logging
+
+// 2. Run Seq locally: docker run -d -p 5341:80 datalust/seq
+
+// 3. Configure in Program.cs
+var loggerFactory = LoggerFactory.Create(builder =>
+{
+    builder.AddSeq("http://localhost:5341");
+});
+
+// 4. View logs in browser: http://localhost:5341
+```
+
+**Example: File Logging**
+
+```csharp
+// 1. Install NuGet: Serilog.Extensions.Logging.File
+
+// 2. Configure in Program.cs
+var loggerFactory = LoggerFactory.Create(builder =>
+{
+    builder.AddFile("logs/app-{Date}.log",
+        minimumLevel: LogLevel.Information);
+});
+
+// Logs written to: logs/app-2026-02-17.log
+```
+
+#### Testing with Logging
+
+**Using NullLoggerFactory (Default):**
+
+```csharp
+[Fact]
+public void Test_MyPresenter()
+{
+    // Arrange
+    var mockServices = new MockPlatformServices();  // Uses NullLoggerFactory (no output)
+    var presenter = new MyPresenter();
+    presenter.SetPlatformServices(mockServices);
+
+    // Act
+    presenter.AttachView(mockView);
+    presenter.Initialize();
+
+    // Assert
+    // Logger calls don't produce output - zero overhead
+}
+```
+
+**Verifying Log Messages:**
+
+```csharp
+[Fact]
+public void OnSave_ShouldLogSuccess()
+{
+    // Arrange
+    var mockLogger = new MockLogger();  // Custom mock that captures log messages
+    var mockLoggerFactory = new MockLoggerFactory(mockLogger);
+
+    var platformServices = new DefaultPlatformServices(null, mockLoggerFactory);
+    var presenter = new MyPresenter();
+    presenter.SetPlatformServices(platformServices);
+
+    presenter.AttachView(mockView);
+    presenter.Initialize();
+
+    // Act
+    presenter.OnSave();
+
+    // Assert
+    Assert.Contains(mockLogger.Messages, m => m.Contains("saved data successfully"));
+}
+```
+
+See `src/WinformsMVP.Samples.Tests/LoggingIntegrationTests.cs` for complete test examples.
+
+#### Complete Example
+
+See `src/WinformsMVP.Samples/LoggingDemoExample.cs` for a full working example demonstrating:
+- Different log levels (Debug, Information, Warning, Error)
+- Structured logging with parameters
+- Exception logging with context
+- Custom logger factory configuration
+- Cloud logging integration patterns
+
+#### Key Benefits
+
+| Benefit | Description |
+|---------|-------------|
+| **Structured Data** | Parameterized messages enable powerful querying |
+| **Extensible** | Add providers without changing code |
+| **Testable** | NullLoggerFactory for zero overhead in tests |
+| **Cloud-Ready** | Easy integration with monitoring services |
+| **Performance** | Lazy evaluation, conditional logging |
+| **Ecosystem** | Rich provider library (20+ official providers) |
+
 ### Platform Services Access
 
 All presenters have **built-in access** to platform services through convenience properties. No constructor injection needed for basic services!

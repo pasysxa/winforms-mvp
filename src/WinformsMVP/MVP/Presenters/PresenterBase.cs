@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Extensions.Logging;
 using WinformsMVP.Common.Events;
 using WinformsMVP.Core.Views;
 using WinformsMVP.MVP.Presenters;
@@ -74,6 +75,33 @@ namespace WinformsMVP.Core.Presenters
         /// Use this instead of Platform.WindowNavigator for cleaner code.
         /// </summary>
         protected WinformsMVP.Services.IWindowNavigator Navigator => Platform.WindowNavigator;
+
+        private ILogger _logger;
+
+        /// <summary>
+        /// Logger for this presenter.
+        /// Uses ILogger&lt;PresenterType&gt; pattern for structured logging.
+        /// Default implementation uses Debug provider.
+        /// Configure custom providers via Platform.LoggerFactory.
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// Logger.LogInformation("User {UserName} opened screen", userName);
+        /// Logger.LogError(ex, "Failed to save data");
+        /// </code>
+        /// </example>
+        protected ILogger Logger
+        {
+            get
+            {
+                if (_logger == null)
+                {
+                    var loggerFactory = Platform.LoggerFactory;
+                    _logger = loggerFactory.CreateLogger(this.GetType());
+                }
+                return _logger;
+            }
+        }
 
         /// <summary>
         /// Sets the view for this presenter. Called by derived classes.
