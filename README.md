@@ -484,59 +484,91 @@ event EventHandler<ActionRequestEventArgs> ActionRequested;
 
 ## 🏛️ Architecture
 
-```mermaid
-graph TB
-    subgraph "🖥️ View Layer"
-        Form[Form / UserControl]
-        ViewInterface[IView Interface]
-        ActionBinder[ViewActionBinder]
-    end
+### Three-Layer Structure
 
-    subgraph "🎯 Presenter Layer"
-        Presenter[Presenter]
-        Dispatcher[ViewActionDispatcher]
-    end
-
-    subgraph "📦 Model & Services"
-        Model[Model / DTOs]
-        Services[Services Layer]
-        Repository[Repositories]
-    end
-
-    Form -.implements.-> ViewInterface
-    Form --> ActionBinder
-    Presenter --> ViewInterface
-    Presenter --> Dispatcher
-    Dispatcher --> ActionBinder
-    Presenter --> Services
-    Presenter --> Repository
-    Presenter --> Model
-
-    style Form fill:#e1f5ff
-    style Presenter fill:#fff4e1
-    style Model fill:#f0f0f0
+```
+┌─────────────────────────────────────────────────────────────┐
+│                       User Interaction                      │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│    View Layer (Forms/Controls)                              │
+│                                                             │
+│  • Displays data to user                                    │
+│  • Captures user input (button clicks, text entry)          │
+│  • Implements IView interface                               │
+│  • NO business logic!                                       │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│    Presenter Layer (Business Logic)                         │
+│                                                             │
+│  • Handles user actions (Save, Delete, etc.)                │
+│  • Validates data                                           │
+│  • Coordinates between View and Model                       │
+│  • Calls Services (messages, dialogs, logging)              │
+│  • Updates View with results                                │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                ┌─────────────┴──────────────┐
+                ▼                            ▼
+┌─────────────────────────────┐  ┌─────────────────────────────┐
+│    Model Layer              │  │    Services Layer           │
+│                             │  │                             │
+│  • Domain models            │  │  • IMessageService          │
+│  • Business entities        │  │  • IDialogProvider          │
+│  • DTOs                     │  │  • IFileService             │
+│  • Repositories             │  │  • ILogger                  │
+└─────────────────────────────┘  └─────────────────────────────┘
 ```
 
-### Lifecycle Flow
+### Component Responsibilities
 
-```mermaid
-sequenceDiagram
-    participant N as WindowNavigator
-    participant P as Presenter
-    participant V as View (Form)
-    participant D as Dispatcher
+```
+📋 Complete Structure:
 
-    N->>V: 1. Create Form
-    V->>V: 2. InitializeActionBindings()
-    N->>P: 3. AttachView(view)
-    P->>P: 4. OnViewAttached()
-    N->>P: 5. Initialize()
-    P->>P: 6. RegisterViewActions()
-    P->>D: 7. Register handlers
-    P->>V: 8. ActionBinder.Bind(dispatcher)
-    V->>D: 9. Connect controls
-    P->>P: 10. OnInitialize()
-    Note over P,V: Ready for user interaction
+View (Form)
+ ├─ Implements IView interface
+ ├─ Defines events (button clicks, etc.)
+ └─ Methods to update UI
+
+Presenter
+ ├─ Subscribes to View events
+ ├─ Calls Model (data operations)
+ ├─ Calls Services (messages, dialogs, etc.)
+ ├─ Validates data
+ └─ Updates View via IView interface
+
+Model Layer
+ ├─ Repository (data access)
+ ├─ Domain Models (User, Order, etc.)
+ └─ Business Entities / DTOs
+
+Services Layer
+ ├─ IMessageService (message boxes)
+ ├─ IDialogProvider (file dialogs)
+ ├─ IFileService (file operations)
+ └─ ILogger (logging)
+```
+
+### Simple Flow Example
+
+```
+User clicks "Save" button
+        ↓
+View raises ActionRequest event
+        ↓
+Presenter receives event → OnSave()
+        ↓
+Presenter validates data
+        ↓
+Presenter calls Repository.Save()
+        ↓
+Presenter updates View: "Saved successfully!"
+        ↓
+User sees success message
 ```
 
 ---
