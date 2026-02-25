@@ -612,7 +612,7 @@ public class UserEditorPresenter : WindowPresenterBase<IUserEditorView>
             canExecute: () => View.HasUnsavedChanges);
         _dispatcher.Register(CommonActions.Cancel, OnCancel);
 
-        View.ActionBinder.Bind(_dispatcher);
+        // Framework automatically calls View.ActionBinder?.Bind(_dispatcher)
     }
 
     private void OnSave()
