@@ -30,9 +30,9 @@ This framework provides a **clean, testable architecture** with **minimal boiler
 ### 📐 The Three Components
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                         MVP Pattern                              │
-└─────────────────────────────────────────────────────────────────┘
+    ┌─────────────────────────────────────────────────────────────────────┐
+    │                             MVP Pattern                             │
+    └─────────────────────────────────────────────────────────────────────┘
 
     ┌──────────────┐           ┌──────────────┐           ┌──────────────┐
     │              │           │              │           │              │
@@ -42,10 +42,11 @@ This framework provides a **clean, testable architecture** with **minimal boiler
     └──────────────┘           └──────────────┘           └──────────────┘
            ▲                          ▲                          ▲
            │                          │                          │
-      ┌────┴─────┐              ┌────┴─────┐              ┌────┴─────┐
-      │Repository│              │ Services │              │Form/Ctrl │
-      │DTOs/Model│              │Validation│              │ WinForms │
-      └──────────┘              └──────────┘              └──────────┘
+           │                          │                          │
+    ┌──────┴────────┐          ┌──────┴──────┐           ┌───────┴────────┐
+    │  Repositories │          │  Services   │           │  Form/Control  │
+    │  DTOs/Entities│          │ Validation  │           │ (WinForms UI)  │
+    └───────────────┘          └─────────────┘           └────────────────┘
 ```
 
 #### 🎯 **Model** - Your Business Data
